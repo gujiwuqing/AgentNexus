@@ -45,6 +45,12 @@
       "revokeConfirm": "Are you sure? The shared link will stop working.",
       "revoking": "Revoking...",
       "sharedBy": "Shared from AgentNexus"
+    },
+    "toolCall": {
+      "calledTool": "Called {name}",
+      "delegatedTo": "Delegated to {name}",
+      "viewArgs": "Arguments",
+      "viewResult": "Result"
     }
   }
 }

@@ -45,6 +45,12 @@
       "revokeConfirm": "确定取消吗？分享链接将失效。",
       "revoking": "取消中...",
       "sharedBy": "来自 AgentNexus 的分享"
+    },
+    "toolCall": {
+      "calledTool": "调用了 {name}",
+      "delegatedTo": "已委派给 {name}",
+      "viewArgs": "参数",
+      "viewResult": "结果"
     }
   }
 }

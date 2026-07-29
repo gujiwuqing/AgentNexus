@@ -48,6 +48,11 @@
     "knowledge": {
       "title": "Knowledge Bases",
       "empty": "No knowledge bases available. Create one first."
+    },
+    "team": {
+      "title": "Team Members",
+      "empty": "No other agents available to add as team members.",
+      "roleDescriptionPlaceholder": "Leave empty to use the agent's own description"
     }
   }
 }

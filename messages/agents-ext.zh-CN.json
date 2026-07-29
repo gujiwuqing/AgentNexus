@@ -48,6 +48,11 @@
     "knowledge": {
       "title": "知识库",
       "empty": "暂无知识库，请先创建。"
+    },
+    "team": {
+      "title": "团队成员",
+      "empty": "没有其他可添加为团队成员的智能体。",
+      "roleDescriptionPlaceholder": "留空则使用该智能体自身的描述"
     }
   }
 }
