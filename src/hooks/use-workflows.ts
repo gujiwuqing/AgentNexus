@@ -78,7 +78,7 @@ export function useDeleteWorkflow() {
 export function useWorkflowRuns(workflowId: string) {
   return useQuery({
     queryKey: ["workflows", workflowId, "runs"],
-    queryFn: () => fetchJson<{ id: string; status: string; input: string; createdAt: string }[]>(
+    queryFn: () => fetchJson<{ id: string; status: string; input: string; versionNumber: number | null; createdAt: string }[]>(
       `/api/workflows/${workflowId}/runs`
     ),
     enabled: Boolean(workflowId),

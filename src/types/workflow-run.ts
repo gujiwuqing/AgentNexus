@@ -6,6 +6,7 @@ export type WorkflowRun = {
   currentNodeId: string | null;
   context: Record<string, string>;
   error: string | null;
+  versionNumber: number | null;
   createdAt: string;
   updatedAt: string;
 };

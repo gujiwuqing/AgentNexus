@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState, useEffect } from "react";
+import { History } from "lucide-react";
 import {
   ReactFlow,
   addEdge,
@@ -18,6 +19,7 @@ import { nodeTypes } from "./nodes";
 import { NodeLibrary } from "./node-library";
 import { NodeConfigDialog } from "./node-config-dialog";
 import { RunPanel } from "./run-panel";
+import { VersionHistoryPanel } from "./version-history-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
@@ -82,6 +84,7 @@ function EditorInner({ workflowId }: { workflowId: string }) {
   const [configNode, setConfigNode] = useState<Node | null>(null);
   const [configOpen, setConfigOpen] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const { data: runDetail } = useWorkflowRunDetail(selectedRunId ?? "");
   const t = useTranslations("workflowExt.editor");
   const tCommon = useTranslations("common");
@@ -178,6 +181,15 @@ function EditorInner({ workflowId }: { workflowId: string }) {
           {updateWorkflow.isPending ? t("saving") : t("save")}
         </Button>
         {updateWorkflow.isSuccess && <span className="text-green-600 text-xs">{t("saved")}</span>}
+        <div className="flex-1" />
+        <Button
+          size="sm"
+          variant={showVersionHistory ? "secondary" : "ghost"}
+          className="cursor-pointer"
+          onClick={() => setShowVersionHistory((v) => !v)}
+        >
+          <History className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -199,6 +211,17 @@ function EditorInner({ workflowId }: { workflowId: string }) {
             <Background />
           </ReactFlow>
         </div>
+        {showVersionHistory && (
+          <div className="w-[280px] border-l overflow-y-auto">
+            <VersionHistoryPanel
+              workflowId={workflowId}
+              onRestored={() => {
+                setShowVersionHistory(false);
+                setInitialized(false);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       <RunPanel workflowId={workflowId} onSelectRun={setSelectedRunId} />
