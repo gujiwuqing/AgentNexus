@@ -1,23 +1,30 @@
 import { apiOk, apiError } from "@/lib/api-response";
-import { getKnowledgeBase } from "@/server/knowledge-bases";
+import { getKnowledgeBaseOwnedBy } from "@/server/knowledge-bases";
 import { listDocuments, createKnowledgeDocument } from "@/server/knowledge-documents";
 import { saveFile } from "@/lib/files/storage";
 import { indexDocument } from "@/lib/knowledge/indexer";
+import { requireUser } from "@/lib/auth";
 
 type Params = { params: Promise<{ id: string }> };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_MIMETYPES = new Set(["text/plain", "text/markdown", "text/csv", "application/pdf"]);
 
-export async function GET(_req: Request, { params }: Params) {
+export async function GET(request: Request, { params }: Params) {
+  const user = await requireUser(request);
+  if (user instanceof Response) return user;
   const { id } = await params;
+  const kb = await getKnowledgeBaseOwnedBy(id, user.id);
+  if (!kb) return apiError(404, "not_found", "Knowledge base not found");
   const docs = await listDocuments(id);
   return apiOk(docs);
 }
 
 export async function POST(request: Request, { params }: Params) {
+  const user = await requireUser(request);
+  if (user instanceof Response) return user;
   const { id } = await params;
-  const kb = await getKnowledgeBase(id);
+  const kb = await getKnowledgeBaseOwnedBy(id, user.id);
   if (!kb) return apiError(404, "not_found", "Knowledge base not found");
 
   const formData = await request.formData();
