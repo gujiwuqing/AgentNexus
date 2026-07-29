@@ -19,7 +19,7 @@ export async function triggerWorkflowRun(workflowId: string, input: string) {
   const versionNumber = (await getLatestVersionNumber(workflowId)) || null;
   await db.insert(workflowRuns).values({ id: runId, workflowId, status: "running", input, context: {}, versionNumber });
 
-  const callbacks = makeCallbacks(runId);
+  const callbacks = makeCallbacks(runId, workflow.userId);
   const graph = workflow.graph as WorkflowGraph;
   const result = await executeWorkflow(graph, input, callbacks);
 
@@ -67,7 +67,7 @@ export async function resumeWorkflowRun(runId: string, input: string) {
     .set({ status: "running", updatedAt: new Date() })
     .where(eq(workflowRuns.id, runId));
 
-  const callbacks = makeCallbacks(runId);
+  const callbacks = makeCallbacks(runId, workflow.userId);
   const graph = workflow.graph as WorkflowGraph;
   const result = await executeWorkflow(graph, data.run.input, callbacks, {
     resumeFromNodeId: data.run.currentNodeId,
@@ -101,7 +101,7 @@ export async function retryWorkflowRun(runId: string, nodeId: string) {
     .set({ status: "running", error: null, updatedAt: new Date() })
     .where(eq(workflowRuns.id, runId));
 
-  const callbacks = makeCallbacks(runId);
+  const callbacks = makeCallbacks(runId, workflow.userId);
   const graph = workflow.graph as WorkflowGraph;
   const result = await executeWorkflow(graph, data.run.input, callbacks, {
     retryNodeId: nodeId,
@@ -122,12 +122,12 @@ export async function retryWorkflowRun(runId: string, nodeId: string) {
   return { id: runId, ...result };
 }
 
-function makeCallbacks(runId: string): EngineCallbacks {
+function makeCallbacks(runId: string, userId: string): EngineCallbacks {
   return {
     async callAgent(agentId: string, prompt: string): Promise<string> {
       const agent = await getAgent(agentId);
       if (!agent) throw new Error(`Agent ${agentId} not found`);
-      const globalConfig = await getProviderConfig();
+      const globalConfig = await getProviderConfig(userId);
       const provider = resolveProviderConfig(agent.model, globalConfig);
       const messages = [
         ...(agent.systemPrompt ? [{ role: "system" as const, content: agent.systemPrompt }] : []),

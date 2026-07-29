@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { clearAllTables } from "@/db/test-helpers";
+import { clearAllTables, authedUser } from "@/db/test-helpers";
 import { createWorkflow } from "./workflows";
 import { createAgent } from "./agents";
 import { upsertProviderConfig } from "./provider-config";
@@ -17,26 +17,28 @@ vi.mock("@/lib/ai/generate", () => ({
 
 afterEach(clearAllTables);
 
-const makeSimpleWorkflow = async () => {
-  await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" });
-  const agent = await createAgent({ name: "Helper", description: "", avatar: "", tags: [], systemPrompt: "Be nice", temperature: 0.7, maxTokens: 1024, topP: 1, model: null });
+const makeSimpleWorkflow = async (userId: string) => {
+  await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" }, userId);
+  const agent = await createAgent({ name: "Helper", description: "", avatar: "", tags: [], systemPrompt: "Be nice", temperature: 0.7, maxTokens: 1024, topP: 1, model: null }, userId);
   const graph = {
     nodes: [{ id: "a", type: "agent" as const, label: "A", config: { agentId: agent.id, promptTemplate: "{{input}}" } }],
     edges: [],
   };
-  return createWorkflow({ name: "Simple", description: "", graph });
+  return createWorkflow({ name: "Simple", description: "", graph }, userId);
 };
 
 describe("workflow run service", () => {
   it("triggers a run and completes", async () => {
-    const w = await makeSimpleWorkflow();
+    const { user } = await authedUser();
+    const w = await makeSimpleWorkflow(user.id);
     const run = await triggerWorkflowRun(w.id, "hello");
     expect(run.status).toBe("completed");
     expect(run.context).toHaveProperty("a");
   });
 
   it("retrieves a run by id", async () => {
-    const w = await makeSimpleWorkflow();
+    const { user } = await authedUser();
+    const w = await makeSimpleWorkflow(user.id);
     const run = await triggerWorkflowRun(w.id, "hello");
     const fetched = await getWorkflowRun(run.id);
     expect(fetched?.run.id).toBe(run.id);
@@ -44,7 +46,8 @@ describe("workflow run service", () => {
   });
 
   it("lists runs for a workflow", async () => {
-    const w = await makeSimpleWorkflow();
+    const { user } = await authedUser();
+    const w = await makeSimpleWorkflow(user.id);
     await triggerWorkflowRun(w.id, "a");
     await triggerWorkflowRun(w.id, "b");
     const runs = await listWorkflowRuns(w.id);
@@ -52,8 +55,9 @@ describe("workflow run service", () => {
   });
 
   it("handles human_input pause and resume", async () => {
-    await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" });
-    const agent = await createAgent({ name: "H", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null });
+    const { user } = await authedUser();
+    await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" }, user.id);
+    const agent = await createAgent({ name: "H", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null }, user.id);
     const graph = {
       nodes: [
         { id: "h", type: "human_input" as const, label: "Ask", config: { prompt: "What?" } },
@@ -61,7 +65,7 @@ describe("workflow run service", () => {
       ],
       edges: [{ id: "e1", source: "h", target: "a" }],
     };
-    const w = await createWorkflow({ name: "HI", description: "", graph });
+    const w = await createWorkflow({ name: "HI", description: "", graph }, user.id);
 
     const run = await triggerWorkflowRun(w.id, "");
     expect(run.status).toBe("waiting_for_input");
@@ -72,7 +76,8 @@ describe("workflow run service", () => {
   });
 
   it("marks the step log as failed when a node throws", async () => {
-    const w = await makeSimpleWorkflow();
+    const { user } = await authedUser();
+    const w = await makeSimpleWorkflow(user.id);
     vi.mocked(generateAgentReply).mockRejectedValueOnce(new Error("boom"));
 
     const run = await triggerWorkflowRun(w.id, "hello");
@@ -85,9 +90,10 @@ describe("workflow run service", () => {
   });
 
   it("correctly attributes step log outputs when nodes run in parallel", async () => {
-    await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" });
-    const agent1 = await createAgent({ name: "A1", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null });
-    const agent2 = await createAgent({ name: "A2", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null });
+    const { user } = await authedUser();
+    await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" }, user.id);
+    const agent1 = await createAgent({ name: "A1", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null }, user.id);
+    const agent2 = await createAgent({ name: "A2", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null }, user.id);
     const graph = {
       nodes: [
         { id: "start", type: "transform" as const, label: "Start", config: { operation: "template" as const, params: { template: "go" }, inputTemplate: "" } },
@@ -99,7 +105,7 @@ describe("workflow run service", () => {
         { id: "e2", source: "start", target: "p2" },
       ],
     };
-    const w = await createWorkflow({ name: "Parallel", description: "", graph });
+    const w = await createWorkflow({ name: "Parallel", description: "", graph }, user.id);
 
     vi.mocked(generateAgentReply)
       .mockResolvedValueOnce("output-from-p1")
