@@ -9,5 +9,11 @@ export type Message = {
   totalTokens: number | null;
   durationMs: number | null;
   attachments: Array<{ id: string; filename: string; mimetype: string; size: number }> | null;
+  toolCalls: Array<{
+    toolName: string;
+    displayName: string;
+    args: Record<string, unknown>;
+    result: string;
+  }> | null;
   createdAt: string;
 };

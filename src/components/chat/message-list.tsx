@@ -37,6 +37,7 @@ export function MessageList({
             createdAt={m.createdAt}
             avatar={avatar}
             meta={m.meta}
+            toolCalls={m.toolCalls}
             isLast={i === messages.length - 1}
             onRegenerate={canRegenerate ? onRegenerate : undefined}
             onDelete={m.id.startsWith("local-") ? undefined : () => onDelete?.(m.id)}

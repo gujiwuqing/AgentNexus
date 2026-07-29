@@ -21,6 +21,7 @@ export type DisplayMessage = {
   content: string;
   createdAt: string;
   meta?: MessageMeta;
+  toolCalls?: Array<{ toolName: string; displayName: string; args: Record<string, unknown>; result: string }>;
 };
 
 function toMeta(m: Message): MessageMeta {
@@ -53,6 +54,7 @@ export function useChatStream(conversationId: string, agentModel: string | null)
           content: m.content,
           createdAt: m.createdAt,
           meta: toMeta(m),
+          toolCalls: m.toolCalls ?? undefined,
         }))
       );
     }

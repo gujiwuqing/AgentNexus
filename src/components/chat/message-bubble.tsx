@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { MarkdownContent } from "./markdown-content";
 import { MessageActions } from "./message-actions";
+import { ToolCallBlock } from "./tool-call-block";
 import type { MessageMeta } from "@/hooks/use-chat-stream";
 
 function formatTime(iso: string) {
@@ -19,6 +20,7 @@ export function MessageBubble({
   createdAt,
   avatar,
   meta,
+  toolCalls,
   isLast,
   onRegenerate,
   onDelete,
@@ -28,6 +30,7 @@ export function MessageBubble({
   createdAt?: string;
   avatar?: string;
   meta?: MessageMeta;
+  toolCalls?: Array<{ toolName: string; displayName: string; args: Record<string, unknown>; result: string }>;
   isLast: boolean;
   onRegenerate?: () => void;
   onDelete?: () => void;
@@ -68,6 +71,7 @@ export function MessageBubble({
         {time && (
           <span className="text-[10px] text-muted-foreground mt-0.5 px-1">{time}</span>
         )}
+        {toolCalls && toolCalls.length > 0 && <ToolCallBlock toolCalls={toolCalls} />}
         {showMeta && meta && (
           <span className="text-[10px] text-muted-foreground px-1">
             {meta.model ? meta.model : ""}
