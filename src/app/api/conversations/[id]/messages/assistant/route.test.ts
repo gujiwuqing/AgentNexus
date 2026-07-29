@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { clearAllTables } from "@/db/test-helpers";
+import { clearAllTables, authedUser } from "@/db/test-helpers";
 import { createAgent } from "@/server/agents";
 import { createConversation } from "@/server/conversations";
 import { upsertProviderConfig } from "@/server/provider-config";
@@ -9,25 +9,26 @@ import { POST } from "./route";
 
 afterEach(() => clearAllTables());
 
-function postRequest(body: unknown) {
+function postRequest(cookie: string, body: unknown) {
   return new Request("http://localhost", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
     body: JSON.stringify(body),
   });
 }
 
 async function seed() {
-  await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" });
-  const agent = await createAgent({ name: "A", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null });
-  const conv = await createConversation(agent.id, "T");
-  return { agent, conv };
+  const { user, cookie } = await authedUser();
+  await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" }, user.id);
+  const agent = await createAgent({ name: "A", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null }, user.id);
+  const conv = await createConversation(agent.id, user.id, "T");
+  return { agent, conv, cookie };
 }
 
 describe("POST /api/conversations/[id]/messages/assistant", () => {
   it("persists a partial assistant message with model + durationMs", async () => {
-    const { conv } = await seed();
-    const res = await POST(postRequest({ content: "partial reply", model: "m1", durationMs: 500 }), {
+    const { conv, cookie } = await seed();
+    const res = await POST(postRequest(cookie, { content: "partial reply", model: "m1", durationMs: 500 }), {
       params: Promise.resolve({ id: conv.id }),
     });
     expect(res.status).toBe(201);
@@ -41,13 +42,14 @@ describe("POST /api/conversations/[id]/messages/assistant", () => {
   });
 
   it("returns 404 for a missing conversation", async () => {
-    const res = await POST(postRequest({ content: "x" }), { params: Promise.resolve({ id: "missing" }) });
+    const { cookie } = await authedUser();
+    const res = await POST(postRequest(cookie, { content: "x" }), { params: Promise.resolve({ id: "missing" }) });
     expect(res.status).toBe(404);
   });
 
   it("returns 400 when content is empty", async () => {
-    const { conv } = await seed();
-    const res = await POST(postRequest({ content: "   " }), { params: Promise.resolve({ id: conv.id }) });
+    const { conv, cookie } = await seed();
+    const res = await POST(postRequest(cookie, { content: "   " }), { params: Promise.resolve({ id: conv.id }) });
     expect(res.status).toBe(400);
   });
 });

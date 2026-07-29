@@ -1,19 +1,19 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { db } from "@/db";
 import { conversations } from "@/db/schema";
 import { createId } from "@/lib/id";
 
-export async function createConversation(agentId: string, title = "New conversation") {
+export async function createConversation(agentId: string, userId: string, title = "New conversation") {
   const id = createId();
-  await db.insert(conversations).values({ id, agentId, title });
+  await db.insert(conversations).values({ id, agentId, userId, title });
   return getConversationById(id);
 }
 
-export async function listConversationsForAgent(agentId: string) {
+export async function listConversationsForAgent(agentId: string, userId: string) {
   return db
     .select()
     .from(conversations)
-    .where(eq(conversations.agentId, agentId))
+    .where(and(eq(conversations.agentId, agentId), eq(conversations.userId, userId)))
     .orderBy(desc(conversations.createdAt));
 }
 
@@ -22,8 +22,14 @@ export async function getConversationById(id: string) {
   return row ?? null;
 }
 
-export async function updateConversationTitle(id: string, title: string) {
-  const existing = await getConversationById(id);
+/** 取出归属某用户的 conversation，做权限隔离校验。 */
+export async function getConversationOwnedBy(id: string, userId: string) {
+  const [row] = await db.select().from(conversations).where(and(eq(conversations.id, id), eq(conversations.userId, userId)));
+  return row ?? null;
+}
+
+export async function updateConversationTitle(id: string, userId: string, title: string) {
+  const existing = await getConversationOwnedBy(id, userId);
   if (!existing) return null;
   await db
     .update(conversations)
@@ -32,8 +38,8 @@ export async function updateConversationTitle(id: string, title: string) {
   return getConversationById(id);
 }
 
-export async function deleteConversation(id: string) {
-  const existing = await getConversationById(id);
+export async function deleteConversation(id: string, userId: string) {
+  const existing = await getConversationOwnedBy(id, userId);
   if (!existing) return false;
   await db.delete(conversations).where(eq(conversations.id, id));
   return true;

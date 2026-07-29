@@ -1,10 +1,11 @@
-import { getConversationById, updateConversationTitle } from "@/server/conversations";
+import { getConversationById, updateConversationTitle, getConversationOwnedBy } from "@/server/conversations";
 import { getAgent } from "@/server/agents";
 import { listMessages, appendUserMessage, appendAssistantMessage } from "@/server/messages";
 import { getProviderConfig } from "@/server/provider-config";
 import { resolveProviderConfig, MissingProviderConfigError } from "@/lib/ai/provider";
 import { streamAgentReply, type ChatMessage } from "@/lib/ai/chat";
 import { apiError } from "@/lib/api-response";
+import { requireUser } from "@/lib/auth";
 import { resolveAgentTools } from "@/lib/tools/resolve";
 import { getAgentKnowledgeBaseIds } from "@/server/agent-knowledge";
 import { getChunksByKnowledgeBaseIds } from "@/server/knowledge-chunks";
@@ -20,8 +21,10 @@ import { getToolByName } from "@/lib/tools/registry";
 type Params = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: Params) {
+  const user = await requireUser(request);
+  if (user instanceof Response) return user;
   const { id } = await params;
-  const conversation = await getConversationById(id);
+  const conversation = await getConversationOwnedBy(id, user.id);
   if (!conversation) return apiError(404, "not_found", "Conversation not found");
 
   const agent = await getAgent(conversation.agentId);
@@ -31,7 +34,7 @@ export async function POST(request: Request, { params }: Params) {
   const content = typeof body?.content === "string" ? body.content.trim() : "";
   if (!content) return apiError(400, "validation_error", "content is required");
 
-  const globalConfig = await getProviderConfig();
+  const globalConfig = await getProviderConfig(user.id);
   let providerConfig;
   try {
     providerConfig = resolveProviderConfig(agent.model, globalConfig);
@@ -74,7 +77,7 @@ export async function POST(request: Request, { params }: Params) {
 
   if (conversation.title === "New conversation") {
     const autoTitle = content.length > 30 ? content.slice(0, 30) + "..." : content;
-    await updateConversationTitle(id, autoTitle);
+    await updateConversationTitle(id, user.id, autoTitle);
   }
 
   const history = await listMessages(id);

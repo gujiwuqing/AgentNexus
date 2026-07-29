@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { clearAllTables } from "@/db/test-helpers";
+import { clearAllTables, authedUser } from "@/db/test-helpers";
 import { createAgent } from "@/server/agents";
 import { createConversation } from "@/server/conversations";
 import { upsertProviderConfig } from "@/server/provider-config";
@@ -18,19 +18,20 @@ afterEach(() => {
   return clearAllTables();
 });
 
-function postRequest(content: string) {
+function postRequest(cookie: string, content: string) {
   return new Request("http://localhost", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
     body: JSON.stringify({ content }),
   });
 }
 
 async function makeConversationWithProvider() {
-  await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" });
-  const agent = await createAgent({ name: "Helper", description: "", avatar: "", tags: [], systemPrompt: "Be nice", temperature: 0.7, maxTokens: 1024, topP: 1, model: null });
-  const conversation = await createConversation(agent.id, "Chat");
-  return conversation;
+  const { user, cookie } = await authedUser();
+  await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" }, user.id);
+  const agent = await createAgent({ name: "Helper", description: "", avatar: "", tags: [], systemPrompt: "Be nice", temperature: 0.7, maxTokens: 1024, topP: 1, model: null }, user.id);
+  const conversation = await createConversation(agent.id, user.id, "Chat");
+  return { conversation, cookie, user };
 }
 
 describe("POST /api/conversations/[id]/messages", () => {
@@ -44,8 +45,8 @@ describe("POST /api/conversations/[id]/messages", () => {
       })
     );
 
-    const conversation = await makeConversationWithProvider();
-    const res = await POST(postRequest("Hello"), { params: Promise.resolve({ id: conversation.id }) });
+    const { conversation, cookie } = await makeConversationWithProvider();
+    const res = await POST(postRequest(cookie, "Hello"), { params: Promise.resolve({ id: conversation.id }) });
 
     expect(res.status).toBe(200);
 
@@ -62,20 +63,22 @@ describe("POST /api/conversations/[id]/messages", () => {
   });
 
   it("returns 404 for a missing conversation", async () => {
-    const res = await POST(postRequest("Hello"), { params: Promise.resolve({ id: "missing" }) });
+    const { cookie } = await authedUser();
+    const res = await POST(postRequest(cookie, "Hello"), { params: Promise.resolve({ id: "missing" }) });
     expect(res.status).toBe(404);
   });
 
   it("returns 400 for empty content", async () => {
-    const conversation = await makeConversationWithProvider();
-    const res = await POST(postRequest("   "), { params: Promise.resolve({ id: conversation.id }) });
+    const { conversation, cookie } = await makeConversationWithProvider();
+    const res = await POST(postRequest(cookie, "   "), { params: Promise.resolve({ id: conversation.id }) });
     expect(res.status).toBe(400);
   });
 
   it("returns 424 when no provider is configured", async () => {
-    const agent = await createAgent({ name: "Helper", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null });
-    const conversation = await createConversation(agent.id, "Chat");
-    const res = await POST(postRequest("Hello"), { params: Promise.resolve({ id: conversation.id }) });
+    const { user, cookie } = await authedUser();
+    const agent = await createAgent({ name: "Helper", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null }, user.id);
+    const conversation = await createConversation(agent.id, user.id, "Chat");
+    const res = await POST(postRequest(cookie, "Hello"), { params: Promise.resolve({ id: conversation.id }) });
     expect(res.status).toBe(424);
   });
 
@@ -84,10 +87,11 @@ describe("POST /api/conversations/[id]/messages", () => {
       toDataStreamResponse: () => { onFinish({ text: "reply", toolCalls: [] }); return new Response("reply"); },
     }));
 
-    await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" });
-    const agent = await createAgent({ name: "Helper", description: "", avatar: "", tags: [], systemPrompt: "Be nice", temperature: 0.7, maxTokens: 1024, topP: 1, model: null });
-    const conversation = await createConversation(agent.id);
-    await POST(postRequest("This is my very first question to the agent about something"), { params: Promise.resolve({ id: conversation.id }) });
+    const { user, cookie } = await authedUser();
+    await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" }, user.id);
+    const agent = await createAgent({ name: "Helper", description: "", avatar: "", tags: [], systemPrompt: "Be nice", temperature: 0.7, maxTokens: 1024, topP: 1, model: null }, user.id);
+    const conversation = await createConversation(agent.id, user.id);
+    await POST(postRequest(cookie, "This is my very first question to the agent about something"), { params: Promise.resolve({ id: conversation.id }) });
 
     const { getConversationById } = await import("@/server/conversations");
     const updated = await getConversationById(conversation.id);

@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { getConversationById } from "@/server/conversations";
+import { getConversationOwnedBy } from "@/server/conversations";
 import { appendAssistantMessage } from "@/server/messages";
 import { apiOk, apiError } from "@/lib/api-response";
+import { requireUser } from "@/lib/auth";
 
 const bodySchema = z.object({
   content: z.string().trim().min(1, "content is required"),
@@ -12,8 +13,10 @@ const bodySchema = z.object({
 type Params = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: Params) {
+  const user = await requireUser(request);
+  if (user instanceof Response) return user;
   const { id } = await params;
-  const conversation = await getConversationById(id);
+  const conversation = await getConversationOwnedBy(id, user.id);
   if (!conversation) return apiError(404, "not_found", "Conversation not found");
 
   const body = await request.json().catch(() => ({}));
