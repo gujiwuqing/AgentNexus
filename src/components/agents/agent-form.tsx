@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { Agent, AgentFormValues } from "@/types/agent";
 import { AgentToolsConfig } from "@/components/agents/agent-tools-config";
-import { AgentKnowledgeConfig } from "@/components/agents/agent-knowledge-config";
 
 function toFormValues(agent?: Agent): AgentFormValues {
   return {
@@ -185,13 +184,6 @@ export function AgentForm({
           <AgentToolsConfig
             enabledTools={values.toolsConfig?.enabledTools ?? []}
             onChange={(tools) => update("toolsConfig", { ...values.toolsConfig, enabledTools: tools })}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <AgentKnowledgeConfig
-            selectedIds={(values.toolsConfig as any)?.knowledgeBaseIds ?? []}
-            onChange={(ids) => update("toolsConfig", { ...values.toolsConfig, knowledgeBaseIds: ids })}
           />
         </div>
       </div>

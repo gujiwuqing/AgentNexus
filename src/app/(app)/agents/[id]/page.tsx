@@ -7,6 +7,8 @@ import { AgentForm } from "@/components/agents/agent-form";
 import { useAgent, useUpdateAgent } from "@/hooks/use-agents";
 import { Button } from "@/components/ui/button";
 import { DeleteAgentButton } from "@/components/agents/delete-agent-button";
+import { AgentKnowledgeConfig } from "@/components/agents/agent-knowledge-config";
+import { AgentTeamConfig } from "@/components/agents/agent-team-config";
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +39,11 @@ export default function AgentDetailPage() {
       />
       {updateAgent.isError && <p className="text-destructive mt-4">{updateAgent.error.message}</p>}
       {updateAgent.isSuccess && <p className="text-green-600 mt-4">{t("saved")}</p>}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6 mt-8 pt-8 border-t">
+        <AgentKnowledgeConfig agentId={agent.id} />
+        <AgentTeamConfig agentId={agent.id} />
+      </div>
     </div>
   );
 }

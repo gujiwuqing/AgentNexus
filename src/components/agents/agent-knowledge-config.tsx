@@ -2,27 +2,24 @@
 
 import { useTranslations } from "next-intl";
 import { BookOpen } from "lucide-react";
-import { useKnowledgeBases } from "@/hooks/use-knowledge";
+import { useKnowledgeBases, useAgentKnowledgeBases, useSetAgentKnowledgeBases } from "@/hooks/use-knowledge";
 
-export function AgentKnowledgeConfig({
-  selectedIds,
-  onChange,
-}: {
-  selectedIds: string[];
-  onChange: (ids: string[]) => void;
-}) {
+export function AgentKnowledgeConfig({ agentId }: { agentId: string }) {
   const t = useTranslations("agentsExt.knowledge");
-  const { data: knowledgeBases } = useKnowledgeBases();
+  const { data: allKnowledgeBases } = useKnowledgeBases();
+  const { data: linked } = useAgentKnowledgeBases(agentId);
+  const setLinked = useSetAgentKnowledgeBases(agentId);
 
-  function toggle(id: string) {
-    if (selectedIds.includes(id)) {
-      onChange(selectedIds.filter((k) => k !== id));
-    } else {
-      onChange([...selectedIds, id]);
-    }
+  const selectedIds = (linked ?? []).map((kb) => kb.id);
+
+  function toggle(kbId: string) {
+    const next = selectedIds.includes(kbId)
+      ? selectedIds.filter((id) => id !== kbId)
+      : [...selectedIds, kbId];
+    setLinked.mutate(next);
   }
 
-  if (!knowledgeBases || knowledgeBases.length === 0) {
+  if (!allKnowledgeBases || allKnowledgeBases.length === 0) {
     return (
       <div className="space-y-3">
         <h3 className="text-sm font-medium">{t("title")}</h3>
@@ -35,7 +32,7 @@ export function AgentKnowledgeConfig({
     <div className="space-y-3">
       <h3 className="text-sm font-medium">{t("title")}</h3>
       <div className="space-y-2">
-        {knowledgeBases.map((kb) => {
+        {allKnowledgeBases.map((kb) => {
           const selected = selectedIds.includes(kb.id);
           return (
             <button
