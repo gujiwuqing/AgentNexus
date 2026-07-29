@@ -260,3 +260,23 @@
 - 邮箱：`admin@agentnexus.local`
 - 密码：由脚本生成的随机强密码
 - 角色：`superAdmin`
+
+---
+
+## 附录：执行迁移（已完成）
+
+迁移已于 2026-07-29 执行完成，创建的超级管理员账号：
+
+- 邮箱：`admin@agentnexus.local`
+- 角色：`superAdmin`
+
+现有全部 agents / workflows / knowledge_bases / conversations / ai_provider_config 数据已归属到该账号下。
+
+迁移命令（仅供记录，不可重复执行，脚本会因 users 表非空而 abort）：
+
+```bash
+MIGRATE_ADMIN_EMAIL=admin@agentnexus.local MIGRATE_ADMIN_PASSWORD='<密码>' \
+  pnpm exec dotenv -e .env.local -- tsx scripts/migrate-add-auth.ts
+```
+
+新用户账号需在登录后访问 `/admin` 后台，通过"新建用户"表单创建（管理员可建普通用户，超级管理员可建任意角色）。
