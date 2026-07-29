@@ -59,6 +59,9 @@ importers:
       ai:
         specifier: ^4.3.19
         version: 4.3.19(react@19.2.8)(zod@3.25.76)
+      bcryptjs:
+        specifier: ^3.0.3
+        version: 3.0.3
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -2098,6 +2101,10 @@ packages:
   baseline-browser-mapping@2.11.1:
     resolution: {integrity: sha512-HYXq73DDpCtNzOmrFsm9eSwCvWCql0RzqjpDzXN9EadiLJ4DNat0nsZ/Bzmy+Ud12mb4/zKDY0cQ805ZzN+i0A==}
     engines: {node: '>=6.0.0'}
+    hasBin: true
+
+  bcryptjs@3.0.3:
+    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
     hasBin: true
 
   better-sqlite3@13.0.1:
@@ -4988,6 +4995,8 @@ snapshots:
   bail@2.0.2: {}
 
   baseline-browser-mapping@2.11.1: {}
+
+  bcryptjs@3.0.3: {}
 
   better-sqlite3@13.0.1:
     dependencies:
