@@ -36,9 +36,9 @@ async function makeConversationWithProvider() {
 describe("POST /api/conversations/[id]/messages", () => {
   it("persists user + assistant messages with meta on finish", async () => {
     streamAgentReplyMock.mockImplementation(
-      (_provider: unknown, _messages: unknown, _options: unknown, onFinish: (m: { text: string; usage?: unknown }) => void) => ({
+      (_provider: unknown, _messages: unknown, _options: unknown, _tools: unknown, onFinish: (m: { text: string; usage?: unknown }) => void) => ({
         toDataStreamResponse: () => {
-          onFinish({ text: "Hi! How can I help?", usage: { promptTokens: 3, completionTokens: 4, totalTokens: 7 } });
+          onFinish({ text: "Hi! How can I help?", usage: { promptTokens: 3, completionTokens: 4, totalTokens: 7 }, toolCalls: [] });
           return new Response("mocked-data-stream");
         },
       })
@@ -80,8 +80,8 @@ describe("POST /api/conversations/[id]/messages", () => {
   });
 
   it("auto-updates conversation title from the first user message", async () => {
-    streamAgentReplyMock.mockImplementation((_p: unknown, _m: unknown, _o: unknown, onFinish: (m: { text: string }) => void) => ({
-      toDataStreamResponse: () => { onFinish({ text: "reply" }); return new Response("reply"); },
+    streamAgentReplyMock.mockImplementation((_p: unknown, _m: unknown, _o: unknown, _tools: unknown, onFinish: (m: { text: string }) => void) => ({
+      toDataStreamResponse: () => { onFinish({ text: "reply", toolCalls: [] }); return new Response("reply"); },
     }));
 
     await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" });

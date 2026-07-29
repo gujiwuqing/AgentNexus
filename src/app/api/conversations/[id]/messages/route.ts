@@ -13,6 +13,9 @@ import { retrieveTopK, buildRagContext } from "@/lib/knowledge/retriever";
 import { getAttachmentsByIds, linkAttachmentToMessage } from "@/server/attachments";
 import { readStoredFile } from "@/lib/files/storage";
 import { extractText, isImageFile } from "@/lib/files/extractor";
+import { getTeamMembers, callTeamMember } from "@/server/agent-team";
+import { buildDelegationTool } from "@/lib/tools/team-delegation";
+import { getToolByName } from "@/lib/tools/registry";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -128,7 +131,14 @@ export async function POST(request: Request, { params }: Params) {
   const searchConfig = globalConfig?.webSearchProvider && globalConfig?.webSearchApiKey
     ? { provider: globalConfig.webSearchProvider, apiKey: globalConfig.webSearchApiKey }
     : null;
-  const tools = resolveAgentTools(enabledTools, searchConfig);
+  const teamMembers = await getTeamMembers(agent.id);
+  const teamToolDefs = teamMembers.map((m) =>
+    buildDelegationTool(
+      { memberAgentId: m.memberAgentId, memberAgentName: m.memberAgentName, roleDescription: m.roleDescription },
+      (memberAgentId, task) => callTeamMember(memberAgentId, task),
+    )
+  );
+  const tools = resolveAgentTools(enabledTools, searchConfig, teamToolDefs);
 
   const startedAt = Date.now();
   const result = streamAgentReply(
@@ -138,12 +148,22 @@ export async function POST(request: Request, { params }: Params) {
     tools,
     (meta) => {
       const durationMs = Date.now() - startedAt;
+      const enrichedToolCalls = meta.toolCalls.map((tc) => {
+        if (tc.toolName.startsWith("delegate_to_")) {
+          const memberId = tc.toolName.replace("delegate_to_", "");
+          const member = teamMembers.find((m) => m.memberAgentId === memberId);
+          return { ...tc, displayName: member?.memberAgentName ?? tc.toolName };
+        }
+        const builtin = getToolByName(tc.toolName);
+        return { ...tc, displayName: builtin?.displayName ?? tc.toolName };
+      });
       return appendAssistantMessage(id, meta.text, {
         model: providerConfig.model,
         promptTokens: meta.usage?.promptTokens,
         completionTokens: meta.usage?.completionTokens,
         totalTokens: meta.usage?.totalTokens,
         durationMs,
+        toolCalls: enrichedToolCalls.length > 0 ? enrichedToolCalls : null,
       });
     }
   );
