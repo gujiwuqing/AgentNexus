@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AgentAvatar } from "@/components/agents/agent-avatar";
 
 type AgentRankItem = {
   agentId: string;
@@ -44,7 +45,7 @@ export function AgentRankingList({ data }: { data: AgentRankItem[] }) {
           {data.map((agent, i) => (
             <div key={agent.agentId} className="flex items-center gap-3">
               <span className="text-sm font-medium text-muted-foreground w-5 text-right">{i + 1}</span>
-              <span className="text-lg">{agent.avatar || "🤖"}</span>
+              <AgentAvatar avatar={agent.avatar} className="h-8 w-8 text-lg" iconClassName="h-4 w-4" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{agent.agentName}</p>
                 <p className="text-xs text-muted-foreground">

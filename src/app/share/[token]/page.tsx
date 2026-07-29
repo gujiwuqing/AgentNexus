@@ -4,6 +4,7 @@ import { getConversationById } from "@/server/conversations";
 import { listMessages } from "@/server/messages";
 import { getAgent } from "@/server/agents";
 import { ReadOnlyMessageList } from "@/components/chat/read-only-message-list";
+import { AgentAvatar } from "@/components/agents/agent-avatar";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -30,7 +31,7 @@ export default async function SharePage({ params }: Props) {
     <div className="min-h-screen bg-background">
       <header className="border-b px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <span className="text-2xl">{agent?.avatar || "🤖"}</span>
+          <AgentAvatar avatar={agent?.avatar} className="h-10 w-10 text-2xl" iconClassName="h-5 w-5" />
           <div>
             <h1 className="font-semibold">{conversation.title}</h1>
             <p className="text-sm text-muted-foreground">{agent?.name ?? "Agent"}</p>

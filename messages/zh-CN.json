@@ -1,5 +1,6 @@
 {
   "nav": {
+    "chat": "对话",
     "agents": "智能体",
     "dashboard": "仪表盘",
     "workflows": "工作流",
@@ -9,18 +10,67 @@
   "theme": {
     "toggle": "切换主题"
   },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "description": "常用操作的快捷键一览",
+    "send": "发送消息",
+    "newline": "换行",
+    "undo": "撤销（工作流编辑器）",
+    "redo": "重做（工作流编辑器）",
+    "help": "打开/关闭本帮助"
+  },
+  "onboarding": {
+    "title": "欢迎使用 AgentNexus",
+    "description": "一个多智能体编排平台，帮你快速搭建、编排和管理 AI 智能体。",
+    "cta": "开始使用",
+    "items": {
+      "chat": {
+        "title": "对话",
+        "description": "和你的智能体聊天，支持文件上传、工具调用、多轮对话"
+      },
+      "agents": {
+        "title": "智能体",
+        "description": "创建、配置和管理你的 AI 智能体"
+      },
+      "workflows": {
+        "title": "工作流",
+        "description": "用可视化编辑器编排多步骤自动化流程"
+      },
+      "knowledge": {
+        "title": "知识库",
+        "description": "上传文档，让智能体基于你的数据回答问题"
+      },
+      "dashboard": {
+        "title": "仪表盘",
+        "description": "查看对话量、Token 用量和成本趋势"
+      }
+    }
+  },
   "common": {
     "loading": "加载中...",
     "save": "保存",
+    "saving": "保存中...",
     "cancel": "取消",
     "delete": "删除",
-    "apply": "应用"
+    "apply": "应用",
+    "confirm": "确定",
+    "confirmTitle": "请确认",
+    "back": "返回",
+    "search": "搜索",
+    "retry": "重试",
+    "testConnection": "测试连接",
+    "testing": "测试中...",
+    "testSuccess": "连接成功",
+    "testFailed": "连接失败"
   },
   "agents": {
     "title": "智能体",
     "new": "新建智能体",
     "create": "创建智能体",
     "empty": "还没有智能体，创建你的第一个吧。",
+    "emptyTitle": "还没有智能体",
+    "searchPlaceholder": "搜索智能体名称、描述或标签...",
+    "noSearchResults": "没有找到匹配的智能体。",
     "loadError": "加载智能体失败：{message}",
     "notFound": "未找到该智能体。",
     "chat": "对话",
@@ -33,6 +83,9 @@
     "create": "创建工作流",
     "creating": "创建中...",
     "empty": "还没有工作流，创建你的第一个吧。",
+    "emptyTitle": "还没有工作流",
+    "searchPlaceholder": "搜索工作流名称或描述...",
+    "noSearchResults": "没有找到匹配的工作流。",
     "loadError": "加载工作流失败：{message}",
     "name": "名称",
     "namePlaceholder": "例如：摘要并翻译",
@@ -44,6 +97,8 @@
   },
   "settings": {
     "title": "设置",
+    "tabModel": "AI 模型",
+    "tabSearch": "网页搜索",
     "providerType": "供应商类型",
     "providerTypeOpenai": "OpenAI 兼容",
     "providerTypeAnthropic": "Anthropic",
@@ -87,6 +142,9 @@
     "create": "创建",
     "creating": "创建中...",
     "empty": "还没有知识库，创建你的第一个吧。",
+    "emptyTitle": "还没有知识库",
+    "searchPlaceholder": "搜索知识库名称或描述...",
+    "noSearchResults": "没有找到匹配的知识库。",
     "noDescription": "暂无描述。",
     "loadError": "加载失败：{message}",
     "name": "名称",
@@ -114,6 +172,15 @@
     "docContent": "内容",
     "docContentPlaceholder": "在此粘贴或输入文档内容...",
     "deleteConfirm": "删除该知识库及其所有文档？",
+    "deleted": "知识库已删除。",
+    "retrievalTest": {
+      "title": "检索测试",
+      "description": "输入一个问题，查看会命中知识库中的哪些内容片段及相似度评分。",
+      "placeholder": "输入测试问题...",
+      "search": "测试",
+      "noResults": "没有检索到相关内容。",
+      "score": "相似度 {score}"
+    },
     "contentLoadError": "加载内容失败。",
     "loading": "加载中...",
     "saving": "保存中..."

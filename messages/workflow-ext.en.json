@@ -73,7 +73,7 @@
     },
     "runPanel": {
       "heading": "Runs",
-      "run": "▶ Run",
+      "run": "Run",
       "noRuns": "No runs yet.",
       "emptyInput": "(empty)",
       "colNode": "Node",
@@ -105,6 +105,9 @@
       "saving": "Saving...",
       "save": "Save",
       "saved": "Saved",
+      "undo": "Undo (Ctrl+Z)",
+      "redo": "Redo (Ctrl+Shift+Z)",
+      "autoLayout": "Auto-arrange layout",
       "notFound": "Workflow not found."
     },
     "versionHistory": {

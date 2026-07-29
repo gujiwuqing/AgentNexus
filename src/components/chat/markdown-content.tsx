@@ -1,10 +1,11 @@
+import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import { CodeBlock } from "./code-block";
 
-export function MarkdownContent({ content }: { content: string }) {
+function MarkdownContentImpl({ content }: { content: string }) {
   return (
     <div className="prose prose-sm dark:prose-invert max-w-none break-words">
       <ReactMarkdown
@@ -36,3 +37,5 @@ export function MarkdownContent({ content }: { content: string }) {
     </div>
   );
 }
+
+export const MarkdownContent = memo(MarkdownContentImpl);

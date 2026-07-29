@@ -33,7 +33,12 @@ export function TemplatePicker({ items, selectedId, onSelect }: TemplatePickerPr
             className={`rounded-lg border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${isSelected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border bg-card hover:border-primary/50 hover:bg-muted/40"}`}
           >
             <span className="flex items-start gap-3">
-              <span className="mt-0.5 text-xl leading-none" aria-hidden="true">{item.icon}</span>
+              <span
+                className="mt-0.5 h-9 w-9 rounded-lg bg-brand/10 flex items-center justify-center text-lg leading-none shrink-0"
+                aria-hidden="true"
+              >
+                {item.icon}
+              </span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-center justify-between gap-3">
                   <span className="font-medium text-foreground">{item.name}</span>

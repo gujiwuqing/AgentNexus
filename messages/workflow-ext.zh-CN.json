@@ -73,7 +73,7 @@
     },
     "runPanel": {
       "heading": "运行记录",
-      "run": "▶ 运行",
+      "run": "运行",
       "noRuns": "还没有运行记录。",
       "emptyInput": "（空）",
       "colNode": "节点",
@@ -105,6 +105,9 @@
       "saving": "保存中...",
       "save": "保存",
       "saved": "已保存",
+      "undo": "撤销 (Ctrl+Z)",
+      "redo": "重做 (Ctrl+Shift+Z)",
+      "autoLayout": "自动整理布局",
       "notFound": "未找到该工作流。"
     },
     "versionHistory": {

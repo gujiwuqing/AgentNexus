@@ -13,6 +13,8 @@ export type Agent = {
   toolsConfig: unknown;
   createdAt: string;
   updatedAt: string;
+  conversationCount?: number;
+  lastActiveAt?: string | null;
 };
 
 export type AgentFormValues = {

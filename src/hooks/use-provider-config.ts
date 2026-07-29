@@ -31,3 +31,14 @@ export function useSaveProviderConfig() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["settings", "ai-provider"] }),
   });
 }
+
+export function useTestProviderConfig() {
+  return useMutation({
+    mutationFn: (input: ProviderConfigInput) =>
+      fetchJson<{ success: boolean; message?: string }>("/api/settings/ai-provider/test", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      }),
+  });
+}

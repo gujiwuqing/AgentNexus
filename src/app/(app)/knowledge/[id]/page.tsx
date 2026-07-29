@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Trash2, Settings, Plus, Eye } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/providers/confirm-provider";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +29,8 @@ import {
 } from "@/hooks/use-knowledge";
 import { DocumentList } from "@/components/knowledge/document-list";
 import { DocumentUpload } from "@/components/knowledge/document-upload";
+import { RetrievalTestPanel } from "@/components/knowledge/retrieval-test-panel";
+import { Breadcrumb } from "@/components/nav/breadcrumb";
 
 function EditSettingsDialog({ kbId, kb }: { kbId: string; kb: { name: string; description: string; chunkSize: number; chunkOverlap: number } }) {
   const t = useTranslations("knowledge");
@@ -195,17 +199,26 @@ export default function KnowledgeDetailPage() {
   const deleteKB = useDeleteKnowledgeBase();
   const t = useTranslations("knowledge");
   const tc = useTranslations("common");
+  const confirm = useConfirm();
 
   if (isLoading) return <div className="p-8">{tc("loading")}</div>;
   if (!kb) return <div className="p-8">Not found</div>;
 
-  function handleDeleteKB() {
-    if (!confirm(t("deleteConfirm"))) return;
-    deleteKB.mutate(id, { onSuccess: () => router.push("/knowledge") });
+  async function handleDeleteKB() {
+    const ok = await confirm({ description: t("deleteConfirm"), variant: "destructive", confirmLabel: tc("delete") });
+    if (!ok) return;
+    deleteKB.mutate(id, {
+      onSuccess: () => {
+        toast.success(t("deleted"));
+        router.push("/knowledge");
+      },
+      onError: (err) => toast.error(err.message),
+    });
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-6 py-8 lg:px-10">
+    <div className="w-full max-w-7xl mx-auto px-6 py-8 lg:px-10 animate-in fade-in duration-300">
+      <Breadcrumb items={[{ label: t("title"), href: "/knowledge" }, { label: kb.name }]} />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold">{kb.name}</h1>
@@ -244,6 +257,8 @@ export default function KnowledgeDetailPage() {
             <DocContentPreview kbId={id} docId={doc.id} filename={doc.filename} />
           )}
         />
+
+        <RetrievalTestPanel knowledgeBaseId={id} />
       </div>
     </div>
   );

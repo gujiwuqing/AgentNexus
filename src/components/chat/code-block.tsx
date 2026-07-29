@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Copy, Check } from "lucide-react";
 
 export function CodeBlock({
   children,
@@ -28,8 +29,10 @@ export function CodeBlock({
         )}
         <button
           onClick={handleCopy}
-          className="text-xs px-2 py-0.5 rounded bg-muted hover:bg-muted-foreground/20"
+          aria-label={copied ? t("copied") : t("copy")}
+          className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-muted hover:bg-muted-foreground/20"
         >
+          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
           {copied ? t("copied") : t("copy")}
         </button>
       </div>

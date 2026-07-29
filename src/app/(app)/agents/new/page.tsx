@@ -34,7 +34,7 @@ export default function NewAgentPage() {
   ];
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-6 py-8 lg:px-10">
+    <div className="w-full max-w-7xl mx-auto px-6 py-8 lg:px-10 animate-in fade-in duration-300">
       <h1 className="text-2xl font-semibold mb-8">{t("new")}</h1>
       <section className="mb-10 space-y-3">
         <h2 className="text-lg font-semibold">{tTemplatePicker("heading")}</h2>

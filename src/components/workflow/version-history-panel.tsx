@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/providers/confirm-provider";
 import { useWorkflowVersions, useRestoreWorkflowVersion } from "@/hooks/use-workflows";
 
 export function VersionHistoryPanel({
@@ -16,9 +17,11 @@ export function VersionHistoryPanel({
   const t = useTranslations("workflowExt.versionHistory");
   const { data: versions } = useWorkflowVersions(workflowId);
   const restore = useRestoreWorkflowVersion(workflowId);
+  const confirm = useConfirm();
 
-  function handleRestore(versionNumber: number) {
-    if (!confirm(t("restoreConfirm", { number: versionNumber }))) return;
+  async function handleRestore(versionNumber: number) {
+    const ok = await confirm({ description: t("restoreConfirm", { number: versionNumber }) });
+    if (!ok) return;
     restore.mutate(versionNumber, { onSuccess: onRestored });
   }
 

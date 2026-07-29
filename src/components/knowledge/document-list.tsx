@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { FileText, RefreshCw, Trash2 } from "lucide-react";
+import { FileText, RefreshCw, Trash2, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { KnowledgeDocument } from "@/types/knowledge";
@@ -57,7 +57,10 @@ export function DocumentList({
               <p className="text-xs text-destructive mt-1">{doc.error}</p>
             )}
           </div>
-          <Badge variant={STATUS_VARIANT[doc.status] ?? "outline"}>
+          <Badge variant={STATUS_VARIANT[doc.status] ?? "outline"} className="gap-1">
+            {(doc.status === "pending" || doc.status === "processing") && (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            )}
             {t(`status${doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}`)}
           </Badge>
           <div className="flex gap-1">

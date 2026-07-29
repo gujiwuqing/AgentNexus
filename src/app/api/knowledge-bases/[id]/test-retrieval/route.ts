@@ -1,0 +1,46 @@
+import { apiError, apiOk } from "@/lib/api-response";
+import { getKnowledgeBase } from "@/server/knowledge-bases";
+import { getProviderConfig } from "@/server/provider-config";
+import { getChunksWithFilenameByKnowledgeBaseId } from "@/server/knowledge-chunks";
+import { embedSingle } from "@/lib/ai/embedding";
+import { retrieveTopK } from "@/lib/knowledge/retriever";
+
+type Params = { params: Promise<{ id: string }> };
+
+export async function POST(request: Request, { params }: Params) {
+  const { id } = await params;
+  const kb = await getKnowledgeBase(id);
+  if (!kb) return apiError(404, "not_found", "Knowledge base not found");
+
+  const body = await request.json().catch(() => ({}));
+  const query = typeof body?.query === "string" ? body.query.trim() : "";
+  if (!query) return apiError(400, "validation_error", "query is required");
+  const topK = Number.isFinite(body?.topK) ? Math.min(Math.max(1, body.topK), 20) : 5;
+
+  const globalConfig = await getProviderConfig();
+  if (!globalConfig?.embeddingModel) {
+    return apiError(424, "embedding_not_configured", "No embedding model configured in Settings");
+  }
+
+  const chunks = await getChunksWithFilenameByKnowledgeBaseId(id);
+  if (chunks.length === 0) {
+    return apiOk({ results: [] });
+  }
+
+  const queryEmbedding = await embedSingle(
+    globalConfig.baseUrl,
+    globalConfig.apiKey,
+    globalConfig.embeddingModel,
+    query,
+  );
+
+  const results = retrieveTopK(queryEmbedding, chunks, topK);
+  const filenameByChunk = new Map(chunks.map((c) => [c.id, c.filename]));
+
+  return apiOk({
+    results: results.map((r) => ({
+      ...r,
+      filename: filenameByChunk.get(r.chunkId) ?? null,
+    })),
+  });
+}

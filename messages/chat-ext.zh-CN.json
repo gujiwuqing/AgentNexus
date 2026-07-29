@@ -10,14 +10,25 @@
       "newWorkflow": "+ 新建工作流",
       "settingsFor": "{name} 的设置",
       "deleteAgent": "删除 {name}",
-      "confirmDeleteAgent": "删除该智能体及其所有对话记录？",
-      "confirmDeleteWorkflow": "删除该工作流？",
+      "deleteWorkflow": "删除 {name}",
+      "deleteConversation": "删除对话",
+      "confirmDeleteAgent": "删除智能体「{name}」及其所有对话记录？",
+      "confirmDeleteWorkflow": "删除工作流「{name}」？",
+      "confirmDeleteConversation": "删除该对话？此操作无法撤销。",
+      "agentDeleted": "已删除「{name}」。",
+      "workflowDeleted": "已删除「{name}」。",
+      "searchAgents": "搜索智能体...",
+      "noAgentsFound": "未找到匹配的智能体。",
+      "today": "今天",
+      "yesterday": "昨天",
+      "earlier": "更早",
       "noWorkflows": "还没有工作流。"
     },
     "input": {
       "placeholder": "输入消息...（Shift+Enter 换行）",
       "send": "发送",
-      "stop": "停止"
+      "stop": "停止",
+      "uploadFailed": "文件上传失败"
     },
     "actions": {
       "copy": "复制",
@@ -51,6 +62,13 @@
       "delegatedTo": "已委派给 {name}",
       "viewArgs": "参数",
       "viewResult": "结果"
+    },
+    "welcome": {
+      "subtitle": "有什么可以帮你的？试试下面的建议，或者直接输入你的问题。",
+      "suggestion1": "帮我总结一下这段内容的要点",
+      "suggestion2": "用简单的语言解释一个复杂概念",
+      "suggestion3": "帮我写一份工作周报草稿",
+      "suggestion4": "把这段文字翻译成英文"
     }
   }
 }

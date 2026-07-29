@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
+import { RotateCcw, ChevronDown, ChevronRight, Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,8 +108,12 @@ export function RunPanel({
     <>
       <div className="border-t">
         <div className="flex items-center justify-between px-4 py-1.5 bg-muted/50 cursor-pointer" onClick={() => setCollapsed((c) => !c)}>
-          <span className="text-xs font-semibold text-muted-foreground">{t("heading")} {collapsed ? "▸" : "▾"}</span>
-          <Button size="sm" variant="outline" className="h-6 text-xs cursor-pointer" onClick={(e) => { e.stopPropagation(); setRunDialogOpen(true); }}>
+          <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground">
+            {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {t("heading")}
+          </span>
+          <Button size="sm" variant="outline" className="h-6 text-xs cursor-pointer gap-1" onClick={(e) => { e.stopPropagation(); setRunDialogOpen(true); }}>
+            <Play className="h-3 w-3" />
             {t("run")}
           </Button>
         </div>

@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { AgentAvatar } from "@/components/agents/agent-avatar";
 import { useAgent } from "@/hooks/use-agents";
 import { useCreateConversation } from "@/hooks/use-conversations";
 
@@ -21,7 +22,7 @@ export default function AgentChatIndexPage() {
   return (
     <div className="flex h-full items-center justify-center">
       <div className="text-center space-y-3 max-w-sm">
-        <div className="text-4xl">{agent.avatar || "🤖"}</div>
+        <AgentAvatar avatar={agent.avatar} className="h-16 w-16 text-4xl mx-auto" iconClassName="h-8 w-8" />
         <h2 className="text-lg font-semibold">{agent.name}</h2>
         {agent.description && (
           <p className="text-sm text-muted-foreground">{agent.description}</p>

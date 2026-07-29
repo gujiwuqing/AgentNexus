@@ -57,6 +57,11 @@ export function useKnowledgeDocuments(knowledgeBaseId: string) {
   return useQuery({
     queryKey: ["knowledge-documents", knowledgeBaseId],
     queryFn: () => fetchJson<KnowledgeDocument[]>(`/api/knowledge-bases/${knowledgeBaseId}/documents`),
+    refetchInterval: (query) => {
+      const docs = query.state.data;
+      const hasPending = docs?.some((d) => d.status === "pending" || d.status === "processing");
+      return hasPending ? 2000 : false;
+    },
   });
 }
 
@@ -110,6 +115,23 @@ export function useReindexDocument(knowledgeBaseId: string) {
       if (!res.ok) throw new Error("Failed to reindex");
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["knowledge-documents", knowledgeBaseId] }),
+  });
+}
+
+export type RetrievalTestResult = { chunkId: string; content: string; score: number; documentId: string; filename: string | null };
+
+export function useTestRetrieval(knowledgeBaseId: string) {
+  return useMutation({
+    mutationFn: async ({ query, topK }: { query: string; topK?: number }) => {
+      const res = await fetch(`/api/knowledge-bases/${knowledgeBaseId}/test-retrieval`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ query, topK }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body?.error?.message ?? "Retrieval test failed");
+      return body.results as RetrievalTestResult[];
+    },
   });
 }
 

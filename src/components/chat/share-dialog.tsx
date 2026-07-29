@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Share2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/providers/confirm-provider";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ export function ShareDialog({ conversationId }: { conversationId: string }) {
   const revokeShare = useRevokeShare(conversationId);
   const [token, setToken] = useState<string | null>(null);
   const [copied, setCopied] = useState<"link" | "embed" | null>(null);
+  const confirm = useConfirm();
 
   const shareUrl = token && typeof window !== "undefined" ? `${window.location.origin}/share/${token}` : "";
   const embedCode = token
@@ -32,7 +34,8 @@ export function ShareDialog({ conversationId }: { conversationId: string }) {
   }
 
   async function handleRevoke() {
-    if (!confirm(t("revokeConfirm"))) return;
+    const ok = await confirm({ description: t("revokeConfirm"), variant: "destructive" });
+    if (!ok) return;
     await revokeShare.mutateAsync();
     setToken(null);
   }

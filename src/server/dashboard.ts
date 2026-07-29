@@ -1,17 +1,28 @@
 import { db } from "@/db";
 import { messages, conversations, agents } from "@/db/schema";
-import { sql, eq, gte, and, isNotNull } from "drizzle-orm";
+import { sql, eq, gte, lt, and, isNotNull } from "drizzle-orm";
 
 export type DateRange = "7d" | "30d" | "90d";
 
-function rangeToDate(range: DateRange): Date {
-  const now = new Date();
-  const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
-  return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+function rangeDays(range: DateRange): number {
+  return range === "7d" ? 7 : range === "30d" ? 30 : 90;
 }
 
-export async function getOverviewStats(range: DateRange) {
-  const since = rangeToDate(range);
+function rangeToDate(range: DateRange): Date {
+  const now = new Date();
+  return new Date(now.getTime() - rangeDays(range) * 24 * 60 * 60 * 1000);
+}
+
+function previousWindow(range: DateRange): { since: Date; until: Date } {
+  const until = rangeToDate(range);
+  const since = new Date(until.getTime() - rangeDays(range) * 24 * 60 * 60 * 1000);
+  return { since, until };
+}
+
+async function getOverviewStatsInWindow(since: Date, until: Date | null) {
+  const dateFilter = until
+    ? and(gte(messages.createdAt, since), lt(messages.createdAt, until))
+    : gte(messages.createdAt, since);
 
   const [msgStats] = await db
     .select({
@@ -19,19 +30,28 @@ export async function getOverviewStats(range: DateRange) {
       totalTokens: sql<number>`coalesce(sum(${messages.totalTokens}), 0)`,
     })
     .from(messages)
-    .where(gte(messages.createdAt, since));
+    .where(dateFilter);
 
   const [convStats] = await db
     .select({ totalConversations: sql<number>`count(distinct ${conversations.id})` })
     .from(conversations)
     .innerJoin(messages, eq(messages.conversationId, conversations.id))
-    .where(gte(messages.createdAt, since));
+    .where(dateFilter);
 
   return {
     totalConversations: Number(convStats?.totalConversations ?? 0),
     totalMessages: Number(msgStats?.totalMessages ?? 0),
     totalTokens: Number(msgStats?.totalTokens ?? 0),
   };
+}
+
+export async function getOverviewStats(range: DateRange) {
+  return getOverviewStatsInWindow(rangeToDate(range), null);
+}
+
+export async function getPreviousOverviewStats(range: DateRange) {
+  const { since, until } = previousWindow(range);
+  return getOverviewStatsInWindow(since, until);
 }
 
 export async function getTokenTrend(range: DateRange) {
@@ -110,8 +130,10 @@ export async function getModelDistribution(range: DateRange) {
   }));
 }
 
-export async function getCostEstimationRows(range: DateRange) {
-  const since = rangeToDate(range);
+async function getCostEstimationRowsInWindow(since: Date, until: Date | null) {
+  const dateFilter = until
+    ? and(gte(messages.createdAt, since), lt(messages.createdAt, until), isNotNull(messages.totalTokens))
+    : and(gte(messages.createdAt, since), isNotNull(messages.totalTokens));
 
   return db
     .select({
@@ -120,5 +142,14 @@ export async function getCostEstimationRows(range: DateRange) {
       completionTokens: messages.completionTokens,
     })
     .from(messages)
-    .where(and(gte(messages.createdAt, since), isNotNull(messages.totalTokens)));
+    .where(dateFilter);
+}
+
+export async function getCostEstimationRows(range: DateRange) {
+  return getCostEstimationRowsInWindow(rangeToDate(range), null);
+}
+
+export async function getPreviousCostEstimationRows(range: DateRange) {
+  const { since, until } = previousWindow(range);
+  return getCostEstimationRowsInWindow(since, until);
 }

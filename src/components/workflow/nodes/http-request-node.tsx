@@ -1,5 +1,6 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { useTranslations } from "next-intl";
+import { NodeShell } from "./node-shell";
 
 type HttpRequestNodeData = {
   label: string;
@@ -10,17 +11,16 @@ type HttpRequestNodeData = {
 export function HttpRequestNode({ data }: NodeProps) {
   const d = data as unknown as HttpRequestNodeData;
   const t = useTranslations("workflowExt");
-  const borderColor = d.runStatus === "completed" ? "border-green-500" : d.runStatus === "failed" ? "border-red-500" : d.runStatus === "running" ? "border-yellow-500" : "border-border";
 
   return (
-    <div className={`bg-background border-2 ${borderColor} rounded-lg px-3 py-2 min-w-[150px] shadow-sm`}>
+    <NodeShell
+      type="http_request"
+      label={d.label || t("nodeTypes.httpRequest.label")}
+      subtitle={d.config?.url || t("nodeDefaults.noUrl")}
+      runStatus={d.runStatus}
+    >
       <Handle type="target" position={Position.Left} />
-      <div className="flex items-center gap-2 mb-1">
-        <span>🌐</span>
-        <span className="text-xs font-semibold truncate">{d.label || t("nodeTypes.httpRequest.label")}</span>
-      </div>
-      <p className="text-[10px] text-muted-foreground truncate">{d.config?.url || t("nodeDefaults.noUrl")}</p>
       <Handle type="source" position={Position.Right} />
-    </div>
+    </NodeShell>
   );
 }

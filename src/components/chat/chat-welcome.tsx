@@ -1,0 +1,39 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { AgentAvatar } from "@/components/agents/agent-avatar";
+import type { Agent } from "@/types/agent";
+
+export function ChatWelcome({
+  agent,
+  onSelectPrompt,
+}: {
+  agent?: Agent;
+  onSelectPrompt: (prompt: string) => void;
+}) {
+  const t = useTranslations("chatExt.welcome");
+  const suggestions = [t("suggestion1"), t("suggestion2"), t("suggestion3"), t("suggestion4")];
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center px-6 text-center overflow-y-auto py-10">
+      <AgentAvatar avatar={agent?.avatar} className="h-16 w-16 text-4xl mb-4" iconClassName="h-8 w-8" />
+      <h2 className="text-lg font-semibold">{agent?.name}</h2>
+      {agent?.description ? (
+        <p className="text-sm text-muted-foreground mt-1 max-w-md">{agent.description}</p>
+      ) : (
+        <p className="text-sm text-muted-foreground mt-1 max-w-md">{t("subtitle")}</p>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6 w-full max-w-lg">
+        {suggestions.map((s) => (
+          <button
+            key={s}
+            onClick={() => onSelectPrompt(s)}
+            className="text-left text-sm border rounded-lg px-3 py-2.5 hover:border-primary hover:bg-accent transition-colors"
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

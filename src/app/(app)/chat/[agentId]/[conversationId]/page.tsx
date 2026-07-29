@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { MessageList } from "@/components/chat/message-list";
 import { ChatInput } from "@/components/chat/chat-input";
+import { ChatWelcome } from "@/components/chat/chat-welcome";
 import { ShareDialog } from "@/components/chat/share-dialog";
 import { useChatStream } from "@/hooks/use-chat-stream";
 import { useConversationDetail } from "@/hooks/use-conversations";
@@ -31,7 +32,7 @@ export default function ChatConversationPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-2 border-b">
+      <div className="flex items-center justify-between px-4 py-2 pl-12 md:pl-4 border-b">
         <span className="text-sm font-medium truncate">{detail?.conversation.title ?? ""}</span>
         <div className="flex items-center gap-1">
           <ShareDialog conversationId={conversationId} />
@@ -40,12 +41,16 @@ export default function ChatConversationPage() {
           </Button>
         </div>
       </div>
-      <MessageList
-        messages={messages}
-        avatar={agent?.avatar}
-        onRegenerate={regenerate}
-        onDelete={deleteMessage}
-      />
+      {messages.length === 0 ? (
+        <ChatWelcome agent={agent} onSelectPrompt={sendMessage} />
+      ) : (
+        <MessageList
+          messages={messages}
+          avatar={agent?.avatar}
+          onRegenerate={regenerate}
+          onDelete={deleteMessage}
+        />
+      )}
       <ChatInput onSend={sendMessage} onStop={stop} disabled={isStreaming} />
     </div>
   );

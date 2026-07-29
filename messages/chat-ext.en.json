@@ -10,14 +10,25 @@
       "newWorkflow": "+ New Workflow",
       "settingsFor": "Settings for {name}",
       "deleteAgent": "Delete {name}",
-      "confirmDeleteAgent": "Delete this agent and all its conversations?",
-      "confirmDeleteWorkflow": "Delete this workflow?",
+      "deleteWorkflow": "Delete {name}",
+      "deleteConversation": "Delete conversation",
+      "confirmDeleteAgent": "Delete agent \"{name}\" and all its conversations?",
+      "confirmDeleteWorkflow": "Delete workflow \"{name}\"?",
+      "confirmDeleteConversation": "Delete this conversation? This cannot be undone.",
+      "agentDeleted": "\"{name}\" deleted.",
+      "workflowDeleted": "\"{name}\" deleted.",
+      "searchAgents": "Search agents...",
+      "noAgentsFound": "No matching agents.",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "earlier": "Earlier",
       "noWorkflows": "No workflows yet."
     },
     "input": {
       "placeholder": "Type a message... (Shift+Enter for newline)",
       "send": "Send",
-      "stop": "Stop"
+      "stop": "Stop",
+      "uploadFailed": "File upload failed"
     },
     "actions": {
       "copy": "Copy",
@@ -51,6 +62,13 @@
       "delegatedTo": "Delegated to {name}",
       "viewArgs": "Arguments",
       "viewResult": "Result"
+    },
+    "welcome": {
+      "subtitle": "How can I help you today? Try a suggestion below or type your own question.",
+      "suggestion1": "Summarize the key points of this content",
+      "suggestion2": "Explain a complex concept in simple terms",
+      "suggestion3": "Draft a weekly work report",
+      "suggestion4": "Translate this text into English"
     }
   }
 }

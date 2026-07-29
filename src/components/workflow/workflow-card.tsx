@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Workflow } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { WorkflowGraph } from "@/types/workflow";
 
-type Workflow = {
+type WorkflowSummary = {
   id: string;
   name: string;
   description: string;
   graph: WorkflowGraph;
 };
 
-export function WorkflowCard({ workflow }: { workflow: Workflow }) {
+export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
   const t = useTranslations("workflowExt.card");
 
   return (
@@ -19,7 +20,9 @@ export function WorkflowCard({ workflow }: { workflow: Workflow }) {
       <Card className="hover:border-primary hover:shadow-md transition-all cursor-pointer h-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span className="text-2xl">🔗</span>
+            <div className="h-9 w-9 rounded-lg brand-gradient flex items-center justify-center shrink-0">
+              <Workflow className="h-4 w-4 text-white" />
+            </div>
             {workflow.name}
           </CardTitle>
         </CardHeader>

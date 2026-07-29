@@ -1,9 +1,14 @@
 "use client";
 
+import { memo } from "react";
 import { useTranslations } from "next-intl";
+import { User } from "lucide-react";
 import { MarkdownContent } from "./markdown-content";
 import { MessageActions } from "./message-actions";
 import { ToolCallBlock } from "./tool-call-block";
+import { TypingDots } from "./typing-dots";
+import { MessageAttachments } from "./message-attachments";
+import { AgentAvatar } from "@/components/agents/agent-avatar";
 import type { MessageMeta } from "@/hooks/use-chat-stream";
 
 function formatTime(iso: string) {
@@ -14,43 +19,51 @@ function formatTime(iso: string) {
   return `${hh}:${mm}`;
 }
 
-export function MessageBubble({
+function MessageBubbleImpl({
+  id,
   role,
   content,
   createdAt,
   avatar,
   meta,
+  attachments,
   toolCalls,
   isLast,
   onRegenerate,
   onDelete,
 }: {
+  id: string;
   role: string;
   content: string;
   createdAt?: string;
   avatar?: string;
   meta?: MessageMeta;
+  attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>;
   toolCalls?: Array<{ toolName: string; displayName: string; args: Record<string, unknown>; result: string }>;
   isLast: boolean;
   onRegenerate?: () => void;
-  onDelete?: () => void;
+  onDelete?: (id: string) => void;
 }) {
   const t = useTranslations("chatExt.actions");
   const isUser = role === "user";
   const isError = role === "error";
   const time = createdAt ? formatTime(createdAt) : "";
-  const assistantAvatar = avatar || "🤖";
   const showMeta =
     role === "assistant" &&
     meta &&
     (meta.model || meta.durationMs != null || meta.totalTokens != null);
+  const handleDelete = onDelete ? () => onDelete(id) : undefined;
 
   return (
     <div className={`group flex gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {!isError && (
-        <div className="w-7 h-7 shrink-0 rounded-full bg-muted flex items-center justify-center text-sm select-none">
-          {isUser ? "🧑" : assistantAvatar}
-        </div>
+        isUser ? (
+          <div className="w-7 h-7 shrink-0 rounded-full bg-secondary flex items-center justify-center select-none">
+            <User className="h-3.5 w-3.5 text-secondary-foreground" />
+          </div>
+        ) : (
+          <AgentAvatar avatar={avatar} className="w-7 h-7 text-sm" iconClassName="h-3.5 w-3.5" />
+        )
       )}
       <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
         <div
@@ -63,11 +76,12 @@ export function MessageBubble({
           }`}
         >
           {!isUser && !isError ? (
-            content ? <MarkdownContent content={content} /> : "..."
+            content ? <MarkdownContent content={content} /> : <TypingDots />
           ) : (
             content || ""
           )}
         </div>
+        {attachments && attachments.length > 0 && <MessageAttachments attachments={attachments} />}
         {time && (
           <span className="text-[10px] text-muted-foreground mt-0.5 px-1">{time}</span>
         )}
@@ -87,10 +101,12 @@ export function MessageBubble({
             content={content}
             isLast={isLast}
             onRegenerate={onRegenerate}
-            onDelete={onDelete}
+            onDelete={handleDelete}
           />
         )}
       </div>
     </div>
   );
 }
+
+export const MessageBubble = memo(MessageBubbleImpl);

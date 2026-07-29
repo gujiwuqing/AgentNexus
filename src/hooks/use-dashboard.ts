@@ -7,6 +7,12 @@ export type DashboardStats = {
     totalTokens: number;
     estimatedCost: number;
   };
+  previousOverview: {
+    totalConversations: number;
+    totalMessages: number;
+    totalTokens: number;
+    estimatedCost: number;
+  };
   tokenTrend: Array<{
     date: string;
     promptTokens: number;

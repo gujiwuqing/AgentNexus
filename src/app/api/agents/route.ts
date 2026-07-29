@@ -1,9 +1,9 @@
 import { agentInputSchema } from "@/lib/validation/agent";
-import { createAgent, listAgents } from "@/server/agents";
+import { createAgent, listAgentsWithStats } from "@/server/agents";
 import { apiOk, apiError } from "@/lib/api-response";
 
 export async function GET() {
-  const all = await listAgents();
+  const all = await listAgentsWithStats();
   return apiOk(all);
 }
 

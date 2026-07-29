@@ -2,10 +2,12 @@ import { apiOk, apiError } from "@/lib/api-response";
 import { estimateCost } from "@/lib/model-pricing";
 import {
   getOverviewStats,
+  getPreviousOverviewStats,
   getTokenTrend,
   getAgentRanking,
   getModelDistribution,
   getCostEstimationRows,
+  getPreviousCostEstimationRows,
   type DateRange,
 } from "@/server/dashboard";
 
@@ -20,18 +22,25 @@ export async function GET(request: Request) {
   }
 
   const dateRange = range as DateRange;
-  const [overview, tokenTrend, agentRanking, modelDistribution, costRows] = await Promise.all([
-    getOverviewStats(dateRange),
-    getTokenTrend(dateRange),
-    getAgentRanking(dateRange),
-    getModelDistribution(dateRange),
-    getCostEstimationRows(dateRange),
-  ]);
+  const [overview, previousOverview, tokenTrend, agentRanking, modelDistribution, costRows, previousCostRows] =
+    await Promise.all([
+      getOverviewStats(dateRange),
+      getPreviousOverviewStats(dateRange),
+      getTokenTrend(dateRange),
+      getAgentRanking(dateRange),
+      getModelDistribution(dateRange),
+      getCostEstimationRows(dateRange),
+      getPreviousCostEstimationRows(dateRange),
+    ]);
 
   return apiOk({
     overview: {
       ...overview,
       estimatedCost: estimateCost(costRows),
+    },
+    previousOverview: {
+      ...previousOverview,
+      estimatedCost: estimateCost(previousCostRows),
     },
     tokenTrend,
     agentRanking,

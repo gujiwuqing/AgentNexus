@@ -32,15 +32,17 @@ export function MessageList({
         return (
           <MessageBubble
             key={m.id}
+            id={m.id}
             role={m.role}
             content={m.content}
             createdAt={m.createdAt}
             avatar={avatar}
             meta={m.meta}
+            attachments={m.attachments}
             toolCalls={m.toolCalls}
             isLast={i === messages.length - 1}
             onRegenerate={canRegenerate ? onRegenerate : undefined}
-            onDelete={m.id.startsWith("local-") ? undefined : () => onDelete?.(m.id)}
+            onDelete={m.id.startsWith("local-") ? undefined : onDelete}
           />
         );
       })}

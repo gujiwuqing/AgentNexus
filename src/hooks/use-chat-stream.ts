@@ -21,6 +21,7 @@ export type DisplayMessage = {
   content: string;
   createdAt: string;
   meta?: MessageMeta;
+  attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>;
   toolCalls?: Array<{ toolName: string; displayName: string; args: Record<string, unknown>; result: string }>;
 };
 
@@ -54,6 +55,7 @@ export function useChatStream(conversationId: string, agentModel: string | null)
           content: m.content,
           createdAt: m.createdAt,
           meta: toMeta(m),
+          attachments: m.attachments ?? undefined,
           toolCalls: m.toolCalls ?? undefined,
         }))
       );
@@ -76,7 +78,11 @@ export function useChatStream(conversationId: string, agentModel: string | null)
   );
 
   const streamReply = useCallback(
-    async (content: string, replaceLastAssistant = false, attachmentIds?: string[]) => {
+    async (
+      content: string,
+      replaceLastAssistant = false,
+      attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>
+    ) => {
       const assistantId = `local-${Date.now()}-assistant`;
       const now = new Date().toISOString();
       if (replaceLastAssistant) {
@@ -87,7 +93,7 @@ export function useChatStream(conversationId: string, agentModel: string | null)
       } else {
         setMessages((prev) => [
           ...prev,
-          { id: `local-${Date.now()}-user`, role: "user", content, createdAt: now },
+          { id: `local-${Date.now()}-user`, role: "user", content, createdAt: now, attachments },
           { id: assistantId, role: "assistant", content: "", createdAt: now },
         ]);
       }
@@ -100,6 +106,7 @@ export function useChatStream(conversationId: string, agentModel: string | null)
       let text = "";
       let usage: { promptTokens?: number; completionTokens?: number; totalTokens?: number } | undefined;
       let aborted = false;
+      const attachmentIds = attachments?.map((a) => a.id);
 
       try {
         const res = await fetch(`/api/conversations/${conversationId}/messages`, {
@@ -220,11 +227,17 @@ export function useChatStream(conversationId: string, agentModel: string | null)
     abortRef.current?.abort();
   }, []);
 
-  async function sendMessage(content: string, attachmentIds?: string[]) {
-    await streamReply(content, false, attachmentIds);
-  }
+  const sendMessage = useCallback(
+    async (
+      content: string,
+      attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>
+    ) => {
+      await streamReply(content, false, attachments);
+    },
+    [streamReply]
+  );
 
-  async function regenerate() {
+  const regenerate = useCallback(async () => {
     const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
     if (!lastAssistant || !lastUser) return;
@@ -235,13 +248,16 @@ export function useChatStream(conversationId: string, agentModel: string | null)
 
     setMessages((prev) => prev.filter((m) => m.id !== lastAssistant.id));
     await streamReply(lastUser.content, true);
-  }
+  }, [messages, streamReply]);
 
-  async function deleteMsg(id: string) {
-    await fetch(`/api/messages/${id}`, { method: "DELETE" });
-    setMessages((prev) => prev.filter((m) => m.id !== id));
-    queryClient.invalidateQueries({ queryKey: ["conversations", conversationId] });
-  }
+  const deleteMsg = useCallback(
+    async (id: string) => {
+      await fetch(`/api/messages/${id}`, { method: "DELETE" });
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+      queryClient.invalidateQueries({ queryKey: ["conversations", conversationId] });
+    },
+    [conversationId, queryClient]
+  );
 
   return { messages, isLoading, isStreaming, sendMessage, regenerate, deleteMessage: deleteMsg, stop };
 }

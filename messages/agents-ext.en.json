@@ -1,7 +1,9 @@
 {
   "agentsExt": {
     "card": {
-      "noDescription": "No description"
+      "noDescription": "No description",
+      "conversationCount": "{count} conversations",
+      "noActivity": "No activity yet"
     },
     "form": {
       "name": "Name",

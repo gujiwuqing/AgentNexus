@@ -1,7 +1,9 @@
 {
   "agentsExt": {
     "card": {
-      "noDescription": "暂无描述"
+      "noDescription": "暂无描述",
+      "conversationCount": "{count} 次对话",
+      "noActivity": "暂无活动"
     },
     "form": {
       "name": "名称",

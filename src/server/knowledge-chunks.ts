@@ -46,3 +46,22 @@ export async function getChunksByKnowledgeBaseIds(knowledgeBaseIds: string[]) {
 
   return rows;
 }
+
+export async function getChunksWithFilenameByKnowledgeBaseId(knowledgeBaseId: string) {
+  const rows = await db
+    .select({
+      id: knowledgeChunks.id,
+      content: knowledgeChunks.content,
+      embedding: knowledgeChunks.embedding,
+      documentId: knowledgeChunks.documentId,
+      filename: knowledgeDocuments.filename,
+    })
+    .from(knowledgeChunks)
+    .innerJoin(
+      knowledgeDocuments,
+      eq(knowledgeChunks.documentId, knowledgeDocuments.id),
+    )
+    .where(eq(knowledgeDocuments.knowledgeBaseId, knowledgeBaseId));
+
+  return rows;
+}

@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
@@ -21,7 +22,7 @@ export function ThemeToggle() {
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       aria-label={t("toggle")}
     >
-      {theme === "dark" ? "☀️" : "🌙"}
+      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </Button>
   );
 }

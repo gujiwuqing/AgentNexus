@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useTranslations } from "next-intl";
 import { Wrench, Users, ChevronDown, ChevronRight } from "lucide-react";
 
@@ -11,7 +11,7 @@ type ToolCallDisplay = {
   result: string;
 };
 
-export function ToolCallBlock({ toolCalls }: { toolCalls: ToolCallDisplay[] }) {
+function ToolCallBlockImpl({ toolCalls }: { toolCalls: ToolCallDisplay[] }) {
   const t = useTranslations("chatExt.toolCall");
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
@@ -58,3 +58,5 @@ export function ToolCallBlock({ toolCalls }: { toolCalls: ToolCallDisplay[] }) {
     </div>
   );
 }
+
+export const ToolCallBlock = memo(ToolCallBlockImpl);

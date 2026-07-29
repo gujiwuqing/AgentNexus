@@ -2,6 +2,35 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Copy, Check, RotateCcw, Trash2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+function ActionButton({
+  label,
+  onClick,
+  destructive,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  destructive?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={onClick}
+          aria-label={label}
+          className={`p-1 rounded hover:bg-muted ${destructive ? "text-muted-foreground hover:text-destructive" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          {children}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
 
 export function MessageActions({
   role,
@@ -26,28 +55,19 @@ export function MessageActions({
   }
 
   return (
-    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
-      <button
-        onClick={handleCopy}
-        className="text-xs text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded hover:bg-muted"
-      >
-        {copied ? t("copied") : t("copy")}
-      </button>
+    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+      <ActionButton label={copied ? t("copied") : t("copy")} onClick={handleCopy}>
+        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+      </ActionButton>
       {role === "assistant" && isLast && onRegenerate && (
-        <button
-          onClick={onRegenerate}
-          className="text-xs text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded hover:bg-muted"
-        >
-          {t("regenerate")}
-        </button>
+        <ActionButton label={t("regenerate")} onClick={onRegenerate}>
+          <RotateCcw className="h-3.5 w-3.5" />
+        </ActionButton>
       )}
       {onDelete && (
-        <button
-          onClick={onDelete}
-          className="text-xs text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded hover:bg-muted"
-        >
-          {t("delete")}
-        </button>
+        <ActionButton label={t("delete")} onClick={onDelete} destructive>
+          <Trash2 className="h-3.5 w-3.5" />
+        </ActionButton>
       )}
     </div>
   );

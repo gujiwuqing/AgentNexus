@@ -2,6 +2,8 @@
 
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCreateAgent } from "@/hooks/use-agents";
 import { agentInputSchema } from "@/lib/validation/agent";
@@ -19,12 +21,12 @@ export function AgentImportButton() {
       const json = JSON.parse(text);
       const parsed = agentInputSchema.safeParse(json);
       if (!parsed.success) {
-        alert(t("invalidFile", { details: parsed.error.issues.map((i) => i.message).join(", ") }));
+        toast.error(t("invalidFile", { details: parsed.error.issues.map((i) => i.message).join(", ") }));
         return;
       }
       createAgent.mutate(parsed.data);
     } catch {
-      alert(t("parseFailed"));
+      toast.error(t("parseFailed"));
     }
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -32,7 +34,8 @@ export function AgentImportButton() {
   return (
     <>
       <input ref={inputRef} type="file" accept=".json" onChange={handleFile} className="hidden" />
-      <Button variant="ghost" size="sm" className="w-full" onClick={() => inputRef.current?.click()}>
+      <Button variant="outline" size="sm" className="w-full" onClick={() => inputRef.current?.click()}>
+        <Upload className="h-3.5 w-3.5" />
         {t("button")}
       </Button>
     </>
