@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run",
+    "test": "dotenv -e .env.local -- vitest run",
+    "test:watch": "dotenv -e .env.local -- vitest",
     "db:push": "drizzle-kit push",
     "templates:reset": "tsx scripts/replace-with-professional-templates.ts"
   },
@@ -57,6 +58,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.5.4",
+    "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.10",
     "postcss": "^8.5.22",
     "tailwindcss": "^3.4.19",

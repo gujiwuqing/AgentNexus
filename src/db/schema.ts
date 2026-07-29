@@ -230,3 +230,26 @@ export const agentTeamMembers = mysqlTable("agent_team_members", {
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull().defaultNow().$defaultFn(() => new Date()),
 });
+
+export const users = mysqlTable("users", {
+  id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  username: varchar("username", { length: 100 }).unique(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  avatar: varchar("avatar", { length: 255 }),
+  role: mysqlEnum("role", ["user", "admin", "superAdmin"]).notNull().default("user"),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+  updatedAt: timestamp("updated_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+});
+
+export const sessions = mysqlTable("sessions", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: varchar("user_id", { length: 36 }).notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at", { mode: "date", fsp: 6 }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+});
