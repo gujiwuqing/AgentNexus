@@ -1,0 +1,53 @@
+{
+  "agentsExt": {
+    "card": {
+      "noDescription": "暂无描述"
+    },
+    "form": {
+      "name": "名称",
+      "description": "描述",
+      "avatar": "头像（emoji）",
+      "tags": "标签（逗号分隔）",
+      "systemPrompt": "系统提示词",
+      "temperature": "Temperature",
+      "maxTokens": "Max Tokens",
+      "topP": "Top P",
+      "model": "模型",
+      "modelPlaceholder": "留空使用全局默认模型",
+      "memoryWindowSize": "记忆窗口",
+      "memoryWindowSizeHint": "0 = 发送全部历史"
+    },
+    "templatePicker": {
+      "heading": "从专业模板开始",
+      "description": "选择模板后会预填可编辑的配置。",
+      "blank": "从空白创建",
+      "blankDescription": "自行配置全部内容。",
+      "recommendedOutput": "预期产出：{output}",
+      "selected": "已选择"
+    },
+    "configDialog": {
+      "configure": "配置 {name}",
+      "export": "导出",
+      "save": "保存"
+    },
+    "import": {
+      "button": "导入智能体",
+      "invalidFile": "文件格式不正确：{details}",
+      "parseFailed": "无法解析该 JSON 文件"
+    },
+    "delete": {
+      "button": "删除",
+      "confirmTitle": "删除该智能体？",
+      "confirmBody": "此操作会永久删除该智能体及其所有对话记录。",
+      "cancel": "取消",
+      "confirm": "删除"
+    },
+    "tools": {
+      "title": "工具"
+    },
+    "knowledge": {
+      "title": "知识库",
+      "empty": "暂无知识库，请先创建。"
+    }
+  }
+}

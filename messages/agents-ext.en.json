@@ -1,0 +1,53 @@
+{
+  "agentsExt": {
+    "card": {
+      "noDescription": "No description"
+    },
+    "form": {
+      "name": "Name",
+      "description": "Description",
+      "avatar": "Avatar (emoji)",
+      "tags": "Tags (comma-separated)",
+      "systemPrompt": "System Prompt",
+      "temperature": "Temperature",
+      "maxTokens": "Max Tokens",
+      "topP": "Top P",
+      "model": "Model",
+      "modelPlaceholder": "Leave empty to use the global default model",
+      "memoryWindowSize": "Memory Window",
+      "memoryWindowSizeHint": "0 = send all history"
+    },
+    "templatePicker": {
+      "heading": "Start with a professional template",
+      "description": "Selecting a template pre-fills an editable configuration.",
+      "blank": "Start from scratch",
+      "blankDescription": "Configure all content yourself.",
+      "recommendedOutput": "Expected output: {output}",
+      "selected": "Selected"
+    },
+    "configDialog": {
+      "configure": "Configure {name}",
+      "export": "Export",
+      "save": "Save"
+    },
+    "import": {
+      "button": "Import Agent",
+      "invalidFile": "Invalid agent file: {details}",
+      "parseFailed": "Failed to parse file as JSON"
+    },
+    "delete": {
+      "button": "Delete",
+      "confirmTitle": "Delete this agent?",
+      "confirmBody": "This permanently deletes the agent and all of its conversations.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "tools": {
+      "title": "Tools"
+    },
+    "knowledge": {
+      "title": "Knowledge Bases",
+      "empty": "No knowledge bases available. Create one first."
+    }
+  }
+}

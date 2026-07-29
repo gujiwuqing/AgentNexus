@@ -1,0 +1,118 @@
+{
+  "workflowExt": {
+    "nodeTypes": {
+      "agent": { "label": "Agent", "description": "Call an AI agent" },
+      "condition": { "label": "Condition", "description": "Branch on condition" },
+      "transform": { "label": "Transform", "description": "Process text" },
+      "humanInput": { "label": "Human Input", "description": "Wait for user input" },
+      "httpRequest": { "label": "HTTP Request", "description": "Make HTTP requests to external APIs" },
+      "codeExecute": { "label": "Code Execute", "description": "Run JavaScript code in sandbox" },
+      "delay": { "label": "Delay", "description": "Wait before continuing" },
+      "variableAggregate": { "label": "Variable Aggregate", "description": "Merge multiple node outputs into JSON" }
+    },
+    "nodeLibrary": {
+      "heading": "Nodes"
+    },
+    "workflowTemplate": {
+      "heading": "Start from a workflow template",
+      "description": "Templates automatically configure stages, context passing, and human approval nodes.",
+      "missingAgents": "The required professional Agents for this template are missing. Run template initialization first.",
+      "buildHint": "You can also start with a blank workflow and add nodes in the editor."
+    },
+    "nodeDefaults": {
+      "noPrompt": "No prompt",
+      "noExpression": "No expression",
+      "noOperation": "No operation",
+      "noUrl": "No URL",
+      "noCode": "No code",
+      "noDuration": "No duration",
+      "noSources": "No sources",
+      "sourceCount": "{count} sources"
+    },
+    "status": {
+      "running": "Running",
+      "waiting_for_input": "Waiting for Input",
+      "completed": "Completed",
+      "failed": "Failed",
+      "skipped": "Skipped"
+    },
+    "configDialog": {
+      "configure": "Configure {name}",
+      "label": "Label",
+      "agent": "Agent",
+      "selectAgent": "Select an agent...",
+      "promptTemplate": "Prompt Template",
+      "promptTemplatePlaceholder": "Use {{input}} or {{nodeId.output}}",
+      "expression": "Expression",
+      "inputNodeId": "Input Node ID",
+      "selectNode": "Select node...",
+      "trueBranch": "True Branch",
+      "falseBranch": "False Branch",
+      "operation": "Operation",
+      "operationTemplate": "Template",
+      "operationSubstring": "Substring",
+      "operationReplace": "Replace",
+      "operationJsonExtract": "JSON Extract",
+      "inputTemplate": "Input Template",
+      "params": "Params (JSON)",
+      "invalidJson": "Invalid JSON — fix it before saving, or your last valid params will be used.",
+      "prompt": "Prompt (shown to user)",
+      "promptPlaceholder": "Please provide your feedback...",
+      "url": "URL",
+      "urlPlaceholder": "https://api.example.com/data",
+      "method": "Method",
+      "headers": "Headers (JSON)",
+      "bodyTemplate": "Body Template",
+      "code": "Code",
+      "codeHint": "Variables available: input (string), context (object)",
+      "durationMs": "Duration (ms)",
+      "durationMsPlaceholder": "1000",
+      "sourceNodeIds": "Source Nodes",
+      "cancel": "Cancel",
+      "apply": "Apply"
+    },
+    "runPanel": {
+      "heading": "Runs",
+      "run": "▶ Run",
+      "noRuns": "No runs yet.",
+      "emptyInput": "(empty)",
+      "colNode": "Node",
+      "colType": "Type",
+      "colStatus": "Status",
+      "colOutput": "Output",
+      "selectRun": "Select a run to view details.",
+      "resumePlaceholder": "Enter input to resume...",
+      "resume": "Resume",
+      "dialogTitle": "Run Workflow",
+      "inputPlaceholder": "Initial input text...",
+      "cancel": "Cancel",
+      "execute": "Execute",
+      "running": "Running...",
+      "retry": "Retry",
+      "retrying": "Retrying...",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "duration": "Duration",
+      "fullInput": "Input",
+      "fullOutput": "Output",
+      "version": "v{number}"
+    },
+    "card": {
+      "noDescription": "No description",
+      "nodeCount": "{count} nodes"
+    },
+    "editor": {
+      "saving": "Saving...",
+      "save": "Save",
+      "saved": "Saved",
+      "notFound": "Workflow not found."
+    },
+    "versionHistory": {
+      "heading": "Version History",
+      "restore": "Restore",
+      "restoreConfirm": "Restore to v{number}? This will overwrite the current graph.",
+      "noVersions": "No versions yet.",
+      "version": "v{number}"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "chatExt": {
+    "sidebar": {
+      "expand": "Expand sidebar",
+      "collapse": "Collapse sidebar",
+      "agentsHeading": "Agents",
+      "workflowsHeading": "Workflows",
+      "newChat": "+ New Chat",
+      "newAgent": "+ New Agent",
+      "newWorkflow": "+ New Workflow",
+      "settingsFor": "Settings for {name}",
+      "deleteAgent": "Delete {name}",
+      "confirmDeleteAgent": "Delete this agent and all its conversations?",
+      "confirmDeleteWorkflow": "Delete this workflow?",
+      "noWorkflows": "No workflows yet."
+    },
+    "input": {
+      "placeholder": "Type a message... (Shift+Enter for newline)",
+      "send": "Send",
+      "stop": "Stop"
+    },
+    "actions": {
+      "copy": "Copy",
+      "copied": "Copied!",
+      "regenerate": "Regenerate",
+      "delete": "Delete",
+      "tokens": "tokens",
+      "in": "in",
+      "out": "out"
+    },
+    "codeBlock": {
+      "copy": "Copy",
+      "copied": "Copied!"
+    },
+    "share": {
+      "title": "Share Conversation",
+      "description": "Generate a read-only link. Anyone with the link can view this conversation.",
+      "generateLink": "Generate Share Link",
+      "generating": "Generating...",
+      "copyLink": "Copy Link",
+      "copied": "Copied!",
+      "embedCode": "Embed Code",
+      "copyEmbedCode": "Copy Embed Code",
+      "revoke": "Revoke Share",
+      "revokeConfirm": "Are you sure? The shared link will stop working.",
+      "revoking": "Revoking...",
+      "sharedBy": "Shared from AgentNexus"
+    }
+  }
+}

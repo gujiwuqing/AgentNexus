@@ -1,0 +1,50 @@
+{
+  "chatExt": {
+    "sidebar": {
+      "expand": "展开侧边栏",
+      "collapse": "收起侧边栏",
+      "agentsHeading": "智能体",
+      "workflowsHeading": "工作流",
+      "newChat": "+ 新建对话",
+      "newAgent": "+ 新建智能体",
+      "newWorkflow": "+ 新建工作流",
+      "settingsFor": "{name} 的设置",
+      "deleteAgent": "删除 {name}",
+      "confirmDeleteAgent": "删除该智能体及其所有对话记录？",
+      "confirmDeleteWorkflow": "删除该工作流？",
+      "noWorkflows": "还没有工作流。"
+    },
+    "input": {
+      "placeholder": "输入消息...（Shift+Enter 换行）",
+      "send": "发送",
+      "stop": "停止"
+    },
+    "actions": {
+      "copy": "复制",
+      "copied": "已复制！",
+      "regenerate": "重新生成",
+      "delete": "删除",
+      "tokens": "tokens",
+      "in": "入",
+      "out": "出"
+    },
+    "codeBlock": {
+      "copy": "复制",
+      "copied": "已复制！"
+    },
+    "share": {
+      "title": "分享对话",
+      "description": "生成只读链接，任何拥有链接的人都可以查看这段对话。",
+      "generateLink": "生成分享链接",
+      "generating": "生成中...",
+      "copyLink": "复制链接",
+      "copied": "已复制！",
+      "embedCode": "嵌入代码",
+      "copyEmbedCode": "复制嵌入代码",
+      "revoke": "取消分享",
+      "revokeConfirm": "确定取消吗？分享链接将失效。",
+      "revoking": "取消中...",
+      "sharedBy": "来自 AgentNexus 的分享"
+    }
+  }
+}

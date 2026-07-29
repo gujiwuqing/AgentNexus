@@ -1,0 +1,15 @@
+node_modules
+.next
+*.db
+*.db-journal
+.env.local
+
+# db artifacts (legacy sqlite, now on mysql)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+data/
+uploads/
+.superpowers
+docs

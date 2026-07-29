@@ -1,0 +1,118 @@
+{
+  "workflowExt": {
+    "nodeTypes": {
+      "agent": { "label": "智能体", "description": "调用一个 AI 智能体" },
+      "condition": { "label": "条件分支", "description": "根据条件走不同分支" },
+      "transform": { "label": "文本处理", "description": "对文本做处理" },
+      "humanInput": { "label": "人工输入", "description": "等待人工输入" },
+      "httpRequest": { "label": "HTTP 请求", "description": "调用外部 API" },
+      "codeExecute": { "label": "代码执行", "description": "在沙箱中执行 JavaScript 代码" },
+      "delay": { "label": "延时", "description": "等待一段时间后继续" },
+      "variableAggregate": { "label": "变量聚合", "description": "将多个节点的输出合并为 JSON" }
+    },
+    "nodeLibrary": {
+      "heading": "节点"
+    },
+    "workflowTemplate": {
+      "heading": "从工作流模板开始",
+      "description": "模板会自动配置阶段、上下文传递和人工确认节点。",
+      "missingAgents": "该模板所需的专业智能体不存在，请先运行模板初始化。",
+      "buildHint": "你也可以从空白工作流开始，再在编辑器中添加节点。"
+    },
+    "nodeDefaults": {
+      "noPrompt": "未设置 Prompt",
+      "noExpression": "未设置表达式",
+      "noOperation": "未设置操作",
+      "noUrl": "未设置 URL",
+      "noCode": "未设置代码",
+      "noDuration": "未设置延时",
+      "noSources": "未选择来源节点",
+      "sourceCount": "{count} 个来源节点"
+    },
+    "status": {
+      "running": "运行中",
+      "waiting_for_input": "等待输入",
+      "completed": "已完成",
+      "failed": "失败",
+      "skipped": "已跳过"
+    },
+    "configDialog": {
+      "configure": "配置 {name}",
+      "label": "标签",
+      "agent": "智能体",
+      "selectAgent": "选择一个智能体...",
+      "promptTemplate": "Prompt 模板",
+      "promptTemplatePlaceholder": "使用 {{input}} 或 {{nodeId.output}}",
+      "expression": "表达式",
+      "inputNodeId": "输入节点 ID",
+      "selectNode": "选择节点...",
+      "trueBranch": "True 分支",
+      "falseBranch": "False 分支",
+      "operation": "操作类型",
+      "operationTemplate": "模板拼接",
+      "operationSubstring": "截取子串",
+      "operationReplace": "替换",
+      "operationJsonExtract": "JSON 取值",
+      "inputTemplate": "输入模板",
+      "params": "参数（JSON）",
+      "invalidJson": "JSON 格式不正确——请修正后再保存，否则会使用上一次的合法值。",
+      "prompt": "提示文本（展示给用户）",
+      "promptPlaceholder": "请提供你的反馈...",
+      "url": "URL",
+      "urlPlaceholder": "https://api.example.com/data",
+      "method": "方法",
+      "headers": "请求头（JSON）",
+      "bodyTemplate": "请求体模板",
+      "code": "代码",
+      "codeHint": "可用变量：input（字符串）、context（对象）",
+      "durationMs": "延时（毫秒）",
+      "durationMsPlaceholder": "1000",
+      "sourceNodeIds": "来源节点",
+      "cancel": "取消",
+      "apply": "应用"
+    },
+    "runPanel": {
+      "heading": "运行记录",
+      "run": "▶ 运行",
+      "noRuns": "还没有运行记录。",
+      "emptyInput": "（空）",
+      "colNode": "节点",
+      "colType": "类型",
+      "colStatus": "状态",
+      "colOutput": "输出",
+      "selectRun": "选择一次运行查看详情。",
+      "resumePlaceholder": "输入内容以继续执行...",
+      "resume": "继续执行",
+      "dialogTitle": "运行工作流",
+      "inputPlaceholder": "初始输入文本...",
+      "cancel": "取消",
+      "execute": "执行",
+      "running": "运行中...",
+      "retry": "重试",
+      "retrying": "重试中...",
+      "expand": "展开",
+      "collapse": "收起",
+      "duration": "耗时",
+      "fullInput": "输入",
+      "fullOutput": "输出",
+      "version": "v{number}"
+    },
+    "card": {
+      "noDescription": "暂无描述",
+      "nodeCount": "{count} 个节点"
+    },
+    "editor": {
+      "saving": "保存中...",
+      "save": "保存",
+      "saved": "已保存",
+      "notFound": "未找到该工作流。"
+    },
+    "versionHistory": {
+      "heading": "历史版本",
+      "restore": "恢复",
+      "restoreConfirm": "恢复到 v{number}？这将覆盖当前的节点图。",
+      "noVersions": "还没有版本记录。",
+      "version": "v{number}"
+    }
+  }
+}
