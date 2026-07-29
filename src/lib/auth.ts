@@ -37,6 +37,11 @@ function parseCookie(header: string): Record<string, string> {
   return out;
 }
 
+export function parseSessionToken(request?: Request): string | undefined {
+  if (!request) return undefined;
+  return parseCookie(request.headers.get("cookie") ?? "")[SESSION_COOKIE];
+}
+
 function unauthorizedResponse(): Response {
   return new Response(JSON.stringify({ error: { code: "unauthorized", message: "Authentication required" } }), {
     status: 401,
@@ -53,7 +58,7 @@ function forbiddenResponse(): Response {
 
 /**
  * 要求已登录。传入 API route 的 request 以便测试注入 cookie。
- * 返回 SafeUser 或 401 Response。调用方：`const user = await requireUser(request); if (user instanceof Response) return user;`
+ * 返回 SafeUser 或 401 Response。
  */
 export async function requireUser(request?: Request): Promise<SafeUser | Response> {
   const user = await getCurrentUser(request);
@@ -61,7 +66,6 @@ export async function requireUser(request?: Request): Promise<SafeUser | Respons
   return user;
 }
 
-/** 要求 admin 或 superAdmin。 */
 export async function requireAdmin(request?: Request): Promise<SafeUser | Response> {
   const user = await requireUser(request);
   if (user instanceof Response) return user;
@@ -69,7 +73,6 @@ export async function requireAdmin(request?: Request): Promise<SafeUser | Respon
   return user;
 }
 
-/** 要求 superAdmin。 */
 export async function requireSuperAdmin(request?: Request): Promise<SafeUser | Response> {
   const user = await requireUser(request);
   if (user instanceof Response) return user;
@@ -77,23 +80,31 @@ export async function requireSuperAdmin(request?: Request): Promise<SafeUser | R
   return user;
 }
 
-export async function setSessionCookie(userId: string) {
+export type SessionCookieValue = { value: string; expires: Date };
+
+/** 创建 session，返回需要写入响应的 cookie 值。调用方把它附到响应 Set-Cookie 头。 */
+export async function createSessionCookie(userId: string): Promise<SessionCookieValue> {
   const { id, expiresAt } = await createSession(userId);
-  const store = await cookies();
-  store.set(SESSION_COOKIE, id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    expires: expiresAt,
-  });
+  return { value: id, expires: expiresAt };
 }
 
-export async function clearSessionCookie() {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
-  if (token) await deleteSession(token);
-  store.delete(SESSION_COOKIE);
+export function buildSetCookieHeader(value: SessionCookieValue): string {
+  const parts = [
+    `${SESSION_COOKIE}=${value.value}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Expires=${value.expires.toUTCString()}`,
+  ];
+  if (process.env.NODE_ENV === "production") parts.push("Secure");
+  return parts.join("; ");
+}
+
+export const CLEAR_COOKIE_HEADER = `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
+
+/** 登出：删除数据库 session。Cookie 的清除由调用方在响应里处理。 */
+export async function clearSession(token: string): Promise<void> {
+  await deleteSession(token);
 }
 
 export async function authenticateWithCredentials(email: string, password: string): Promise<SafeUser | null> {

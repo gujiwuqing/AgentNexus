@@ -10,6 +10,17 @@
   "theme": {
     "toggle": "切换主题"
   },
+  "auth": {
+    "login": "登录",
+    "logout": "退出登录",
+    "email": "邮箱",
+    "password": "密码",
+    "loginButton": "登录",
+    "loginError": "邮箱或密码错误",
+    "welcome": "欢迎回来",
+    "loginSubtitle": "登录以开始使用 AgentNexus",
+    "loggingIn": "登录中..."
+  },
   "shortcuts": {
     "title": "键盘快捷键",
     "description": "常用操作的快捷键一览",

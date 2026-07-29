@@ -10,6 +10,17 @@
   "theme": {
     "toggle": "Toggle theme"
   },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "loginButton": "Log in",
+    "loginError": "Email or password is incorrect",
+    "welcome": "Welcome back",
+    "loginSubtitle": "Log in to start using AgentNexus",
+    "loggingIn": "Logging in..."
+  },
   "shortcuts": {
     "title": "Keyboard Shortcuts",
     "description": "Quick reference for common actions",
