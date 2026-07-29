@@ -10,10 +10,13 @@ import {
   getPreviousCostEstimationRows,
   type DateRange,
 } from "@/server/dashboard";
+import { requireUser } from "@/lib/auth";
 
 const VALID_RANGES = new Set(["7d", "30d", "90d"]);
 
 export async function GET(request: Request) {
+  const user = await requireUser(request);
+  if (user instanceof Response) return user;
   const { searchParams } = new URL(request.url);
   const range = searchParams.get("range") ?? "7d";
 
@@ -24,13 +27,13 @@ export async function GET(request: Request) {
   const dateRange = range as DateRange;
   const [overview, previousOverview, tokenTrend, agentRanking, modelDistribution, costRows, previousCostRows] =
     await Promise.all([
-      getOverviewStats(dateRange),
-      getPreviousOverviewStats(dateRange),
-      getTokenTrend(dateRange),
-      getAgentRanking(dateRange),
-      getModelDistribution(dateRange),
-      getCostEstimationRows(dateRange),
-      getPreviousCostEstimationRows(dateRange),
+      getOverviewStats(dateRange, user.id),
+      getPreviousOverviewStats(dateRange, user.id),
+      getTokenTrend(dateRange, user.id),
+      getAgentRanking(dateRange, user.id),
+      getModelDistribution(dateRange, user.id),
+      getCostEstimationRows(dateRange, user.id),
+      getPreviousCostEstimationRows(dateRange, user.id),
     ]);
 
   return apiOk({

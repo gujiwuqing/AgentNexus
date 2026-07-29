@@ -6,7 +6,7 @@ import {
   workflowRuns,
   workflowStepLogs,
 } from '@/db/schema';
-import { clearAllTables } from '@/db/test-helpers';
+import { clearAllTables, authedUser } from '@/db/test-helpers';
 import { createId } from '@/lib/id';
 import { createAgent } from './agents';
 import { createConversation } from './conversations';
@@ -19,6 +19,7 @@ afterEach(clearAllTables);
 
 describe('professional template replacement service', () => {
   it('replaces every authorized record and preserves provider settings', async () => {
+    const { user } = await authedUser();
     const oldAgent = await createAgent({
       name: 'Old agent',
       description: '',
@@ -29,14 +30,14 @@ describe('professional template replacement service', () => {
       maxTokens: 1024,
       topP: 1,
       model: null,
-    });
-    const conversation = await createConversation(oldAgent.id, 'Old conversation');
+    }, user.id);
+    const conversation = await createConversation(oldAgent.id, user.id, 'Old conversation');
     await appendUserMessage(conversation.id, 'old message');
     const oldWorkflow = await createWorkflow({
       name: 'Old workflow',
       description: '',
       graph: { nodes: [], edges: [] },
-    });
+    }, user.id);
     const oldRunId = createId();
     await db.insert(workflowRuns).values({
       id: oldRunId,
@@ -57,9 +58,9 @@ describe('professional template replacement service', () => {
       baseUrl: 'https://example.test',
       model: 'model',
       apiKey: 'key',
-    });
+    }, user.id);
 
-    const result = await replaceWithProfessionalTemplates();
+    const result = await replaceWithProfessionalTemplates(user.id);
 
     expect(result.agents).toHaveLength(7);
     expect(result.workflows).toHaveLength(3);
@@ -68,7 +69,7 @@ describe('professional template replacement service', () => {
     expect(await db.select().from(workflowRuns)).toEqual([]);
     expect(await db.select().from(workflowStepLogs)).toEqual([]);
     expect(await getWorkflow(oldWorkflow.id)).toBeNull();
-    expect(await getProviderConfig()).toMatchObject({
+    expect(await getProviderConfig(user.id)).toMatchObject({
       baseUrl: 'https://example.test',
       model: 'model',
     });

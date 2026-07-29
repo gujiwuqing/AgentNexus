@@ -1,6 +1,7 @@
 import { apiOk, apiError } from "@/lib/api-response";
 import { saveFile } from "@/lib/files/storage";
 import { createAttachment } from "@/server/attachments";
+import { requireUser } from "@/lib/auth";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_MIMETYPES = new Set([
@@ -10,6 +11,9 @@ const ALLOWED_MIMETYPES = new Set([
 ]);
 
 export async function POST(request: Request) {
+  const user = await requireUser(request);
+  if (user instanceof Response) return user;
+
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
 

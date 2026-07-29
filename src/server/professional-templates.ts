@@ -18,7 +18,11 @@ function toAgentInput(template: (typeof professionalAgentTemplates)[number]) {
   return { ...input, tags: [...tags] };
 }
 
-export async function replaceWithProfessionalTemplates() {
+/**
+ * 用专业模板替换全部 agents/workflows（并清空相关对话/运行数据）。
+ * @param userId 新创建的模板归属该用户。
+ */
+export async function replaceWithProfessionalTemplates(userId: string) {
   return db.transaction(async (tx) => {
     await tx.delete(messages);
     await tx.delete(conversations);
@@ -34,6 +38,7 @@ export async function replaceWithProfessionalTemplates() {
       professionalAgentTemplates.map((template) => ({
         ...toAgentInput(template),
         id: agentIds[template.key],
+        userId,
       })),
     );
     const workflowInputs = createProfessionalWorkflowTemplates(agentIds);
@@ -43,6 +48,7 @@ export async function replaceWithProfessionalTemplates() {
         name: workflow.name,
         description: workflow.description,
         graph: workflow.graph,
+        userId,
       })),
     );
 

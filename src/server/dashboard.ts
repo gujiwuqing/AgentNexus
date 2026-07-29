@@ -19,10 +19,10 @@ function previousWindow(range: DateRange): { since: Date; until: Date } {
   return { since, until };
 }
 
-async function getOverviewStatsInWindow(since: Date, until: Date | null) {
+async function getOverviewStatsInWindow(since: Date, until: Date | null, userId: string) {
   const dateFilter = until
-    ? and(gte(messages.createdAt, since), lt(messages.createdAt, until))
-    : gte(messages.createdAt, since);
+    ? and(gte(messages.createdAt, since), lt(messages.createdAt, until), eq(conversations.userId, userId))
+    : and(gte(messages.createdAt, since), eq(conversations.userId, userId));
 
   const [msgStats] = await db
     .select({
@@ -30,6 +30,7 @@ async function getOverviewStatsInWindow(since: Date, until: Date | null) {
       totalTokens: sql<number>`coalesce(sum(${messages.totalTokens}), 0)`,
     })
     .from(messages)
+    .innerJoin(conversations, eq(messages.conversationId, conversations.id))
     .where(dateFilter);
 
   const [convStats] = await db
@@ -45,16 +46,16 @@ async function getOverviewStatsInWindow(since: Date, until: Date | null) {
   };
 }
 
-export async function getOverviewStats(range: DateRange) {
-  return getOverviewStatsInWindow(rangeToDate(range), null);
+export async function getOverviewStats(range: DateRange, userId: string) {
+  return getOverviewStatsInWindow(rangeToDate(range), null, userId);
 }
 
-export async function getPreviousOverviewStats(range: DateRange) {
+export async function getPreviousOverviewStats(range: DateRange, userId: string) {
   const { since, until } = previousWindow(range);
-  return getOverviewStatsInWindow(since, until);
+  return getOverviewStatsInWindow(since, until, userId);
 }
 
-export async function getTokenTrend(range: DateRange) {
+export async function getTokenTrend(range: DateRange, userId: string) {
   const since = rangeToDate(range);
 
   const rows = await db
@@ -66,7 +67,8 @@ export async function getTokenTrend(range: DateRange) {
       messageCount: sql<number>`count(*)`,
     })
     .from(messages)
-    .where(gte(messages.createdAt, since))
+    .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+    .where(and(gte(messages.createdAt, since), eq(conversations.userId, userId)))
     .groupBy(sql`DATE(${messages.createdAt})`)
     .orderBy(sql`DATE(${messages.createdAt})`);
 
@@ -79,7 +81,7 @@ export async function getTokenTrend(range: DateRange) {
   }));
 }
 
-export async function getAgentRanking(range: DateRange) {
+export async function getAgentRanking(range: DateRange, userId: string) {
   const since = rangeToDate(range);
 
   const rows = await db
@@ -94,7 +96,7 @@ export async function getAgentRanking(range: DateRange) {
     .from(agents)
     .innerJoin(conversations, eq(conversations.agentId, agents.id))
     .innerJoin(messages, eq(messages.conversationId, conversations.id))
-    .where(gte(messages.createdAt, since))
+    .where(and(gte(messages.createdAt, since), eq(conversations.userId, userId), eq(agents.userId, userId)))
     .groupBy(agents.id, agents.name, agents.avatar)
     .orderBy(sql`coalesce(sum(${messages.totalTokens}), 0) desc`)
     .limit(10);
@@ -109,7 +111,7 @@ export async function getAgentRanking(range: DateRange) {
   }));
 }
 
-export async function getModelDistribution(range: DateRange) {
+export async function getModelDistribution(range: DateRange, userId: string) {
   const since = rangeToDate(range);
 
   const rows = await db
@@ -119,7 +121,8 @@ export async function getModelDistribution(range: DateRange) {
       totalTokens: sql<number>`coalesce(sum(${messages.totalTokens}), 0)`,
     })
     .from(messages)
-    .where(and(gte(messages.createdAt, since), isNotNull(messages.model)))
+    .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+    .where(and(gte(messages.createdAt, since), eq(conversations.userId, userId), isNotNull(messages.model)))
     .groupBy(messages.model)
     .orderBy(sql`count(*) desc`);
 
@@ -130,10 +133,10 @@ export async function getModelDistribution(range: DateRange) {
   }));
 }
 
-async function getCostEstimationRowsInWindow(since: Date, until: Date | null) {
+async function getCostEstimationRowsInWindow(since: Date, until: Date | null, userId: string) {
   const dateFilter = until
-    ? and(gte(messages.createdAt, since), lt(messages.createdAt, until), isNotNull(messages.totalTokens))
-    : and(gte(messages.createdAt, since), isNotNull(messages.totalTokens));
+    ? and(gte(messages.createdAt, since), lt(messages.createdAt, until), isNotNull(messages.totalTokens), eq(conversations.userId, userId))
+    : and(gte(messages.createdAt, since), isNotNull(messages.totalTokens), eq(conversations.userId, userId));
 
   return db
     .select({
@@ -142,14 +145,15 @@ async function getCostEstimationRowsInWindow(since: Date, until: Date | null) {
       completionTokens: messages.completionTokens,
     })
     .from(messages)
+    .innerJoin(conversations, eq(messages.conversationId, conversations.id))
     .where(dateFilter);
 }
 
-export async function getCostEstimationRows(range: DateRange) {
-  return getCostEstimationRowsInWindow(rangeToDate(range), null);
+export async function getCostEstimationRows(range: DateRange, userId: string) {
+  return getCostEstimationRowsInWindow(rangeToDate(range), null, userId);
 }
 
-export async function getPreviousCostEstimationRows(range: DateRange) {
+export async function getPreviousCostEstimationRows(range: DateRange, userId: string) {
   const { since, until } = previousWindow(range);
-  return getCostEstimationRowsInWindow(since, until);
+  return getCostEstimationRowsInWindow(since, until, userId);
 }

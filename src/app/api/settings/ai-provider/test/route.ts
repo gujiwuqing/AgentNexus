@@ -3,8 +3,11 @@ import { createModelClient } from "@/lib/ai/provider-factory";
 import { providerConfigInputSchema } from "@/lib/validation/provider";
 import { apiError } from "@/lib/api-response";
 import { NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth";
 
 export async function POST(request: Request) {
+  const user = await requireUser(request);
+  if (user instanceof Response) return user;
   const body = await request.json();
   const parsed = providerConfigInputSchema.safeParse(body);
   if (!parsed.success) {
