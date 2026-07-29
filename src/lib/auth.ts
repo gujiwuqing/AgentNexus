@@ -6,15 +6,35 @@ import { verifyPassword } from "@/lib/password";
 export const SESSION_COOKIE = "session_token";
 
 /**
- * 从请求 Cookie 中解析当前用户。页面 layout 和 API 路由共用。
- * 返回 SafeUser 或 null（未登录 / session 失效）。
+ * 从请求 Cookie 中解析当前用户。
+ * @param request 可选；API route 传入时优先从其 cookie header 解析（便于测试与无 Next store 的场景）。
+ *                不传（页面 layout）时使用 next/headers 的 cookies()。
  */
-export async function getCurrentUser(): Promise<SafeUser | null> {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
+export async function getCurrentUser(request?: Request): Promise<SafeUser | null> {
+  let token: string | undefined;
+  if (request) {
+    const cookieHeader = request.headers.get("cookie") ?? "";
+    token = parseCookie(cookieHeader)[SESSION_COOKIE];
+  } else {
+    const store = await cookies();
+    token = store.get(SESSION_COOKIE)?.value;
+  }
   if (!token) return null;
   const result = await getSessionUser(token);
   return result?.user ?? null;
+}
+
+function parseCookie(header: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!header) return out;
+  for (const part of header.split(";")) {
+    const idx = part.indexOf("=");
+    if (idx === -1) continue;
+    const k = part.slice(0, idx).trim();
+    const v = part.slice(idx + 1).trim();
+    out[k] = v;
+  }
+  return out;
 }
 
 function unauthorizedResponse(): Response {
@@ -32,26 +52,26 @@ function forbiddenResponse(): Response {
 }
 
 /**
- * 要求已登录。返回 SafeUser 或 401 Response。
- * 调用方约定：`const user = await requireUser(); if (user instanceof Response) return user;`
+ * 要求已登录。传入 API route 的 request 以便测试注入 cookie。
+ * 返回 SafeUser 或 401 Response。调用方：`const user = await requireUser(request); if (user instanceof Response) return user;`
  */
-export async function requireUser(): Promise<SafeUser | Response> {
-  const user = await getCurrentUser();
+export async function requireUser(request?: Request): Promise<SafeUser | Response> {
+  const user = await getCurrentUser(request);
   if (!user) return unauthorizedResponse();
   return user;
 }
 
-/** 要求 admin 或 superAdmin。返回 SafeUser 或 401/403 Response。 */
-export async function requireAdmin(): Promise<SafeUser | Response> {
-  const user = await requireUser();
+/** 要求 admin 或 superAdmin。 */
+export async function requireAdmin(request?: Request): Promise<SafeUser | Response> {
+  const user = await requireUser(request);
   if (user instanceof Response) return user;
   if (user.role === "user") return forbiddenResponse();
   return user;
 }
 
-/** 要求 superAdmin。返回 SafeUser 或 401/403 Response。 */
-export async function requireSuperAdmin(): Promise<SafeUser | Response> {
-  const user = await requireUser();
+/** 要求 superAdmin。 */
+export async function requireSuperAdmin(request?: Request): Promise<SafeUser | Response> {
+  const user = await requireUser(request);
   if (user instanceof Response) return user;
   if (user.role !== "superAdmin") return forbiddenResponse();
   return user;
