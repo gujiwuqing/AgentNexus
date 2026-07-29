@@ -4,6 +4,7 @@ import type { WorkflowNode, WorkflowEdge } from "@/types/workflow";
 
 export const aiProviderConfig = mysqlTable("ai_provider_config", {
   id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  userId: varchar("user_id", { length: 36 }),
   providerType: mysqlEnum("provider_type", ["openai", "anthropic", "azure", "ollama"]).notNull().default("openai"),
   baseUrl: varchar("base_url", { length: 255 }).notNull(),
   model: varchar("model", { length: 255 }).notNull(),
@@ -19,6 +20,7 @@ export const aiProviderConfig = mysqlTable("ai_provider_config", {
 
 export const agents = mysqlTable("agents", {
   id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  userId: varchar("user_id", { length: 36 }),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description").notNull(),
   avatar: varchar("avatar", { length: 255 }).notNull().default(""),
@@ -42,6 +44,7 @@ export const agents = mysqlTable("agents", {
 
 export const conversations = mysqlTable("conversations", {
   id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  userId: varchar("user_id", { length: 36 }),
   agentId: varchar("agent_id", { length: 36 })
     .notNull()
     .references(() => agents.id, { onDelete: "cascade" }),
@@ -97,6 +100,7 @@ export const attachments = mysqlTable("attachments", {
 
 export const workflows = mysqlTable("workflows", {
   id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  userId: varchar("user_id", { length: 36 }),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description").notNull(),
   graph: json("graph").notNull().$type<{
@@ -153,6 +157,7 @@ export const workflowStepLogs = mysqlTable("workflow_step_logs", {
 
 export const knowledgeBases = mysqlTable("knowledge_bases", {
   id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  userId: varchar("user_id", { length: 36 }),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description").notNull().default(""),
   embeddingModel: varchar("embedding_model", { length: 255 }),
