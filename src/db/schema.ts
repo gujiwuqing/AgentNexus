@@ -69,6 +69,12 @@ export const messages = mysqlTable("messages", {
   totalTokens: int("total_tokens"),
   durationMs: int("duration_ms"),
   attachments: json("attachments").$type<Array<{ id: string; filename: string; mimetype: string; size: number }>>(),
+  toolCalls: json("tool_calls").$type<Array<{
+    toolName: string;
+    displayName: string;
+    args: Record<string, unknown>;
+    result: string;
+  }>>(),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull()
     .defaultNow()
@@ -210,6 +216,17 @@ export const workflowVersions = mysqlTable("workflow_versions", {
     .references(() => workflows.id, { onDelete: "cascade" }),
   versionNumber: int("version_number").notNull(),
   graph: json("graph").notNull().$type<{ nodes: WorkflowNode[]; edges: WorkflowEdge[] }>(),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+});
+
+export const agentTeamMembers = mysqlTable("agent_team_members", {
+  id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  supervisorAgentId: varchar("supervisor_agent_id", { length: 36 }).notNull()
+    .references(() => agents.id, { onDelete: "cascade" }),
+  memberAgentId: varchar("member_agent_id", { length: 36 }).notNull()
+    .references(() => agents.id, { onDelete: "cascade" }),
+  roleDescription: text("role_description"),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull().defaultNow().$defaultFn(() => new Date()),
 });
