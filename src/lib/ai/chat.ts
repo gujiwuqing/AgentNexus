@@ -13,6 +13,12 @@ export type ChatOptions = {
   topP: number;
 };
 
+export type ToolCallRecord = {
+  toolName: string;
+  args: Record<string, unknown>;
+  result: string;
+};
+
 export type StreamFinishMeta = {
   text: string;
   usage?: {
@@ -20,6 +26,7 @@ export type StreamFinishMeta = {
     completionTokens: number;
     totalTokens: number;
   };
+  toolCalls: ToolCallRecord[];
 };
 
 export function streamAgentReply(
@@ -29,6 +36,7 @@ export function streamAgentReply(
   tools: Record<string, CoreTool> | undefined,
   onFinish: (meta: StreamFinishMeta) => Promise<void> | void
 ) {
+  const toolCalls: ToolCallRecord[] = [];
   return streamText({
     model: createModelClient(provider),
     messages,
@@ -37,8 +45,20 @@ export function streamAgentReply(
     temperature: options.temperature,
     maxTokens: options.maxTokens,
     topP: options.topP,
+    onStepFinish: (step) => {
+      const calls = step.toolCalls ?? [];
+      const results = step.toolResults ?? [];
+      for (const call of calls) {
+        const matched = results.find((r) => r.toolCallId === call.toolCallId);
+        toolCalls.push({
+          toolName: call.toolName,
+          args: call.args as Record<string, unknown>,
+          result: matched ? String(matched.result) : "",
+        });
+      }
+    },
     onFinish: async ({ text, usage }) => {
-      await onFinish({ text, usage });
+      await onFinish({ text, usage, toolCalls });
     },
   });
 }

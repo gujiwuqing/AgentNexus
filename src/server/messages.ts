@@ -9,6 +9,12 @@ export type AssistantMessageMeta = {
   completionTokens?: number | null;
   totalTokens?: number | null;
   durationMs?: number | null;
+  toolCalls?: Array<{
+    toolName: string;
+    displayName: string;
+    args: Record<string, unknown>;
+    result: string;
+  }> | null;
 };
 
 export async function listMessages(conversationId: string) {
@@ -56,6 +62,7 @@ export async function appendAssistantMessage(
     completionTokens: meta?.completionTokens ?? null,
     totalTokens: meta?.totalTokens ?? null,
     durationMs: meta?.durationMs ?? null,
+    toolCalls: meta?.toolCalls ?? null,
   });
   return getMessage(id);
 }
