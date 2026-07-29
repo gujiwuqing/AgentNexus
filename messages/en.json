@@ -19,7 +19,20 @@
     "loginError": "Email or password is incorrect",
     "welcome": "Welcome back",
     "loginSubtitle": "Log in to start using AgentNexus",
-    "loggingIn": "Logging in..."
+    "loggingIn": "Logging in...",
+    "profile": "Profile",
+    "admin": "Admin"
+  },
+  "profile": {
+    "title": "Profile",
+    "name": "Name",
+    "avatar": "Avatar",
+    "changePassword": "Change Password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordMismatch": "New passwords do not match",
+    "saveFailed": "Failed to save"
   },
   "shortcuts": {
     "title": "Keyboard Shortcuts",

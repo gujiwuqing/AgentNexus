@@ -7,7 +7,9 @@ import { useTranslations } from "next-intl";
 import { MessagesSquare, Bot, LayoutDashboard, Workflow, BookOpen, Settings, Sparkles, Menu, X } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
+import { UserMenu } from "./user-menu";
 import { cn } from "@/lib/utils";
+import type { SafeUser } from "@/server/users";
 
 const NAV_ITEMS = [
   { href: "/chat", key: "chat", icon: MessagesSquare },
@@ -17,7 +19,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard },
 ] as const;
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent({ user, onNavigate }: { user: SafeUser; onNavigate?: () => void }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
 
@@ -76,19 +78,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           <LocaleSwitcher />
           <ThemeToggle />
         </div>
+        <div className="pt-2">
+          <UserMenu user={user} />
+        </div>
       </div>
     </>
   );
 }
 
-export function PrimarySidebar() {
+export function PrimarySidebar({ user }: { user: SafeUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <>
       {/* Desktop static sidebar */}
       <aside className="hidden md:flex w-56 shrink-0 h-screen border-r bg-sidebar flex-col">
-        <SidebarContent />
+        <SidebarContent user={user} />
       </aside>
 
       {/* Mobile top bar */}
@@ -118,7 +123,7 @@ export function PrimarySidebar() {
             >
               <X className="h-4 w-4" />
             </button>
-            <SidebarContent onNavigate={() => setMobileOpen(false)} />
+            <SidebarContent user={user} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>
       )}
