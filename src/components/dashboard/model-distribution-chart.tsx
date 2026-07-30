@@ -18,13 +18,20 @@ const COLORS = [
   "hsl(var(--chart-5))",
 ];
 
-export function ModelDistributionChart({ data }: { data: ModelItem[] }) {
+export function ModelDistributionChart({
+  data,
+  onSelectModel,
+}: {
+  data: ModelItem[];
+  onSelectModel?: (model: string) => void;
+}) {
   const t = useTranslations("dashboard");
 
   return (
     <Card className="h-full">
       <CardHeader>
         <CardTitle className="text-base">{t("modelDistribution")}</CardTitle>
+        {onSelectModel && <p className="text-xs text-muted-foreground">{t("clickModelHint")}</p>}
       </CardHeader>
       <CardContent>
         <div className="h-64">
@@ -40,8 +47,13 @@ export function ModelDistributionChart({ data }: { data: ModelItem[] }) {
                 outerRadius={80}
                 paddingAngle={2}
               >
-                {data.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                {data.map((item, i) => (
+                  <Cell
+                    key={i}
+                    fill={COLORS[i % COLORS.length]}
+                    className={onSelectModel ? "cursor-pointer" : undefined}
+                    onClick={() => onSelectModel?.(item.model)}
+                  />
                 ))}
               </Pie>
               <Tooltip

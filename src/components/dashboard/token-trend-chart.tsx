@@ -21,23 +21,37 @@ type TrendItem = {
   messageCount: number;
 };
 
-export function TokenTrendChart({ data }: { data: TrendItem[] }) {
+export function TokenTrendChart({
+  data,
+  onSelectDate,
+}: {
+  data: TrendItem[];
+  onSelectDate?: (date: string) => void;
+}) {
   const t = useTranslations("dashboard");
 
   const formatted = data.map((d) => ({
     ...d,
+    fullDate: d.date,
     date: d.date.slice(5),
   }));
+
+  function handleChartClick(state: unknown) {
+    const s = state as { activePayload?: Array<{ payload?: { fullDate?: string } }> } | null;
+    const fullDate = s?.activePayload?.[0]?.payload?.fullDate;
+    if (fullDate && onSelectDate) onSelectDate(fullDate);
+  }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{t("tokenTrend")}</CardTitle>
+        {onSelectDate && <p className="text-xs text-muted-foreground">{t("clickDayHint")}</p>}
       </CardHeader>
       <CardContent>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={formatted}>
+            <AreaChart data={formatted} onClick={handleChartClick} className={onSelectDate ? "cursor-pointer" : undefined}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="date" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />
               <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} />

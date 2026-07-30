@@ -194,6 +194,19 @@
     "modelDistribution": "Model Distribution",
     "messages": "messages",
     "noData": "No data yet.",
+    "clickDayHint": "Click a day to see its active conversations",
+    "clickModelHint": "Click a slice to see conversations using that model",
+    "drilldown": {
+      "description": "Click a conversation to open it in chat.",
+      "summary": "{count} conversations, sorted by token usage. Click to open.",
+      "rangeTitle": "Active conversations in the last {range}",
+      "agentTitle": "Conversations with {name}",
+      "modelTitle": "Conversations using {model}",
+      "dateTitle": "Active conversations on {date}",
+      "msgCount": "{count} messages",
+      "empty": "No conversations match this filter.",
+      "loadError": "Failed to load. Please retry."
+    },
     "range7d": "7 Days",
     "range30d": "30 Days",
     "range90d": "90 Days"

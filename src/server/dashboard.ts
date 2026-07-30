@@ -157,3 +157,54 @@ export async function getPreviousCostEstimationRows(range: DateRange, userId: st
   const { since, until } = previousWindow(range);
   return getCostEstimationRowsInWindow(since, until, userId);
 }
+
+export type DrilldownFilter = {
+  agentId?: string;
+  model?: string;
+  /** YYYY-MM-DD，指定后忽略 range 起点，只看当天 */
+  date?: string;
+};
+
+/** 仪表盘下钻：按 Agent/模型/日期筛选时间范围内的活跃对话，按 Token 用量降序。 */
+export async function getConversationDrilldown(range: DateRange, userId: string, filter: DrilldownFilter) {
+  const conds = [eq(conversations.userId, userId)];
+
+  if (filter.date) {
+    conds.push(sql`DATE(${messages.createdAt}) = ${filter.date}`);
+  } else {
+    conds.push(gte(messages.createdAt, rangeToDate(range)));
+  }
+  if (filter.agentId) conds.push(eq(conversations.agentId, filter.agentId));
+  if (filter.model) conds.push(eq(messages.model, filter.model));
+
+  const rows = await db
+    .select({
+      conversationId: conversations.id,
+      title: conversations.title,
+      agentId: conversations.agentId,
+      agentName: agents.name,
+      avatar: agents.avatar,
+      messageCount: sql<number>`count(${messages.id})`,
+      totalTokens: sql<number>`coalesce(sum(${messages.totalTokens}), 0)`,
+      lastMessageAt: sql<string | Date>`max(${messages.createdAt})`,
+    })
+    .from(conversations)
+    .innerJoin(agents, eq(conversations.agentId, agents.id))
+    .innerJoin(messages, eq(messages.conversationId, conversations.id))
+    .where(and(...conds))
+    .groupBy(conversations.id, conversations.title, conversations.agentId, agents.name, agents.avatar)
+    .orderBy(sql`coalesce(sum(${messages.totalTokens}), 0) desc`)
+    .limit(50);
+
+  return rows.map((r) => ({
+    conversationId: r.conversationId,
+    title: r.title,
+    agentId: r.agentId,
+    agentName: r.agentName,
+    avatar: r.avatar,
+    messageCount: Number(r.messageCount),
+    totalTokens: Number(r.totalTokens),
+    lastMessageAt:
+      r.lastMessageAt instanceof Date ? r.lastMessageAt.toISOString() : String(r.lastMessageAt),
+  }));
+}

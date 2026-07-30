@@ -46,15 +46,23 @@ export function StatCard({
   icon: Icon,
   current,
   previous,
+  onClick,
 }: {
   title: string;
   value: string;
   icon: LucideIcon;
   current?: number;
   previous?: number;
+  onClick?: () => void;
 }) {
   return (
-    <Card>
+    <Card
+      className={cn(onClick && "cursor-pointer transition-shadow hover:shadow-md")}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } : undefined}
+    >
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
           <div>

@@ -9,7 +9,8 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { TokenTrendChart } from "@/components/dashboard/token-trend-chart";
 import { ModelDistributionChart } from "@/components/dashboard/model-distribution-chart";
 import { AgentRankingList } from "@/components/dashboard/agent-ranking-list";
-import { useDashboardStats, type DateRange } from "@/hooks/use-dashboard";
+import { DrilldownDialog } from "@/components/dashboard/drilldown-dialog";
+import { useDashboardStats, type DateRange, type DrilldownParams } from "@/hooks/use-dashboard";
 
 const RANGES: DateRange[] = ["7d", "30d", "90d"];
 const RANGE_KEYS: Record<DateRange, string> = {
@@ -27,6 +28,7 @@ function formatTokens(n: number): string {
 export default function DashboardPage() {
   const [range, setRange] = useState<DateRange>("7d");
   const { data, isLoading } = useDashboardStats(range);
+  const [drilldown, setDrilldown] = useState<{ title: string; params: DrilldownParams } | null>(null);
   const t = useTranslations("dashboard");
 
   return (
@@ -67,6 +69,12 @@ export default function DashboardPage() {
               icon={MessageSquare}
               current={data.overview.totalConversations}
               previous={data.previousOverview.totalConversations}
+              onClick={() =>
+                setDrilldown({
+                  title: t("drilldown.rangeTitle", { range: t(RANGE_KEYS[range]) }),
+                  params: { range },
+                })
+              }
             />
             <StatCard
               title={t("totalMessages")}
@@ -92,13 +100,43 @@ export default function DashboardPage() {
           </div>
 
           <div className="mb-8">
-            <TokenTrendChart data={data.tokenTrend} />
+            <TokenTrendChart
+              data={data.tokenTrend}
+              onSelectDate={(date) =>
+                setDrilldown({
+                  title: t("drilldown.dateTitle", { date }),
+                  params: { range, date },
+                })
+              }
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <AgentRankingList data={data.agentRanking} />
-            <ModelDistributionChart data={data.modelDistribution} />
+            <AgentRankingList
+              data={data.agentRanking}
+              onSelectAgent={(agent) =>
+                setDrilldown({
+                  title: t("drilldown.agentTitle", { name: agent.agentName }),
+                  params: { range, agentId: agent.agentId },
+                })
+              }
+            />
+            <ModelDistributionChart
+              data={data.modelDistribution}
+              onSelectModel={(model) =>
+                setDrilldown({
+                  title: t("drilldown.modelTitle", { model }),
+                  params: { range, model },
+                })
+              }
+            />
           </div>
+
+          <DrilldownDialog
+            title={drilldown?.title ?? ""}
+            params={drilldown?.params ?? null}
+            onClose={() => setDrilldown(null)}
+          />
         </>
       )}
     </div>

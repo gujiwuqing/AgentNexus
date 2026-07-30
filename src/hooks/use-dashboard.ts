@@ -49,3 +49,39 @@ export function useDashboardStats(range: DateRange) {
     queryFn: () => fetchStats(range),
   });
 }
+
+export type DrilldownParams = {
+  range: DateRange;
+  agentId?: string;
+  model?: string;
+  date?: string;
+};
+
+export type DrilldownConversation = {
+  conversationId: string;
+  title: string;
+  agentId: string;
+  agentName: string;
+  avatar: string;
+  messageCount: number;
+  totalTokens: number;
+  lastMessageAt: string;
+};
+
+async function fetchDrilldown(params: DrilldownParams): Promise<DrilldownConversation[]> {
+  const qs = new URLSearchParams({ range: params.range });
+  if (params.agentId) qs.set("agentId", params.agentId);
+  if (params.model) qs.set("model", params.model);
+  if (params.date) qs.set("date", params.date);
+  const res = await fetch(`/api/dashboard/conversations?${qs.toString()}`);
+  if (!res.ok) throw new Error("Failed to fetch drilldown conversations");
+  return res.json();
+}
+
+export function useDashboardDrilldown(params: DrilldownParams | null) {
+  return useQuery({
+    queryKey: ["dashboard", "drilldown", params],
+    queryFn: () => fetchDrilldown(params!),
+    enabled: params != null,
+  });
+}

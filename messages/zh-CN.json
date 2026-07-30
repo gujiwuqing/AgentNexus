@@ -194,6 +194,19 @@
     "modelDistribution": "模型调用分布",
     "messages": "条消息",
     "noData": "暂无数据。",
+    "clickDayHint": "点击某一天可查看当天的活跃对话",
+    "clickModelHint": "点击扇区可查看使用该模型的对话",
+    "drilldown": {
+      "description": "点击对话可直接跳转到聊天详情。",
+      "summary": "共 {count} 个对话，按 Token 用量排序，点击可跳转详情。",
+      "rangeTitle": "近 {range}的活跃对话",
+      "agentTitle": "「{name}」的对话",
+      "modelTitle": "使用 {model} 的对话",
+      "dateTitle": "{date} 的活跃对话",
+      "msgCount": "{count} 条消息",
+      "empty": "该条件下暂无对话。",
+      "loadError": "加载失败，请重试。"
+    },
     "range7d": "7 天",
     "range30d": "30 天",
     "range90d": "90 天"
