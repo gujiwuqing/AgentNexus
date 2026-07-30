@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import type { Agent, AgentFormValues } from "@/types/agent";
 import { AgentToolsConfig } from "@/components/agents/agent-tools-config";
 
@@ -22,6 +23,7 @@ function toFormValues(agent?: Agent): AgentFormValues {
     model: agent?.model ?? "",
     memoryWindowSize: agent?.memoryWindowSize ?? 20,
     toolsConfig: (agent?.toolsConfig as { enabledTools: string[] }) ?? { enabledTools: [] },
+    suggestedPrompts: agent?.suggestedPrompts ?? [],
   };
 }
 
@@ -58,7 +60,12 @@ export function AgentForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = (values.model ?? "").trim();
-    onSubmit({ ...values, model: trimmed === "" ? null : trimmed });
+    onSubmit({
+      ...values,
+      model: trimmed === "" ? null : trimmed,
+      // 编辑态保留空行方便输入，提交时再清洗
+      suggestedPrompts: values.suggestedPrompts.map((s) => s.trim()).filter(Boolean).slice(0, 4),
+    });
     setBaseline(JSON.stringify(values));
   }
 
@@ -106,24 +113,39 @@ export function AgentForm({
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <Label htmlFor="temperature">{t("temperature")}</Label>
-              <Input
-                id="temperature"
-                type="number"
-                step="0.1"
-                min={0}
-                max={2}
-                required
-                value={values.temperature}
-                onChange={(e) => {
-                  if (e.target.value === "") return;
-                  const parsed = Number(e.target.value);
-                  if (!Number.isNaN(parsed)) update("temperature", parsed);
-                }}
-              />
+              <span className="text-sm tabular-nums text-muted-foreground">{values.temperature.toFixed(1)}</span>
             </div>
+            <Slider
+              id="temperature"
+              min={0}
+              max={2}
+              step={0.1}
+              value={values.temperature}
+              onChange={(e) => update("temperature", Number(e.target.value))}
+            />
+            <p className="text-xs text-muted-foreground">{t("temperatureHint")}</p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="topP">{t("topP")}</Label>
+              <span className="text-sm tabular-nums text-muted-foreground">{values.topP.toFixed(2)}</span>
+            </div>
+            <Slider
+              id="topP"
+              min={0}
+              max={1}
+              step={0.05}
+              value={values.topP}
+              onChange={(e) => update("topP", Number(e.target.value))}
+            />
+            <p className="text-xs text-muted-foreground">{t("topPHint")}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="maxTokens">{t("maxTokens")}</Label>
               <Input
@@ -140,51 +162,48 @@ export function AgentForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="topP">{t("topP")}</Label>
+              <Label htmlFor="memoryWindowSize">{t("memoryWindowSize")}</Label>
               <Input
-                id="topP"
+                id="memoryWindowSize"
                 type="number"
-                step="0.05"
                 min={0}
-                max={1}
+                max={200}
                 required
-                value={values.topP}
+                value={values.memoryWindowSize}
                 onChange={(e) => {
                   if (e.target.value === "") return;
                   const parsed = Number(e.target.value);
-                  if (!Number.isNaN(parsed)) update("topP", parsed);
+                  if (!Number.isNaN(parsed)) update("memoryWindowSize", parsed);
                 }}
               />
             </div>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="memoryWindowSize">{t("memoryWindowSize")}</Label>
-            <Input
-              id="memoryWindowSize"
-              type="number"
-              min={0}
-              max={200}
-              required
-              value={values.memoryWindowSize}
-              onChange={(e) => {
-                if (e.target.value === "") return;
-                const parsed = Number(e.target.value);
-                if (!Number.isNaN(parsed)) update("memoryWindowSize", parsed);
-              }}
-            />
-            <p className="text-xs text-muted-foreground">{t("memoryWindowSizeHint")}</p>
-          </div>
+          <p className="text-xs text-muted-foreground -mt-3">{t("memoryWindowSizeHint")}</p>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="systemPrompt">{t("systemPrompt")}</Label>
-          <Textarea
-            id="systemPrompt"
-            className="min-h-[320px] lg:min-h-[400px] resize-y"
-            value={values.systemPrompt}
-            onChange={(e) => update("systemPrompt", e.target.value)}
-          />
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="systemPrompt">{t("systemPrompt")}</Label>
+            <Textarea
+              id="systemPrompt"
+              className="min-h-[280px] lg:min-h-[320px] resize-y"
+              value={values.systemPrompt}
+              onChange={(e) => update("systemPrompt", e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="suggestedPrompts">{t("suggestedPrompts")}</Label>
+            <Textarea
+              id="suggestedPrompts"
+              rows={4}
+              className="resize-y"
+              placeholder={t("suggestedPromptsPlaceholder")}
+              value={values.suggestedPrompts.join("\n")}
+              onChange={(e) => update("suggestedPrompts", e.target.value.split("\n"))}
+            />
+            <p className="text-xs text-muted-foreground">{t("suggestedPromptsHint")}</p>
+          </div>
         </div>
 
         <div className="space-y-2">

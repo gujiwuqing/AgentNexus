@@ -22,7 +22,8 @@
       "today": "Today",
       "yesterday": "Yesterday",
       "earlier": "Earlier",
-      "noWorkflows": "No workflows yet."
+      "noWorkflows": "No workflows yet.",
+      "renameConversation": "Rename conversation"
     },
     "input": {
       "placeholder": "Type a message... (Shift+Enter for newline)",
@@ -37,7 +38,9 @@
       "delete": "Delete",
       "tokens": "tokens",
       "in": "in",
-      "out": "out"
+      "out": "out",
+      "edit": "Edit",
+      "saveAndResend": "Save & resend"
     },
     "codeBlock": {
       "copy": "Copy",

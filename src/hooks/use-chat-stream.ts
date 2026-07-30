@@ -259,5 +259,18 @@ export function useChatStream(conversationId: string, agentModel: string | null)
     [conversationId, queryClient]
   );
 
-  return { messages, isLoading, isStreaming, sendMessage, regenerate, deleteMessage: deleteMsg, stop };
+  /** 编辑已发消息并从该处重新生成：删除该消息及其后全部消息，再以新内容重发 */
+  const editAndResend = useCallback(
+    async (id: string, content: string) => {
+      const idx = messages.findIndex((m) => m.id === id);
+      if (idx === -1 || !content.trim()) return;
+      const toDelete = messages.slice(idx).filter((m) => !m.id.startsWith("local-"));
+      await Promise.all(toDelete.map((m) => fetch(`/api/messages/${m.id}`, { method: "DELETE" })));
+      setMessages((prev) => prev.slice(0, idx));
+      await streamReply(content, false);
+    },
+    [messages, streamReply]
+  );
+
+  return { messages, isLoading, isStreaming, sendMessage, regenerate, deleteMessage: deleteMsg, editAndResend, stop };
 }

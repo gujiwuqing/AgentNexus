@@ -29,6 +29,7 @@ export async function listAgentsWithStats(userId: string) {
       model: agents.model,
       memoryWindowSize: agents.memoryWindowSize,
       toolsConfig: agents.toolsConfig,
+      suggestedPrompts: agents.suggestedPrompts,
       userId: agents.userId,
       createdAt: agents.createdAt,
       updatedAt: agents.updatedAt,

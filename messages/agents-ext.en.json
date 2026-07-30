@@ -18,7 +18,12 @@
       "modelPlaceholder": "Leave empty to use the global default model",
       "memoryWindowSize": "Memory Window",
       "memoryWindowSizeHint": "0 = send all history",
-      "unsavedChanges": "Unsaved changes"
+      "unsavedChanges": "Unsaved changes",
+      "temperatureHint": "Lower = precise & stable, higher = creative & random",
+      "topPHint": "Sampling range: lower is more conservative. Usually keep at 1",
+      "suggestedPrompts": "Opening questions",
+      "suggestedPromptsPlaceholder": "One per line, e.g. Review this code for performance issues",
+      "suggestedPromptsHint": "One per line, up to 4. Shown on the new-chat welcome screen"
     },
     "templatePicker": {
       "heading": "Start with a professional template",
@@ -26,7 +31,9 @@
       "blank": "Start from scratch",
       "blankDescription": "Configure all content yourself.",
       "recommendedOutput": "Expected output: {output}",
-      "selected": "Selected"
+      "selected": "Selected",
+      "reselect": "Choose another template",
+      "stepHint": "Pick a template to start. You can edit everything in the next step."
     },
     "configDialog": {
       "configure": "Configure {name}",

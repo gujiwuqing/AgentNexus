@@ -11,6 +11,7 @@ export type Agent = {
   model: string | null;
   memoryWindowSize: number;
   toolsConfig: unknown;
+  suggestedPrompts: string[];
   createdAt: string;
   updatedAt: string;
   conversationCount?: number;
@@ -29,4 +30,5 @@ export type AgentFormValues = {
   model: string | null;
   memoryWindowSize: number;
   toolsConfig: { enabledTools: string[] };
+  suggestedPrompts: string[];
 };

@@ -32,6 +32,7 @@ export const agents = mysqlTable("agents", {
   model: varchar("model", { length: 255 }),
   memoryWindowSize: int("memory_window_size").notNull().default(20),
   toolsConfig: json("tools_config").$type<unknown | null>(),
+  suggestedPrompts: json("suggested_prompts").notNull().$type<string[]>().default([]),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull()
     .defaultNow()

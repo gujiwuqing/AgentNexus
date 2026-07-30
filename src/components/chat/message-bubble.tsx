@@ -1,8 +1,9 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { User } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { MarkdownContent } from "./markdown-content";
 import { MessageActions } from "./message-actions";
 import { ToolCallBlock } from "./tool-call-block";
@@ -31,6 +32,7 @@ function MessageBubbleImpl({
   isLast,
   onRegenerate,
   onDelete,
+  onEditResend,
 }: {
   id: string;
   role: string;
@@ -43,8 +45,12 @@ function MessageBubbleImpl({
   isLast: boolean;
   onRegenerate?: () => void;
   onDelete?: (id: string) => void;
+  onEditResend?: (id: string, content: string) => void;
 }) {
   const t = useTranslations("chatExt.actions");
+  const tCommon = useTranslations("common");
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState("");
   const isUser = role === "user";
   const isError = role === "error";
   const time = createdAt ? formatTime(createdAt) : "";
@@ -53,6 +59,18 @@ function MessageBubbleImpl({
     meta &&
     (meta.model || meta.durationMs != null || meta.totalTokens != null);
   const handleDelete = onDelete ? () => onDelete(id) : undefined;
+  const canEdit = isUser && onEditResend && !id.startsWith("local-");
+
+  function startEdit() {
+    setDraft(content);
+    setIsEditing(true);
+  }
+
+  function commitEdit() {
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== content) onEditResend?.(id, trimmed);
+    setIsEditing(false);
+  }
 
   return (
     <div className={`group flex gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
@@ -67,26 +85,50 @@ function MessageBubbleImpl({
       )}
       {/* 宽度上限必须加在列容器上（百分比参照整行）；
           若加在气泡上，参照物是收缩适应的列容器，会双重收窄 */}
-      <div className={`flex min-w-0 max-w-[85%] flex-col ${isUser ? "items-end" : "items-start"}`}>
-        <div
-          className={`max-w-full rounded-lg px-4 py-2 text-sm ${
-            isError
-              ? "bg-destructive/10 text-destructive border border-destructive/30 whitespace-pre-wrap"
-              : isUser
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted"
-          }`}
-        >
-          {isError ? (
-            content || ""
-          ) : isUser ? (
-            <MarkdownContent content={content} onPrimary />
-          ) : content ? (
-            <MarkdownContent content={content} />
-          ) : (
-            <TypingDots />
-          )}
-        </div>
+      <div className={`flex min-w-0 max-w-[85%] flex-col ${isUser ? "items-end" : "items-start"} ${isEditing ? "flex-1" : ""}`}>
+        {isEditing ? (
+          <div className="w-full space-y-2">
+            <textarea
+              className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              rows={3}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commitEdit();
+                if (e.key === "Escape") setIsEditing(false);
+              }}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+                {tCommon("cancel")}
+              </Button>
+              <Button size="sm" onClick={commitEdit} disabled={!draft.trim()}>
+                {t("saveAndResend")}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={`max-w-full rounded-lg px-4 py-2 text-sm ${
+              isError
+                ? "bg-destructive/10 text-destructive border border-destructive/30 whitespace-pre-wrap"
+                : isUser
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted"
+            }`}
+          >
+            {isError ? (
+              content || ""
+            ) : isUser ? (
+              <MarkdownContent content={content} onPrimary />
+            ) : content ? (
+              <MarkdownContent content={content} />
+            ) : (
+              <TypingDots />
+            )}
+          </div>
+        )}
         {attachments && attachments.length > 0 && <MessageAttachments attachments={attachments} />}
         {time && (
           <span className="text-[10px] text-muted-foreground mt-0.5 px-1">{time}</span>
@@ -101,13 +143,14 @@ function MessageBubbleImpl({
               : ""}
           </span>
         )}
-        {role !== "error" && content && (
+        {role !== "error" && content && !isEditing && (
           <MessageActions
             role={role}
             content={content}
             isLast={isLast}
             onRegenerate={onRegenerate}
             onDelete={handleDelete}
+            onEdit={canEdit ? startEdit : undefined}
           />
         )}
       </div>

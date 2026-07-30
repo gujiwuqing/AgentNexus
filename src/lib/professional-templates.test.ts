@@ -55,6 +55,7 @@ describe('professional template catalog', () => {
       model: null,
       memoryWindowSize: 20,
       toolsConfig: { enabledTools: [] },
+      suggestedPrompts: professionalAgentTemplates[0].suggestedPrompts,
     });
   });
 });

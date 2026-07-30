@@ -18,7 +18,12 @@
       "modelPlaceholder": "留空使用全局默认模型",
       "memoryWindowSize": "记忆窗口",
       "memoryWindowSizeHint": "0 = 发送全部历史",
-      "unsavedChanges": "有未保存的修改"
+      "unsavedChanges": "有未保存的修改",
+      "temperatureHint": "越低越严谨稳定，越高越有创意随机",
+      "topPHint": "采样范围：越低输出越保守，通常保持 1",
+      "suggestedPrompts": "开场问题",
+      "suggestedPromptsPlaceholder": "每行一条，例如：帮我审查这段代码的性能问题",
+      "suggestedPromptsHint": "每行一条，最多 4 条；将展示在新对话的欢迎页"
     },
     "templatePicker": {
       "heading": "从专业模板开始",
@@ -26,7 +31,9 @@
       "blank": "从空白创建",
       "blankDescription": "自行配置全部内容。",
       "recommendedOutput": "预期产出：{output}",
-      "selected": "已选择"
+      "selected": "已选择",
+      "reselect": "重新选择模板",
+      "stepHint": "选择一个模板开始，下一步可修改全部配置。"
     },
     "configDialog": {
       "configure": "配置 {name}",

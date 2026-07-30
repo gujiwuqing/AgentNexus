@@ -22,7 +22,8 @@
       "today": "今天",
       "yesterday": "昨天",
       "earlier": "更早",
-      "noWorkflows": "还没有工作流。"
+      "noWorkflows": "还没有工作流。",
+      "renameConversation": "重命名对话"
     },
     "input": {
       "placeholder": "输入消息...（Shift+Enter 换行）",
@@ -37,7 +38,9 @@
       "delete": "删除",
       "tokens": "tokens",
       "in": "入",
-      "out": "出"
+      "out": "出",
+      "edit": "编辑",
+      "saveAndResend": "保存并重发"
     },
     "codeBlock": {
       "copy": "复制",

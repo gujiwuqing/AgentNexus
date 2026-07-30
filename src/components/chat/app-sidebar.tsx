@@ -10,6 +10,7 @@ import {
   Settings,
   Trash2,
   X,
+  Pencil,
   PanelLeftClose,
   PanelLeft,
   Search,
@@ -153,6 +154,15 @@ function ConversationList({
                 >
                   {conv.title}
                 </Link>
+              )}
+              {editingId !== conv.id && (
+                <button
+                  className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => startEditing(conv.id, conv.title)}
+                  aria-label={t("renameConversation")}
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
               )}
               <button
                 className="text-muted-foreground hover:text-destructive shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"

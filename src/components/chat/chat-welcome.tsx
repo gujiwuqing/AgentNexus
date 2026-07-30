@@ -12,7 +12,10 @@ export function ChatWelcome({
   onSelectPrompt: (prompt: string) => void;
 }) {
   const t = useTranslations("chatExt.welcome");
-  const suggestions = [t("suggestion1"), t("suggestion2"), t("suggestion3"), t("suggestion4")];
+  const defaults = [t("suggestion1"), t("suggestion2"), t("suggestion3"), t("suggestion4")];
+  // Agent 配置了开场问题则优先展示，否则回退到通用建议
+  const suggestions =
+    agent?.suggestedPrompts && agent.suggestedPrompts.length > 0 ? agent.suggestedPrompts : defaults;
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 text-center overflow-y-auto py-10">

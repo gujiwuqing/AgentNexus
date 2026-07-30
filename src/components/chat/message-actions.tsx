@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Copy, Check, RotateCcw, Trash2 } from "lucide-react";
+import { Copy, Check, RotateCcw, Trash2, Pencil } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 function ActionButton({
@@ -38,12 +38,14 @@ export function MessageActions({
   isLast,
   onRegenerate,
   onDelete,
+  onEdit,
 }: {
   role: string;
   content: string;
   isLast: boolean;
   onRegenerate?: () => void;
   onDelete?: () => void;
+  onEdit?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const t = useTranslations("chatExt.actions");
@@ -59,6 +61,11 @@ export function MessageActions({
       <ActionButton label={copied ? t("copied") : t("copy")} onClick={handleCopy}>
         {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
       </ActionButton>
+      {role === "user" && onEdit && (
+        <ActionButton label={t("edit")} onClick={onEdit}>
+          <Pencil className="h-3.5 w-3.5" />
+        </ActionButton>
+      )}
       {role === "assistant" && isLast && onRegenerate && (
         <ActionButton label={t("regenerate")} onClick={onRegenerate}>
           <RotateCcw className="h-3.5 w-3.5" />

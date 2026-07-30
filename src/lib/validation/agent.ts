@@ -11,6 +11,12 @@ export const agentInputSchema = z.object({
   topP: z.number().min(0).max(1).default(1),
   model: z.string().nullable().default(null),
   memoryWindowSize: z.number().int().min(0).max(200).default(20),
+  // 不在 schema 内的字段会被 safeParse 剥掉，以下两项必须显式声明
+  toolsConfig: z
+    .object({ enabledTools: z.array(z.string()).default([]) })
+    .nullable()
+    .default(null),
+  suggestedPrompts: z.array(z.string().min(1).max(200)).max(4).default([]),
 });
 
 export type AgentInput = z.infer<typeof agentInputSchema>;

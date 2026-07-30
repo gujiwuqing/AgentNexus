@@ -32,6 +32,12 @@ export const professionalAgentTemplates = [
     maxTokens: 2048,
     topP: 1,
     model: null,
+    suggestedPrompts: [
+      '帮我调研一个技术选型，对比主流方案的优劣势',
+      '验证这个说法是否有可靠依据：……',
+      '帮我梳理某个领域的研究现状和关键争议',
+      '对这份报告的结论做一次证据审查',
+    ],
   },
   {
     key: 'requirements-analyst',
@@ -45,6 +51,12 @@ export const professionalAgentTemplates = [
     maxTokens: 2048,
     topP: 1,
     model: null,
+    suggestedPrompts: [
+      '把这段业务诉求拆成 PRD 要点和用户故事',
+      '帮我补全这个功能的验收标准和边界条件',
+      '评估这个需求的依赖和风险',
+      '帮我识别这份需求里的冲突和缺失信息',
+    ],
   },
   {
     key: 'operations-planner',
@@ -58,6 +70,12 @@ export const professionalAgentTemplates = [
     maxTokens: 2048,
     topP: 1,
     model: null,
+    suggestedPrompts: [
+      '为新功能上线制定一份 4 周运营计划',
+      '帮我设计这次活动的核心指标和监测口径',
+      '针对留存下降给出可执行的运营对策',
+      '帮我做一次活动复盘的结构化分析',
+    ],
   },
   {
     key: 'technical-architect',
@@ -71,6 +89,12 @@ export const professionalAgentTemplates = [
     maxTokens: 2048,
     topP: 1,
     model: null,
+    suggestedPrompts: [
+      '帮我设计这个功能的技术方案和分期计划',
+      '评估这两种架构选型的关键取舍',
+      '帮我梳理这次发布的回滚预案和风险点',
+      '把这个业务目标翻译成模块和接口设计',
+    ],
   },
   {
     key: 'code-reviewer',
@@ -84,6 +108,12 @@ export const professionalAgentTemplates = [
     maxTokens: 2048,
     topP: 1,
     model: null,
+    suggestedPrompts: [
+      '审查这段代码的正确性和安全风险',
+      '帮我评估这个变更对现有系统的影响面',
+      '指出这份实现里的测试缺口',
+      '按优先级给出这段代码的修复建议',
+    ],
   },
   {
     key: 'test-designer',
@@ -97,6 +127,12 @@ export const professionalAgentTemplates = [
     maxTokens: 2048,
     topP: 1,
     model: null,
+    suggestedPrompts: [
+      '为这个功能设计基于风险的测试计划',
+      '帮我找出这个流程的边界用例和异常场景',
+      '梳理这次发布的准入检查项',
+      '评估这份需求的可测性风险',
+    ],
   },
   {
     key: 'fact-logic-reviewer',
@@ -110,6 +146,12 @@ export const professionalAgentTemplates = [
     maxTokens: 2048,
     topP: 1,
     model: null,
+    suggestedPrompts: [
+      '审校这篇文章的事实依据和逻辑链路',
+      '找出这份方案里未披露的假设',
+      '检查这个结论是否存在因果跳跃',
+      '对这段论证给出明确的修订建议',
+    ],
   },
 ] as const satisfies readonly ProfessionalAgentTemplate[];
 
@@ -126,6 +168,7 @@ export function toAgentFormValues(template: (typeof professionalAgentTemplates)[
     model: template.model,
     memoryWindowSize: 20,
     toolsConfig: { enabledTools: [] },
+    suggestedPrompts: [...template.suggestedPrompts],
   };
 }
 

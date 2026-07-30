@@ -9,11 +9,13 @@ export function MessageList({
   avatar,
   onRegenerate,
   onDelete,
+  onEditResend,
 }: {
   messages: DisplayMessage[];
   avatar?: string;
   onRegenerate?: () => void;
   onDelete: (id: string) => void;
+  onEditResend?: (id: string, content: string) => void;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +47,7 @@ export function MessageList({
               isLast={i === messages.length - 1}
               onRegenerate={canRegenerate ? onRegenerate : undefined}
               onDelete={m.id.startsWith("local-") ? undefined : onDelete}
+              onEditResend={onEditResend}
             />
           );
         })}
