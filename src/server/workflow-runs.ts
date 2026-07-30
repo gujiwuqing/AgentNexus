@@ -8,6 +8,7 @@ import { getProviderConfig } from "./provider-config";
 import { resolveProviderConfig } from "@/lib/ai/provider";
 import { generateAgentReply } from "@/lib/ai/generate";
 import { executeWorkflow, type EngineCallbacks, type EngineResult } from "@/lib/workflow/engine";
+import { retrieveAgentRagContext, injectRagContext } from "@/lib/knowledge/agent-rag";
 import type { WorkflowGraph, ExecutionContext } from "@/types/workflow";
 import { getLatestVersionNumber } from "./workflow-versions";
 
@@ -170,10 +171,13 @@ function makeCallbacks(runId: string, userId: string): EngineCallbacks {
       if (!agent) throw new Error(`Agent ${agentId} not found`);
       const globalConfig = await getProviderConfig(userId);
       const provider = resolveProviderConfig(agent.model, globalConfig);
-      const messages = [
+      // 工作流中的 Agent 节点同样注入其关联知识库，与对话场景保持一致
+      const ragContext = await retrieveAgentRagContext(agent.id, prompt, globalConfig);
+      const baseMessages = [
         ...(agent.systemPrompt ? [{ role: "system" as const, content: agent.systemPrompt }] : []),
         { role: "user" as const, content: prompt },
       ];
+      const messages = injectRagContext(baseMessages, ragContext);
       return generateAgentReply(provider, messages, {
         temperature: agent.temperature,
         maxTokens: agent.maxTokens,

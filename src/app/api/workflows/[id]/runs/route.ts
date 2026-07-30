@@ -1,7 +1,9 @@
 import { triggerWorkflowRun, listWorkflowRuns } from "@/server/workflow-runs";
 import { getWorkflowOwnedBy } from "@/server/workflows";
+import { validateGraph } from "@/lib/workflow/validate-graph";
 import { apiOk, apiError } from "@/lib/api-response";
 import { requireUser } from "@/lib/auth";
+import type { WorkflowGraph } from "@/types/workflow";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -24,6 +26,13 @@ export async function POST(request: Request, { params }: Params) {
   const body = await request.json().catch(() => ({}));
   const input = typeof body?.input === "string" ? body.input : "";
   const stepMode = body?.stepMode === true;
+
+  // 运行前严格校验节点配置，避免跑到一半才因为没选 Agent 之类的原因失败
+  const issues = validateGraph(workflow.graph as WorkflowGraph);
+  if (issues.length > 0) {
+    return apiError(400, "invalid_graph", "Workflow has configuration issues", { issues });
+  }
+
   try {
     const result = await triggerWorkflowRun(id, input, stepMode);
     return apiOk(result);

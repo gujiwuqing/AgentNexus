@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { RotateCcw, ChevronDown, ChevronRight, Play, StepForward, FastForward, Braces } from "lucide-react";
+import { RotateCcw, ChevronDown, ChevronRight, Play, StepForward, FastForward, Braces, Search, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -67,7 +68,31 @@ export function RunPanel({
   const [collapsed, setCollapsed] = useState(false);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [showContext, setShowContext] = useState(false);
+  const [logQuery, setLogQuery] = useState("");
   const t = useTranslations("workflowExt.runPanel");
+
+  const filteredLogs = useMemo(() => {
+    const logs = runDetail?.stepLogs ?? [];
+    const q = logQuery.trim().toLowerCase();
+    if (!q) return logs;
+    return logs.filter((log) =>
+      [log.nodeId, log.nodeType, log.status, log.input, log.output ?? ""].some((field) =>
+        field.toLowerCase().includes(q),
+      ),
+    );
+  }, [runDetail, logQuery]);
+
+  /** 导出当前运行的完整记录（run + 全部步骤日志）为 JSON 文件。 */
+  function handleExport() {
+    if (!runDetail) return;
+    const blob = new Blob([JSON.stringify(runDetail, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `workflow-run-${runDetail.run.id}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 
   function selectRun(id: string) {
     setSelectedRunId(id);
@@ -83,6 +108,7 @@ export function RunPanel({
         refetchRuns();
         selectRun(result.id);
       },
+      onError: (err) => toast.error(err.message),
     });
   }
 
@@ -163,7 +189,37 @@ export function RunPanel({
             <div className="flex-1 overflow-y-auto p-2">
               {runDetail ? (
                 <div className="space-y-1">
-                  {runDetail.stepLogs.map((log) => {
+                  <div className="flex items-center gap-2 pb-1">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                      <Input
+                        value={logQuery}
+                        onChange={(e) => setLogQuery(e.target.value)}
+                        placeholder={t("searchLogs")}
+                        className="h-6 pl-7 text-xs"
+                      />
+                    </div>
+                    {logQuery && (
+                      <span className="text-[10px] text-muted-foreground shrink-0">
+                        {t("logMatches", { shown: filteredLogs.length, total: runDetail.stepLogs.length })}
+                      </span>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 text-xs cursor-pointer gap-1 shrink-0"
+                      onClick={handleExport}
+                    >
+                      <Download className="h-3 w-3" />
+                      {t("exportLogs")}
+                    </Button>
+                  </div>
+
+                  {filteredLogs.length === 0 && (
+                    <p className="text-xs text-muted-foreground py-3 text-center">{t("noLogMatch")}</p>
+                  )}
+
+                  {filteredLogs.map((log) => {
                     const isExpanded = expandedLogId === log.id;
                     return (
                       <div key={log.id} className="border rounded text-xs">

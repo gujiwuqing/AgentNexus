@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { History, ArrowLeft, Undo2, Redo2, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import {
@@ -24,11 +24,13 @@ import { NodeLibrary } from "./node-library";
 import { NodeConfigDialog } from "./node-config-dialog";
 import { RunPanel } from "./run-panel";
 import { VersionHistoryPanel } from "./version-history-panel";
+import { IssuesPopover } from "./issues-popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
 import { useWorkflow, useUpdateWorkflow, useWorkflowRunDetail } from "@/hooks/use-workflows";
+import { validateGraph } from "@/lib/workflow/validate-graph";
 import type { WorkflowGraph, WorkflowNode } from "@/types/workflow";
 
 const NODE_TYPE_KEYS: Record<string, "agent.label" | "condition.label" | "transform.label" | "humanInput.label" | "httpRequest.label" | "codeExecute.label" | "delay.label" | "variableAggregate.label"> = {
@@ -187,19 +189,103 @@ function EditorInner({ workflowId }: { workflowId: string }) {
     });
   }, [setNodes, setEdges]);
 
+  const copyBufferRef = useRef<{ nodes: Node[]; edges: Edge[] } | null>(null);
+
+  // 实时校验当前画布：仅在工具栏提示，不写回 node.data
+  // （写回会形成 校验→setNodes→重算校验 的循环）
+  const issues = useMemo(() => {
+    if (!initialized) return [];
+    return validateGraph(flowToGraph(nodes, edges));
+  }, [nodes, edges, initialized]);
+
+  /** 把选中节点（及其内部连线）写入剪贴缓存。 */
+  const copySelection = useCallback(() => {
+    const selectedNodes = stateRef.current.nodes.filter((n) => n.selected);
+    if (selectedNodes.length === 0) return;
+    const ids = new Set(selectedNodes.map((n) => n.id));
+    copyBufferRef.current = {
+      nodes: selectedNodes,
+      edges: stateRef.current.edges.filter((e) => ids.has(e.source) && ids.has(e.target)),
+    };
+  }, []);
+
+  /** 粘贴缓存节点：重新分配 id、位置偏移，保留内部连线。 */
+  const pasteSelection = useCallback(() => {
+    const buffer = copyBufferRef.current;
+    if (!buffer || buffer.nodes.length === 0) return;
+
+    const stamp = Date.now();
+    const idMap = new Map<string, string>();
+    const newNodes = buffer.nodes.map((n, i) => {
+      const newId = `node_${stamp}_${i}`;
+      idMap.set(n.id, newId);
+      return {
+        ...n,
+        id: newId,
+        selected: true,
+        position: { x: (n.position?.x ?? 0) + 40, y: (n.position?.y ?? 0) + 40 },
+        data: { ...n.data, runStatus: undefined },
+      };
+    });
+    const newEdges = buffer.edges.map((e, i) => ({
+      ...e,
+      id: `edge_${stamp}_${i}`,
+      source: idMap.get(e.source)!,
+      target: idMap.get(e.target)!,
+    }));
+
+    pushHistory();
+    setNodes((nds) => [...nds.map((n) => ({ ...n, selected: false })), ...newNodes]);
+    setEdges((eds) => [...eds, ...newEdges]);
+  }, [pushHistory, setNodes, setEdges]);
+
+  const deleteSelection = useCallback(() => {
+    const selectedIds = new Set(stateRef.current.nodes.filter((n) => n.selected).map((n) => n.id));
+    const hasSelectedEdge = stateRef.current.edges.some((e) => e.selected);
+    if (selectedIds.size === 0 && !hasSelectedEdge) return;
+    pushHistory();
+    setNodes((nds) => nds.filter((n) => !selectedIds.has(n.id)));
+    setEdges((eds) =>
+      eds.filter((e) => !e.selected && !selectedIds.has(e.source) && !selectedIds.has(e.target)),
+    );
+  }, [pushHistory, setNodes, setEdges]);
+
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
       const isMod = e.metaKey || e.ctrlKey;
-      if (!isMod || e.key.toLowerCase() !== "z") return;
-      e.preventDefault();
-      if (e.shiftKey) redo();
-      else undo();
+      const key = e.key.toLowerCase();
+
+      if (isMod && key === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if (isMod && key === "c") {
+        copySelection();
+        return;
+      }
+      if (isMod && key === "v") {
+        e.preventDefault();
+        pasteSelection();
+        return;
+      }
+      if (isMod && key === "d") {
+        e.preventDefault();
+        copySelection();
+        pasteSelection();
+        return;
+      }
+      if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        deleteSelection();
+      }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, copySelection, pasteSelection, deleteSelection]);
 
   useEffect(() => {
     if (workflow && !initialized) {
@@ -361,6 +447,7 @@ function EditorInner({ workflowId }: { workflowId: string }) {
         </div>
 
         <div className="flex-1" />
+        <IssuesPopover issues={issues} />
         <Button
           size="sm"
           variant={showVersionHistory ? "secondary" : "ghost"}

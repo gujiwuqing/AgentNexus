@@ -7,10 +7,7 @@ import { streamAgentReply, type ChatMessage } from "@/lib/ai/chat";
 import { apiError } from "@/lib/api-response";
 import { requireUser } from "@/lib/auth";
 import { resolveAgentTools } from "@/lib/tools/resolve";
-import { getAgentKnowledgeBaseIds } from "@/server/agent-knowledge";
-import { getChunksByKnowledgeBaseIds } from "@/server/knowledge-chunks";
-import { embedSingle } from "@/lib/ai/embedding";
-import { retrieveHybrid, buildRagContext } from "@/lib/knowledge/retriever";
+import { retrieveAgentRagContext } from "@/lib/knowledge/agent-rag";
 import { getAttachmentsByIds, linkAttachmentToMessage } from "@/server/attachments";
 import { readStoredFile } from "@/lib/files/storage";
 import { extractText, isImageFile } from "@/lib/files/extractor";
@@ -101,32 +98,16 @@ export async function POST(request: Request, { params }: Params) {
     chatMessages[chatMessages.length - 1] = { role: "user", content: enrichedContent };
   }
 
-  const kbIds = await getAgentKnowledgeBaseIds(agent.id);
-  if (kbIds.length > 0 && globalConfig?.embeddingModel) {
-    try {
-      const queryEmbedding = await embedSingle(
-        globalConfig.baseUrl,
-        globalConfig.apiKey,
-        globalConfig.embeddingModel,
-        content,
-      );
-      const chunks = await getChunksByKnowledgeBaseIds(kbIds);
-      const ragTopK = (agent.toolsConfig as { ragTopK?: number })?.ragTopK ?? 5;
-      const results = retrieveHybrid(queryEmbedding, content, chunks, ragTopK);
-      const ragContext = buildRagContext(results);
-
-      if (ragContext) {
-        if (chatMessages.length > 0 && chatMessages[0].role === "system") {
-          chatMessages[0] = {
-            role: "system",
-            content: (chatMessages[0].content as string) + ragContext,
-          };
-        } else {
-          chatMessages.unshift({ role: "system", content: ragContext });
-        }
-      }
-    } catch (err) {
-      console.error("RAG retrieval failed, continuing without context:", err);
+  const ragTopK = (agent.toolsConfig as { ragTopK?: number })?.ragTopK ?? 5;
+  const ragContext = await retrieveAgentRagContext(agent.id, content, globalConfig, ragTopK);
+  if (ragContext) {
+    if (chatMessages.length > 0 && chatMessages[0].role === "system") {
+      chatMessages[0] = {
+        role: "system",
+        content: (chatMessages[0].content as string) + ragContext,
+      };
+    } else {
+      chatMessages.unshift({ role: "system", content: ragContext });
     }
   }
 
@@ -138,7 +119,8 @@ export async function POST(request: Request, { params }: Params) {
   const teamToolDefs = teamMembers.map((m) =>
     buildDelegationTool(
       { memberAgentId: m.memberAgentId, memberAgentName: m.memberAgentName, roleDescription: m.roleDescription },
-      (memberAgentId, task) => callTeamMember(memberAgentId, task),
+      // 将主 Agent 作为委托链起点传入，防止成员反向委托回主 Agent 成环
+      (memberAgentId, task) => callTeamMember(memberAgentId, task, { depth: 1, chain: [agent.id] }),
     )
   );
   const tools = resolveAgentTools(enabledTools, searchConfig, teamToolDefs);

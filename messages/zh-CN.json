@@ -137,7 +137,11 @@
     "notFound": "未找到该智能体。",
     "chat": "对话",
     "saveChanges": "保存修改",
-    "saved": "已保存。"
+    "saved": "已保存。",
+    "sortRecent": "最近活跃",
+    "sortUsage": "使用最多",
+    "sortName": "名称",
+    "tagAll": "全部标签"
   },
   "workflows": {
     "title": "工作流",

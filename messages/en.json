@@ -137,7 +137,11 @@
     "notFound": "Agent not found.",
     "chat": "Chat",
     "saveChanges": "Save Changes",
-    "saved": "Saved."
+    "saved": "Saved.",
+    "sortRecent": "Recently active",
+    "sortUsage": "Most used",
+    "sortName": "Name",
+    "tagAll": "All tags"
   },
   "workflows": {
     "title": "Workflows",
@@ -268,7 +272,7 @@
     "markdownSupported": "Content supports Markdown (headings, lists, tables, code blocks).",
     "reindex": "Reindex",
     "reindexAll": "Rebuild all",
-    "reindexAllConfirm": "Reindex every document in this knowledge base? Useful after changing chunk settings \u2014 Markdown files will switch to structure-aware chunking.",
+    "reindexAllConfirm": "Reindex every document in this knowledge base? Useful after changing chunk settings — Markdown files will switch to structure-aware chunking.",
     "reindexAllStarted": "Started rebuilding {count} documents. Progress refreshes automatically.",
     "statusPending": "Pending",
     "statusProcessing": "Processing",
@@ -296,7 +300,7 @@
       "matchedBoth": "Semantic + keyword",
       "matchedVector": "Semantic",
       "matchedKeyword": "Keyword",
-      "scoreDetail": "Vector similarity {vector} \u00b7 Keyword BM25 {keyword}"
+      "scoreDetail": "Vector similarity {vector} · Keyword BM25 {keyword}"
     },
     "chunkPreview": {
       "title": "Chunks of {filename}",
@@ -318,7 +322,7 @@
       "chunkLabel": "Chunk {index}",
       "page": "P{page}",
       "chars": "{count} chars",
-      "chunkHint": "Shown in order \u2014 these are the exact units used at retrieval time. Markdown splits at heading/paragraph/code boundaries; PDF splits per page and keeps page numbers.",
+      "chunkHint": "Shown in order — these are the exact units used at retrieval time. Markdown splits at heading/paragraph/code boundaries; PDF splits per page and keeps page numbers.",
       "chunkFiltered": "{shown} of {total} chunks matched",
       "chunkNoMatch": "No chunk contains this keyword.",
       "chunkEmpty": "No chunks yet. The document may still be indexing.",

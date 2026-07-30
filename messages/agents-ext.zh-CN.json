@@ -45,7 +45,25 @@
       "confirm": "删除"
     },
     "tools": {
-      "title": "工具"
+      "title": "工具",
+      "items": {
+        "current_time": {
+          "name": "当前时间",
+          "description": "获取当前日期和时间"
+        },
+        "http_request": {
+          "name": "HTTP 请求",
+          "description": "向指定 URL 发起 HTTP 请求（已拦截内网地址）"
+        },
+        "web_search": {
+          "name": "联网搜索",
+          "description": "搜索互联网获取实时信息（需在设置中配置搜索服务）"
+        },
+        "code_execute": {
+          "name": "代码执行",
+          "description": "在沙箱中执行 JavaScript 代码"
+        }
+      }
     },
     "knowledge": {
       "title": "知识库",

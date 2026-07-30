@@ -45,7 +45,25 @@
       "confirm": "Delete"
     },
     "tools": {
-      "title": "Tools"
+      "title": "Tools",
+      "items": {
+        "current_time": {
+          "name": "Current Time",
+          "description": "Get the current date and time"
+        },
+        "http_request": {
+          "name": "HTTP Request",
+          "description": "Send HTTP requests to a URL (internal addresses blocked)"
+        },
+        "web_search": {
+          "name": "Web Search",
+          "description": "Search the web for live information (configure a provider in Settings)"
+        },
+        "code_execute": {
+          "name": "Code Execute",
+          "description": "Run JavaScript in a sandbox"
+        }
+      }
     },
     "knowledge": {
       "title": "Knowledge Bases",

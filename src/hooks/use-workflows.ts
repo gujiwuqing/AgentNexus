@@ -168,6 +168,29 @@ export function useWorkflowVersions(workflowId: string) {
   });
 }
 
+export type GraphDiffResult = {
+  from: string;
+  to: string;
+  diff: {
+    addedNodes: string[];
+    removedNodes: string[];
+    changedNodes: string[];
+    addedEdges: string[];
+    removedEdges: string[];
+    identical: boolean;
+  };
+};
+
+/** 对比某历史版本与当前图的差异。versionNumber 为 null 时不请求。 */
+export function useWorkflowVersionDiff(workflowId: string, versionNumber: number | null) {
+  return useQuery({
+    queryKey: ["workflow-version-diff", workflowId, versionNumber],
+    queryFn: () =>
+      fetchJson<GraphDiffResult>(`/api/workflows/${workflowId}/versions/${versionNumber}/diff`),
+    enabled: Boolean(workflowId) && versionNumber != null,
+  });
+}
+
 export function useRestoreWorkflowVersion(workflowId: string) {
   const qc = useQueryClient();
   return useMutation({

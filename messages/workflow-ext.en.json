@@ -1,14 +1,38 @@
 {
   "workflowExt": {
     "nodeTypes": {
-      "agent": { "label": "Agent", "description": "Call an AI agent" },
-      "condition": { "label": "Condition", "description": "Branch on condition" },
-      "transform": { "label": "Transform", "description": "Process text" },
-      "humanInput": { "label": "Human Input", "description": "Wait for user input" },
-      "httpRequest": { "label": "HTTP Request", "description": "Make HTTP requests to external APIs" },
-      "codeExecute": { "label": "Code Execute", "description": "Run JavaScript code in sandbox" },
-      "delay": { "label": "Delay", "description": "Wait before continuing" },
-      "variableAggregate": { "label": "Variable Aggregate", "description": "Merge multiple node outputs into JSON" }
+      "agent": {
+        "label": "Agent",
+        "description": "Call an AI agent"
+      },
+      "condition": {
+        "label": "Condition",
+        "description": "Branch on condition"
+      },
+      "transform": {
+        "label": "Transform",
+        "description": "Process text"
+      },
+      "humanInput": {
+        "label": "Human Input",
+        "description": "Wait for user input"
+      },
+      "httpRequest": {
+        "label": "HTTP Request",
+        "description": "Make HTTP requests to external APIs"
+      },
+      "codeExecute": {
+        "label": "Code Execute",
+        "description": "Run JavaScript code in sandbox"
+      },
+      "delay": {
+        "label": "Delay",
+        "description": "Wait before continuing"
+      },
+      "variableAggregate": {
+        "label": "Variable Aggregate",
+        "description": "Merge multiple node outputs into JSON"
+      }
     },
     "nodeLibrary": {
       "heading": "Nodes"
@@ -102,7 +126,11 @@
       "pausedAt": "Paused. Next nodes: {nodes}",
       "stepNext": "Next Step",
       "runToEnd": "Run to End",
-      "contextHeading": "Runtime Variables ({count})"
+      "contextHeading": "Runtime Variables ({count})",
+      "searchLogs": "Search step logs...",
+      "logMatches": "{shown}/{total} matched",
+      "exportLogs": "Export",
+      "noLogMatch": "No step logs match this query."
     },
     "card": {
       "noDescription": "No description",
@@ -115,14 +143,49 @@
       "undo": "Undo (Ctrl+Z)",
       "redo": "Redo (Ctrl+Shift+Z)",
       "autoLayout": "Auto-arrange layout",
-      "notFound": "Workflow not found."
+      "notFound": "Workflow not found.",
+      "copy": "Copy selection (Ctrl+C)",
+      "paste": "Paste (Ctrl+V)",
+      "duplicate": "Duplicate (Ctrl+D)",
+      "deleteSelection": "Delete selection (Delete)"
     },
     "versionHistory": {
       "heading": "Version History",
       "restore": "Restore",
       "restoreConfirm": "Restore to v{number}? This will overwrite the current graph.",
       "noVersions": "No versions yet.",
-      "version": "v{number}"
+      "version": "v{number}",
+      "compare": "Compare with current",
+      "diffTitle": "v{number} vs current",
+      "diffIdentical": "Identical to the current graph.",
+      "diffAddedNodes": "Added nodes",
+      "diffRemovedNodes": "Removed nodes",
+      "diffChangedNodes": "Changed nodes",
+      "diffAddedEdges": "Added edges",
+      "diffRemovedEdges": "Removed edges",
+      "diffLoadError": "Failed to load diff."
+    },
+    "validation": {
+      "allGood": "Config complete",
+      "issueCount": "{count} to fix",
+      "hint": "These issues block running. Saving is unaffected.",
+      "codes": {
+        "agent.missingAgent": "No agent selected",
+        "agent.missingPrompt": "Prompt template is empty",
+        "condition.missingExpression": "Condition expression is empty",
+        "condition.missingInput": "No input node selected",
+        "condition.missingBranch": "True/False branch not set",
+        "condition.unknownBranch": "A branch points to a node that no longer exists",
+        "transform.missingOperation": "No operation selected",
+        "transform.missingTemplate": "Template operation needs a template param",
+        "http.missingUrl": "Request URL is empty",
+        "http.invalidUrl": "URL must start with http:// or https://",
+        "code.missingCode": "Code is empty",
+        "delay.invalidDuration": "Delay must be between 0 and 30000 ms",
+        "aggregate.missingSources": "No source nodes selected",
+        "graph.emptyGraph": "This workflow has no nodes yet",
+        "graph.unknownEdge": "An edge points to a deleted node"
+      }
     }
   }
 }

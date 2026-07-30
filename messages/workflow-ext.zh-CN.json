@@ -1,14 +1,38 @@
 {
   "workflowExt": {
     "nodeTypes": {
-      "agent": { "label": "智能体", "description": "调用一个 AI 智能体" },
-      "condition": { "label": "条件分支", "description": "根据条件走不同分支" },
-      "transform": { "label": "文本处理", "description": "对文本做处理" },
-      "humanInput": { "label": "人工输入", "description": "等待人工输入" },
-      "httpRequest": { "label": "HTTP 请求", "description": "调用外部 API" },
-      "codeExecute": { "label": "代码执行", "description": "在沙箱中执行 JavaScript 代码" },
-      "delay": { "label": "延时", "description": "等待一段时间后继续" },
-      "variableAggregate": { "label": "变量聚合", "description": "将多个节点的输出合并为 JSON" }
+      "agent": {
+        "label": "智能体",
+        "description": "调用一个 AI 智能体"
+      },
+      "condition": {
+        "label": "条件分支",
+        "description": "根据条件走不同分支"
+      },
+      "transform": {
+        "label": "文本处理",
+        "description": "对文本做处理"
+      },
+      "humanInput": {
+        "label": "人工输入",
+        "description": "等待人工输入"
+      },
+      "httpRequest": {
+        "label": "HTTP 请求",
+        "description": "调用外部 API"
+      },
+      "codeExecute": {
+        "label": "代码执行",
+        "description": "在沙箱中执行 JavaScript 代码"
+      },
+      "delay": {
+        "label": "延时",
+        "description": "等待一段时间后继续"
+      },
+      "variableAggregate": {
+        "label": "变量聚合",
+        "description": "将多个节点的输出合并为 JSON"
+      }
     },
     "nodeLibrary": {
       "heading": "节点"
@@ -102,7 +126,11 @@
       "pausedAt": "已暂停，待执行节点：{nodes}",
       "stepNext": "下一步",
       "runToEnd": "继续执行到结束",
-      "contextHeading": "运行时变量（{count}）"
+      "contextHeading": "运行时变量（{count}）",
+      "searchLogs": "搜索步骤日志...",
+      "logMatches": "命中 {shown}/{total}",
+      "exportLogs": "导出",
+      "noLogMatch": "没有匹配的步骤日志。"
     },
     "card": {
       "noDescription": "暂无描述",
@@ -115,14 +143,49 @@
       "undo": "撤销 (Ctrl+Z)",
       "redo": "重做 (Ctrl+Shift+Z)",
       "autoLayout": "自动整理布局",
-      "notFound": "未找到该工作流。"
+      "notFound": "未找到该工作流。",
+      "copy": "复制所选 (Ctrl+C)",
+      "paste": "粘贴 (Ctrl+V)",
+      "duplicate": "创建副本 (Ctrl+D)",
+      "deleteSelection": "删除所选 (Delete)"
     },
     "versionHistory": {
       "heading": "历史版本",
       "restore": "恢复",
       "restoreConfirm": "恢复到 v{number}？这将覆盖当前的节点图。",
       "noVersions": "还没有版本记录。",
-      "version": "v{number}"
+      "version": "v{number}",
+      "compare": "与当前对比",
+      "diffTitle": "v{number} 与当前的差异",
+      "diffIdentical": "与当前内容一致。",
+      "diffAddedNodes": "新增节点",
+      "diffRemovedNodes": "删除节点",
+      "diffChangedNodes": "修改节点",
+      "diffAddedEdges": "新增连线",
+      "diffRemovedEdges": "删除连线",
+      "diffLoadError": "加载差异失败。"
+    },
+    "validation": {
+      "allGood": "配置完整",
+      "issueCount": "{count} 项待完善",
+      "hint": "以下问题会导致运行失败，保存不受影响。",
+      "codes": {
+        "agent.missingAgent": "未选择智能体",
+        "agent.missingPrompt": "未填写 Prompt 模板",
+        "condition.missingExpression": "未填写判断表达式",
+        "condition.missingInput": "未选择输入节点",
+        "condition.missingBranch": "未设置 True/False 分支",
+        "condition.unknownBranch": "分支指向的节点已不存在",
+        "transform.missingOperation": "未选择操作类型",
+        "transform.missingTemplate": "模板拼接缺少 template 参数",
+        "http.missingUrl": "未填写请求 URL",
+        "http.invalidUrl": "URL 需以 http:// 或 https:// 开头",
+        "code.missingCode": "未填写代码",
+        "delay.invalidDuration": "延时需在 0–30000 毫秒之间",
+        "aggregate.missingSources": "未选择来源节点",
+        "graph.emptyGraph": "工作流还没有任何节点",
+        "graph.unknownEdge": "存在指向已删除节点的连线"
+      }
     }
   }
 }
