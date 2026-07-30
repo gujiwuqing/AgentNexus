@@ -8,7 +8,7 @@ import { AppSidebar } from "@/components/chat/app-sidebar";
 import { useIsMobile } from "@/hooks/use-media-query";
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
-  const params = useParams<{ agentId?: string; conversationId?: string; workflowId?: string }>();
+  const params = useParams<{ agentId?: string; conversationId?: string }>();
   const isMobile = useIsMobile();
   const t = useTranslations("chatExt.sidebar");
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
@@ -24,7 +24,6 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
               <AppSidebar
                 selectedAgentId={params.agentId}
                 activeConversationId={params.conversationId}
-                selectedWorkflowId={params.workflowId}
                 collapsed={false}
                 onToggle={() => setMobileDrawerOpen(false)}
                 onNavigate={() => setMobileDrawerOpen(false)}
@@ -49,7 +48,6 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
       <AppSidebar
         selectedAgentId={params.agentId}
         activeConversationId={params.conversationId}
-        selectedWorkflowId={params.workflowId}
         collapsed={desktopCollapsed}
         onToggle={() => setDesktopCollapsed((c) => !c)}
       />

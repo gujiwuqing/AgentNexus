@@ -16,7 +16,7 @@ export function WorkflowCard({ workflow }: { workflow: WorkflowSummary }) {
   const t = useTranslations("workflowExt.card");
 
   return (
-    <Link href={`/chat/workflows/${workflow.id}`}>
+    <Link href={`/workflows/${workflow.id}`}>
       <Card className="hover:border-primary hover:shadow-md transition-all cursor-pointer h-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

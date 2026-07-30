@@ -146,7 +146,7 @@ export function CommandPalette() {
         icon: Workflow,
         title: w.name,
         subtitle: w.description || undefined,
-        href: `/chat/workflows/${w.id}`,
+        href: `/workflows/${w.id}`,
       });
     }
     for (const kb of (knowledgeBases ?? []).filter((kb) => matches(query, kb.name, kb.description)).slice(0, limit)) {

@@ -410,7 +410,7 @@ function EditorInner({ workflowId }: { workflowId: string }) {
   if (isLoading) {
     return (
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 px-4 py-2 pl-12 md:pl-4 border-b">
+        <div className="flex items-center gap-2 px-4 py-2 border-b">
           <Skeleton className="h-8 w-8 rounded-md" />
           <Skeleton className="h-8 w-[200px]" />
           <Skeleton className="h-8 w-16" />
@@ -423,7 +423,7 @@ function EditorInner({ workflowId }: { workflowId: string }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 px-4 py-2 pl-12 md:pl-4 border-b">
+      <div className="flex items-center gap-2 px-4 py-2 border-b">
         <Button asChild variant="ghost" size="icon" className="h-8 w-8">
           <Link href="/workflows" aria-label={tCommon("back")}>
             <ArrowLeft className="h-4 w-4" />
