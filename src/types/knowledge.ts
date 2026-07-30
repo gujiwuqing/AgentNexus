@@ -1,3 +1,10 @@
+export type KnowledgeBaseStats = {
+  documentCount: number;
+  chunkCount: number;
+  failedCount: number;
+  indexingCount: number;
+};
+
 export type KnowledgeBase = {
   id: string;
   name: string;
@@ -7,6 +14,8 @@ export type KnowledgeBase = {
   chunkOverlap: number;
   createdAt: string;
   updatedAt: string;
+  /** 仅列表接口返回 */
+  stats?: KnowledgeBaseStats;
 };
 
 export type KnowledgeDocument = {

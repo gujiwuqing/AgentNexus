@@ -1,11 +1,16 @@
 import { readStoredFile } from "@/lib/files/storage";
-import { extractText } from "@/lib/files/extractor";
+import { extractText, extractPdfPages } from "@/lib/files/extractor";
+import { detectFileKind } from "@/lib/files/file-kind";
 import { embedTexts } from "@/lib/ai/embedding";
 import { chunkText } from "./chunker";
+import { chunkMarkdown } from "./markdown-chunker";
+import { chunkPdfPages } from "./pdf-chunker";
 import { getKnowledgeDocument, updateDocumentStatus } from "@/server/knowledge-documents";
 import { deleteChunksByDocument, insertChunks } from "@/server/knowledge-chunks";
 import { getKnowledgeBase } from "@/server/knowledge-bases";
 import { getProviderConfig } from "@/server/provider-config";
+
+type IndexedChunk = { content: string; heading?: string; page?: number };
 
 export async function indexDocument(documentId: string): Promise<void> {
   const doc = await getKnowledgeDocument(documentId);
@@ -25,14 +30,28 @@ export async function indexDocument(documentId: string): Promise<void> {
     await deleteChunksByDocument(documentId);
 
     const buffer = await readStoredFile(doc.storagePath);
-    const text = await extractText(buffer, doc.mimetype);
+    const kind = detectFileKind(doc.filename, doc.mimetype);
 
-    if (!text.trim()) {
-      await updateDocumentStatus(documentId, "completed", 0);
-      return;
+    // 按文件类型选分片策略：Markdown 走结构感知，PDF 保留页码，其余按字符切分。
+    let chunks: IndexedChunk[];
+    if (kind === "pdf") {
+      const pages = await extractPdfPages(buffer);
+      if (!pages.some((p) => p.text.trim())) {
+        await updateDocumentStatus(documentId, "completed", 0);
+        return;
+      }
+      chunks = chunkPdfPages(pages, kb.chunkSize, kb.chunkOverlap);
+    } else {
+      const text = await extractText(buffer, doc.mimetype, doc.filename);
+      if (!text.trim()) {
+        await updateDocumentStatus(documentId, "completed", 0);
+        return;
+      }
+      chunks =
+        kind === "markdown"
+          ? chunkMarkdown(text, kb.chunkSize, kb.chunkOverlap)
+          : chunkText(text, kb.chunkSize, kb.chunkOverlap).map((content) => ({ content }));
     }
-
-    const chunks = chunkText(text, kb.chunkSize, kb.chunkOverlap);
 
     const batchSize = 100;
     const allEmbeddings: number[][] = [];
@@ -42,18 +61,24 @@ export async function indexDocument(documentId: string): Promise<void> {
         globalConfig.baseUrl,
         globalConfig.apiKey,
         embeddingModel,
-        batch,
+        batch.map((c) => c.content),
       );
       allEmbeddings.push(...embeddings);
     }
 
     await insertChunks(
       documentId,
-      chunks.map((content, i) => ({
-        content,
-        embedding: allEmbeddings[i],
-        chunkIndex: i,
-      })),
+      chunks.map((chunk, i) => {
+        const metadata: Record<string, unknown> = {};
+        if (chunk.heading) metadata.heading = chunk.heading;
+        if (chunk.page != null) metadata.page = chunk.page;
+        return {
+          content: chunk.content,
+          embedding: allEmbeddings[i],
+          chunkIndex: i,
+          metadata,
+        };
+      }),
     );
 
     await updateDocumentStatus(documentId, "completed", chunks.length);

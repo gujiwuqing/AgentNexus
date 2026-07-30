@@ -1,12 +1,12 @@
 import { apiOk, apiError } from "@/lib/api-response";
 import { knowledgeBaseInputSchema } from "@/lib/validation/knowledge";
-import { listKnowledgeBases, createKnowledgeBase } from "@/server/knowledge-bases";
+import { listKnowledgeBasesWithStats, createKnowledgeBase } from "@/server/knowledge-bases";
 import { requireUser } from "@/lib/auth";
 
 export async function GET(request: Request) {
   const user = await requireUser(request);
   if (user instanceof Response) return user;
-  const kbs = await listKnowledgeBases(user.id);
+  const kbs = await listKnowledgeBasesWithStats(user.id);
   return apiOk(kbs);
 }
 

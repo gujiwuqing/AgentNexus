@@ -5,7 +5,12 @@ import { createId } from "@/lib/id";
 
 export async function insertChunks(
   documentId: string,
-  chunks: Array<{ content: string; embedding: number[]; chunkIndex: number }>,
+  chunks: Array<{
+    content: string;
+    embedding: number[];
+    chunkIndex: number;
+    metadata?: Record<string, unknown>;
+  }>,
 ) {
   if (chunks.length === 0) return;
   const values = chunks.map((c) => ({
@@ -14,7 +19,7 @@ export async function insertChunks(
     content: c.content,
     embedding: c.embedding,
     chunkIndex: c.chunkIndex,
-    metadata: {},
+    metadata: c.metadata ?? {},
   }));
   await db.insert(knowledgeChunks).values(values);
 }
@@ -30,6 +35,7 @@ export async function listChunksByDocument(documentId: string) {
       id: knowledgeChunks.id,
       chunkIndex: knowledgeChunks.chunkIndex,
       content: knowledgeChunks.content,
+      metadata: knowledgeChunks.metadata,
     })
     .from(knowledgeChunks)
     .where(eq(knowledgeChunks.documentId, documentId))
@@ -45,6 +51,8 @@ export async function getChunksByKnowledgeBaseIds(knowledgeBaseIds: string[]) {
       content: knowledgeChunks.content,
       embedding: knowledgeChunks.embedding,
       documentId: knowledgeChunks.documentId,
+      metadata: knowledgeChunks.metadata,
+      filename: knowledgeDocuments.filename,
     })
     .from(knowledgeChunks)
     .innerJoin(
@@ -67,6 +75,7 @@ export async function getChunksWithFilenameByKnowledgeBaseId(knowledgeBaseId: st
       content: knowledgeChunks.content,
       embedding: knowledgeChunks.embedding,
       documentId: knowledgeChunks.documentId,
+      metadata: knowledgeChunks.metadata,
       filename: knowledgeDocuments.filename,
     })
     .from(knowledgeChunks)

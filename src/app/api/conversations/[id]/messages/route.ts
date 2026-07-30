@@ -10,7 +10,7 @@ import { resolveAgentTools } from "@/lib/tools/resolve";
 import { getAgentKnowledgeBaseIds } from "@/server/agent-knowledge";
 import { getChunksByKnowledgeBaseIds } from "@/server/knowledge-chunks";
 import { embedSingle } from "@/lib/ai/embedding";
-import { retrieveTopK, buildRagContext } from "@/lib/knowledge/retriever";
+import { retrieveHybrid, buildRagContext } from "@/lib/knowledge/retriever";
 import { getAttachmentsByIds, linkAttachmentToMessage } from "@/server/attachments";
 import { readStoredFile } from "@/lib/files/storage";
 import { extractText, isImageFile } from "@/lib/files/extractor";
@@ -56,7 +56,7 @@ export async function POST(request: Request, { params }: Params) {
     if (isImageFile(att.mimetype)) {
       imageContents.push({ type: "image", image: buffer.toString("base64") });
     } else {
-      const text = await extractText(buffer, att.mimetype);
+      const text = await extractText(buffer, att.mimetype, att.filename);
       if (text.trim()) {
         enrichedContent += `\n\n--- 附件: ${att.filename} ---\n${text.slice(0, 50000)}\n--- 附件结束 ---`;
       }
@@ -112,7 +112,7 @@ export async function POST(request: Request, { params }: Params) {
       );
       const chunks = await getChunksByKnowledgeBaseIds(kbIds);
       const ragTopK = (agent.toolsConfig as { ragTopK?: number })?.ragTopK ?? 5;
-      const results = retrieveTopK(queryEmbedding, chunks, ragTopK);
+      const results = retrieveHybrid(queryEmbedding, content, chunks, ragTopK);
       const ragContext = buildRagContext(results);
 
       if (ragContext) {

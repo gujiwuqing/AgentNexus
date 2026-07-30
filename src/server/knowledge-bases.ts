@@ -1,6 +1,6 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { knowledgeBases } from "@/db/schema";
+import { knowledgeBases, knowledgeDocuments } from "@/db/schema";
 import { createId } from "@/lib/id";
 import type { KnowledgeBaseInput, KnowledgeBaseUpdateInput } from "@/lib/validation/knowledge";
 
@@ -12,6 +12,49 @@ export async function createKnowledgeBase(input: KnowledgeBaseInput, userId: str
 
 export async function listKnowledgeBases(userId: string) {
   return db.select().from(knowledgeBases).where(eq(knowledgeBases.userId, userId));
+}
+
+/**
+ * 列表页专用：附带文档/分片/异常统计。
+ * 用一次按 knowledgeBaseId 的聚合查询后在应用层合并，避免每个知识库单独查一次（N+1）。
+ */
+export async function listKnowledgeBasesWithStats(userId: string) {
+  const bases = await listKnowledgeBases(userId);
+  if (bases.length === 0) return [];
+
+  const rows = await db
+    .select({
+      knowledgeBaseId: knowledgeDocuments.knowledgeBaseId,
+      documentCount: sql<number>`count(*)`,
+      chunkCount: sql<number>`coalesce(sum(${knowledgeDocuments.chunkCount}), 0)`,
+      failedCount: sql<number>`sum(case when ${knowledgeDocuments.status} = 'failed' then 1 else 0 end)`,
+      indexingCount: sql<number>`sum(case when ${knowledgeDocuments.status} in ('pending', 'processing') then 1 else 0 end)`,
+    })
+    .from(knowledgeDocuments)
+    .where(inArray(knowledgeDocuments.knowledgeBaseId, bases.map((b) => b.id)))
+    .groupBy(knowledgeDocuments.knowledgeBaseId);
+
+  const statsById = new Map(
+    rows.map((r) => [
+      r.knowledgeBaseId,
+      {
+        documentCount: Number(r.documentCount),
+        chunkCount: Number(r.chunkCount),
+        failedCount: Number(r.failedCount),
+        indexingCount: Number(r.indexingCount),
+      },
+    ]),
+  );
+
+  return bases.map((base) => ({
+    ...base,
+    stats: statsById.get(base.id) ?? {
+      documentCount: 0,
+      chunkCount: 0,
+      failedCount: 0,
+      indexingCount: 0,
+    },
+  }));
 }
 
 export async function getKnowledgeBase(id: string) {

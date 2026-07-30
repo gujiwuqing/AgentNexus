@@ -3,7 +3,7 @@ import { getKnowledgeBaseOwnedBy } from "@/server/knowledge-bases";
 import { getProviderConfig } from "@/server/provider-config";
 import { getChunksWithFilenameByKnowledgeBaseId } from "@/server/knowledge-chunks";
 import { embedSingle } from "@/lib/ai/embedding";
-import { retrieveTopK } from "@/lib/knowledge/retriever";
+import { retrieveHybrid } from "@/lib/knowledge/retriever";
 import { requireUser } from "@/lib/auth";
 
 type Params = { params: Promise<{ id: string }> };
@@ -37,13 +37,7 @@ export async function POST(request: Request, { params }: Params) {
     query,
   );
 
-  const results = retrieveTopK(queryEmbedding, chunks, topK);
-  const filenameByChunk = new Map(chunks.map((c) => [c.id, c.filename]));
+  const results = retrieveHybrid(queryEmbedding, query, chunks, topK);
 
-  return apiOk({
-    results: results.map((r) => ({
-      ...r,
-      filename: filenameByChunk.get(r.chunkId) ?? null,
-    })),
-  });
+  return apiOk({ results });
 }

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const ACCEPTED = ".txt,.md,.csv,.pdf";
+const ACCEPTED = ".txt,.md,.markdown,.mdx,.csv,.json,.pdf,.log";
 
 export function DocumentUpload({
   onUpload,

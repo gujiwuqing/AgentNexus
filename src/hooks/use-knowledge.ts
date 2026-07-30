@@ -118,7 +118,24 @@ export function useReindexDocument(knowledgeBaseId: string) {
   });
 }
 
-export type DocumentChunk = { id: string; chunkIndex: number; content: string };
+export function useReindexAllDocuments(knowledgeBaseId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/knowledge-bases/${knowledgeBaseId}/reindex`, { method: "POST" });
+      if (!res.ok) throw new Error("Failed to reindex");
+      return res.json() as Promise<{ success: boolean; count: number }>;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["knowledge-documents", knowledgeBaseId] }),
+  });
+}
+
+export type DocumentChunk = {
+  id: string;
+  chunkIndex: number;
+  content: string;
+  metadata: Record<string, unknown> | null;
+};
 
 export function useDocumentChunks(knowledgeBaseId: string, docId: string, enabled: boolean) {
   return useQuery({
@@ -128,7 +145,28 @@ export function useDocumentChunks(knowledgeBaseId: string, docId: string, enable
   });
 }
 
-export type RetrievalTestResult = { chunkId: string; content: string; score: number; documentId: string; filename: string | null };
+export type DocumentContent = { content: string; kind: string };
+
+export function useDocumentContent(knowledgeBaseId: string, docId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["knowledge-doc-content", knowledgeBaseId, docId],
+    queryFn: () => fetchJson<DocumentContent>(`/api/knowledge-bases/${knowledgeBaseId}/documents/${docId}/content`),
+    enabled,
+  });
+}
+
+export type RetrievalTestResult = {
+  chunkId: string;
+  content: string;
+  score: number;
+  documentId: string;
+  filename: string | null;
+  heading: string | null;
+  page: number | null;
+  vectorScore: number;
+  keywordScore: number;
+  matchedBy: "both" | "vector" | "keyword";
+};
 
 export function useTestRetrieval(knowledgeBaseId: string) {
   return useMutation({
