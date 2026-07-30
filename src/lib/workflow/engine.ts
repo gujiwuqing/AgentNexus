@@ -36,6 +36,30 @@ export type EngineResult = {
 
 type NodeExecResult = { output: string; nextNodes: string[] } | { pause: true; nodeId: string };
 
+/** 给节点执行加超时上限；timeoutMs 未传或为 0 时不限制。 */
+async function withNodeTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number | undefined,
+  nodeId: string,
+): Promise<T> {
+  if (!timeoutMs || timeoutMs <= 0) return promise;
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`Node ${nodeId} timed out after ${timeoutMs}ms`)),
+          timeoutMs,
+        );
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 export async function executeWorkflow(
   graph: WorkflowGraph,
   input: string,
@@ -46,10 +70,12 @@ export async function executeWorkflow(
     retryNodeId?: string;
     existingContext?: ExecutionContext;
     maxIterations?: number;
-    /** 单步调试：每执行完一批就绪节点后暂停，返回 paused + 待执行节点。 */
+    /** 单步调试：每执行完一批已就绪的节点后暂停，返回 paused + 待执行节点。 */
     stepMode?: boolean;
     /** 从指定节点集合继续执行（配合 paused 恢复）。 */
     startNodeIds?: string[];
+    /** 单个节点的执行超时，防止某个模型/HTTP 调用挂死拖垮整次运行。 */
+    nodeTimeoutMs?: number;
   }
 ): Promise<EngineResult> {
   const context: ExecutionContext = { ...(options?.existingContext ?? {}) };
@@ -185,7 +211,7 @@ export async function executeWorkflow(
     }
 
     try {
-      return await executeNodeByType(node);
+      return await withNodeTimeout(executeNodeByType(node), options?.nodeTimeoutMs, node.id);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await callbacks.onStepFail(node.id, message);

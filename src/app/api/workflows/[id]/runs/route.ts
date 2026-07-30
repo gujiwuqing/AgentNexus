@@ -1,4 +1,4 @@
-import { triggerWorkflowRun, listWorkflowRuns } from "@/server/workflow-runs";
+import { enqueueWorkflowRun, listWorkflowRuns } from "@/server/workflow-runs";
 import { getWorkflowOwnedBy } from "@/server/workflows";
 import { validateGraph } from "@/lib/workflow/validate-graph";
 import { apiOk, apiError } from "@/lib/api-response";
@@ -33,9 +33,11 @@ export async function POST(request: Request, { params }: Params) {
     return apiError(400, "invalid_graph", "Workflow has configuration issues", { issues });
   }
 
+  // 只登记运行意图并入队，立即返回；实际执行由 worker 消费队列完成，
+  // 避免长时间运行的工作流阻塞/超时 HTTP 请求。
   try {
-    const result = await triggerWorkflowRun(id, input, stepMode);
-    return apiOk(result);
+    const result = await enqueueWorkflowRun(id, input, stepMode);
+    return apiOk(result, 202);
   } catch (err) {
     return apiError(400, "execution_error", err instanceof Error ? err.message : "Failed to run workflow");
   }

@@ -122,7 +122,7 @@ export const workflowRuns = mysqlTable("workflow_runs", {
   workflowId: varchar("workflow_id", { length: 36 })
     .notNull()
     .references(() => workflows.id, { onDelete: "cascade" }),
-  status: mysqlEnum("status", ["running", "waiting_for_input", "completed", "failed", "paused"]).notNull(),
+  status: mysqlEnum("status", ["queued", "running", "waiting_for_input", "completed", "failed", "paused"]).notNull(),
   input: text("input").notNull(),
   currentNodeId: varchar("current_node_id", { length: 255 }),
   context: json("context").notNull().$type<Record<string, string>>().default({}),
@@ -153,6 +153,37 @@ export const workflowStepLogs = mysqlTable("workflow_step_logs", {
     .defaultNow()
     .$defaultFn(() => new Date()),
   completedAt: timestamp("completed_at", { mode: "date", fsp: 6 }),
+});
+
+/**
+ * 工作流执行作业队列。工作流可能运行数分钟（多次 LLM 调用），
+ * 不能在 HTTP 请求内同步执行；用 MySQL 做载体队列避免引入 Redis 等新基础设施。
+ * 领取采用乐观锁（条件 UPDATE + affectedRows），崩溃通过租约过期感知。
+ */
+export const workflowJobs = mysqlTable("workflow_jobs", {
+  id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  runId: varchar("run_id", { length: 36 })
+    .notNull()
+    .references(() => workflowRuns.id, { onDelete: "cascade" }),
+  /** 执行类型，对应 executeRunJob 的分发分支 */
+  kind: mysqlEnum("kind", ["trigger", "resume", "retry", "step"]).notNull(),
+  /** 执行参数：resume 的 input、retry 的 nodeId、step 的 mode 等 */
+  payload: json("payload").notNull().$type<Record<string, unknown>>().default({}),
+  status: mysqlEnum("status", ["pending", "processing", "done", "failed"]).notNull().default("pending"),
+  attempts: int("attempts").notNull().default(0),
+  /** 当前持有者标识，仅用于可观测性 */
+  workerId: varchar("worker_id", { length: 64 }),
+  /** 租约到期时间；过期即认为持有者已崩溃 */
+  leaseExpiresAt: timestamp("lease_expires_at", { mode: "date", fsp: 6 }),
+  error: text("error"),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull()
+    .defaultNow()
+    .$defaultFn(() => new Date()),
+  updatedAt: timestamp("updated_at", { mode: "date", fsp: 6 })
+    .notNull()
+    .defaultNow()
+    .$defaultFn(() => new Date()),
 });
 
 export const knowledgeBases = mysqlTable("knowledge_bases", {

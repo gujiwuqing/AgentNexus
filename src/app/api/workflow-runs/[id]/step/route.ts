@@ -1,4 +1,4 @@
-import { stepWorkflowRun, getWorkflowRun } from "@/server/workflow-runs";
+import { enqueueStepRun, getWorkflowRun } from "@/server/workflow-runs";
 import { getWorkflowOwnedBy } from "@/server/workflows";
 import { apiOk, apiError } from "@/lib/api-response";
 import { requireUser } from "@/lib/auth";
@@ -16,7 +16,7 @@ export async function POST(request: Request, { params }: Params) {
 
   const body = await request.json().catch(() => ({}));
   const mode = body?.mode === "continue" ? "continue" : "step";
-  const result = await stepWorkflowRun(id, mode === "step");
+  const result = await enqueueStepRun(id, mode === "step");
   if (!result) return apiError(404, "not_found", "Run not found or not paused");
-  return apiOk(result);
+  return apiOk(result, 202);
 }

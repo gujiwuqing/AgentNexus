@@ -75,6 +75,11 @@ export function useDeleteWorkflow() {
   });
 }
 
+/** 运行仍在推进的状态；处于这些状态时需轮询。 */
+const ACTIVE_RUN_STATUSES = new Set(["queued", "running"]);
+/** 轮询间隔：工作流异步执行，前端靠轮询获取进展。 */
+const RUN_POLL_MS = 1_500;
+
 export function useWorkflowRuns(workflowId: string) {
   return useQuery({
     queryKey: ["workflows", workflowId, "runs"],
@@ -82,6 +87,10 @@ export function useWorkflowRuns(workflowId: string) {
       `/api/workflows/${workflowId}/runs`
     ),
     enabled: Boolean(workflowId),
+    refetchInterval: (query) => {
+      const runs = query.state.data;
+      return runs?.some((r) => ACTIVE_RUN_STATUSES.has(r.status)) ? RUN_POLL_MS : false;
+    },
   });
 }
 
@@ -90,6 +99,10 @@ export function useWorkflowRunDetail(runId: string) {
     queryKey: ["workflow-runs", runId],
     queryFn: () => fetchJson<WorkflowRunDetail>(`/api/workflow-runs/${runId}`),
     enabled: Boolean(runId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.run.status;
+      return status && ACTIVE_RUN_STATUSES.has(status) ? RUN_POLL_MS : false;
+    },
   });
 }
 

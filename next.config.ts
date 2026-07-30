@@ -6,7 +6,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
-  serverExternalPackages: ["pdf-parse"],
+  serverExternalPackages: ["pdf-parse", "mysql2"],
 };
 
 export default withNextIntl(nextConfig);

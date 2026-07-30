@@ -1,4 +1,4 @@
-import { resumeWorkflowRun, getWorkflowRun } from "@/server/workflow-runs";
+import { enqueueResumeRun, getWorkflowRun } from "@/server/workflow-runs";
 import { getWorkflowOwnedBy } from "@/server/workflows";
 import { apiOk, apiError } from "@/lib/api-response";
 import { requireUser } from "@/lib/auth";
@@ -16,7 +16,7 @@ export async function POST(request: Request, { params }: Params) {
 
   const body = await request.json().catch(() => ({}));
   const input = typeof body?.input === "string" ? body.input : "";
-  const result = await resumeWorkflowRun(id, input);
+  const result = await enqueueResumeRun(id, input);
   if (!result) return apiError(404, "not_found", "Run not found or not waiting for input");
-  return apiOk(result);
+  return apiOk(result, 202);
 }

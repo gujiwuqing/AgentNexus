@@ -11,6 +11,10 @@ import { executeWorkflow, type EngineCallbacks, type EngineResult } from "@/lib/
 import { retrieveAgentRagContext, injectRagContext } from "@/lib/knowledge/agent-rag";
 import type { WorkflowGraph, ExecutionContext } from "@/types/workflow";
 import { getLatestVersionNumber } from "./workflow-versions";
+import { enqueueJob, type ClaimedJob } from "./workflow-queue";
+
+/** 单个节点的执行超时（默认 5 分钟），可用环境变量覆盖。 */
+const NODE_TIMEOUT_MS = Number(process.env.WORKFLOW_NODE_TIMEOUT_MS ?? 5 * 60_000);
 
 /** paused 状态下 currentNodeId 存逗号分隔的待执行节点列表，其余状态存单个节点。 */
 function resultCurrentNodeId(result: EngineResult): string | null {
@@ -18,18 +22,7 @@ function resultCurrentNodeId(result: EngineResult): string | null {
   return result.currentNodeId ?? null;
 }
 
-export async function triggerWorkflowRun(workflowId: string, input: string, stepMode = false) {
-  const workflow = await getWorkflow(workflowId);
-  if (!workflow) throw new Error("Workflow not found");
-
-  const runId = createId();
-  const versionNumber = (await getLatestVersionNumber(workflowId)) || null;
-  await db.insert(workflowRuns).values({ id: runId, workflowId, status: "running", input, context: {}, versionNumber });
-
-  const callbacks = makeCallbacks(runId, workflow.userId);
-  const graph = workflow.graph as WorkflowGraph;
-  const result = await executeWorkflow(graph, input, callbacks, stepMode ? { stepMode } : undefined);
-
+async function persistResult(runId: string, result: EngineResult) {
   await db
     .update(workflowRuns)
     .set({
@@ -40,9 +33,154 @@ export async function triggerWorkflowRun(workflowId: string, input: string, step
       updatedAt: new Date(),
     })
     .where(eq(workflowRuns.id, runId));
-
-  return { id: runId, ...result };
 }
+
+// ---------------------------------------------------------------------------
+// 入队：HTTP 请求只负责登记意图，立即返回；实际执行由 worker 消费队列完成。
+// ---------------------------------------------------------------------------
+
+export type EnqueueResult = { id: string; status: "queued" };
+
+export async function enqueueWorkflowRun(
+  workflowId: string,
+  input: string,
+  stepMode = false,
+): Promise<EnqueueResult> {
+  const workflow = await getWorkflow(workflowId);
+  if (!workflow) throw new Error("Workflow not found");
+
+  const runId = createId();
+  const versionNumber = (await getLatestVersionNumber(workflowId)) || null;
+  await db.insert(workflowRuns).values({
+    id: runId,
+    workflowId,
+    status: "queued",
+    input,
+    context: {},
+    versionNumber,
+  });
+  await enqueueJob(runId, "trigger", { stepMode });
+
+  return { id: runId, status: "queued" };
+}
+
+export async function enqueueResumeRun(runId: string, input: string): Promise<EnqueueResult | null> {
+  const data = await getWorkflowRun(runId);
+  if (!data || data.run.status !== "waiting_for_input" || !data.run.currentNodeId) return null;
+
+  // 恢复点在入队时捕获：状态即将变为 queued，执行时无法再依据状态判断
+  await enqueueJob(runId, "resume", { input, resumeFromNodeId: data.run.currentNodeId });
+  await db
+    .update(workflowRuns)
+    .set({ status: "queued", updatedAt: new Date() })
+    .where(eq(workflowRuns.id, runId));
+
+  return { id: runId, status: "queued" };
+}
+
+export async function enqueueRetryRun(runId: string, nodeId: string): Promise<EnqueueResult | null> {
+  const data = await getWorkflowRun(runId);
+  if (!data || data.run.status !== "failed") return null;
+
+  await enqueueJob(runId, "retry", { nodeId });
+  await db
+    .update(workflowRuns)
+    .set({ status: "queued", error: null, updatedAt: new Date() })
+    .where(eq(workflowRuns.id, runId));
+
+  return { id: runId, status: "queued" };
+}
+
+/** 单步调试：从 paused 状态继续执行下一批节点（stepMode=true）或直接跑完（stepMode=false）。 */
+export async function enqueueStepRun(runId: string, stepMode: boolean): Promise<EnqueueResult | null> {
+  const data = await getWorkflowRun(runId);
+  if (!data || data.run.status !== "paused" || !data.run.currentNodeId) return null;
+
+  await enqueueJob(runId, "step", {
+    stepMode,
+    startNodeIds: data.run.currentNodeId.split(",").filter(Boolean),
+  });
+  await db
+    .update(workflowRuns)
+    .set({ status: "queued", updatedAt: new Date() })
+    .where(eq(workflowRuns.id, runId));
+
+  return { id: runId, status: "queued" };
+}
+
+// ---------------------------------------------------------------------------
+// 执行：由 worker 调用，不在 HTTP 请求生命周期内。
+// ---------------------------------------------------------------------------
+
+/**
+ * 执行一个已领取的作业。引擎内部会捕获节点异常并返回 failed，
+ * 因此这里只在「运行/工作流已不存在」这类前置条件失败时抛错。
+ */
+export async function executeRunJob(job: Pick<ClaimedJob, "runId" | "kind" | "payload">): Promise<EngineResult> {
+  const data = await getWorkflowRun(job.runId);
+  if (!data) throw new Error(`Workflow run ${job.runId} not found`);
+
+  const workflow = await getWorkflow(data.run.workflowId);
+  if (!workflow) throw new Error(`Workflow ${data.run.workflowId} not found`);
+
+  await db
+    .update(workflowRuns)
+    .set({ status: "running", updatedAt: new Date() })
+    .where(eq(workflowRuns.id, job.runId));
+
+  const callbacks = makeCallbacks(job.runId, workflow.userId);
+  const graph = workflow.graph as WorkflowGraph;
+  const existingContext = (data.run.context ?? {}) as ExecutionContext;
+  const payload = job.payload ?? {};
+
+  let result: EngineResult;
+  switch (job.kind) {
+    case "trigger":
+      result = await executeWorkflow(graph, data.run.input, callbacks, {
+        stepMode: payload.stepMode === true,
+        nodeTimeoutMs: NODE_TIMEOUT_MS,
+      });
+      break;
+    case "resume":
+      result = await executeWorkflow(graph, data.run.input, callbacks, {
+        resumeFromNodeId: String(payload.resumeFromNodeId ?? ""),
+        resumeInput: String(payload.input ?? ""),
+        existingContext,
+        nodeTimeoutMs: NODE_TIMEOUT_MS,
+      });
+      break;
+    case "retry":
+      result = await executeWorkflow(graph, data.run.input, callbacks, {
+        retryNodeId: String(payload.nodeId ?? ""),
+        existingContext,
+        nodeTimeoutMs: NODE_TIMEOUT_MS,
+      });
+      break;
+    case "step":
+      result = await executeWorkflow(graph, data.run.input, callbacks, {
+        startNodeIds: Array.isArray(payload.startNodeIds) ? (payload.startNodeIds as string[]) : [],
+        existingContext,
+        stepMode: payload.stepMode === true,
+        nodeTimeoutMs: NODE_TIMEOUT_MS,
+      });
+      break;
+  }
+
+  await persistResult(job.runId, result);
+  return result;
+}
+
+/** 执行前置校验失败时，把运行标记为 failed，避免永久停在 queued。 */
+export async function markRunFailed(runId: string, error: string) {
+  await db
+    .update(workflowRuns)
+    .set({ status: "failed", error, updatedAt: new Date() })
+    .where(eq(workflowRuns.id, runId));
+}
+
+// ---------------------------------------------------------------------------
+// 读取
+// ---------------------------------------------------------------------------
 
 export async function getWorkflowRun(id: string) {
   const [run] = await db.select().from(workflowRuns).where(eq(workflowRuns.id, id));
@@ -60,108 +198,6 @@ export async function listWorkflowRuns(workflowId: string) {
     .from(workflowRuns)
     .where(eq(workflowRuns.workflowId, workflowId))
     .orderBy(desc(workflowRuns.createdAt));
-}
-
-export async function resumeWorkflowRun(runId: string, input: string) {
-  const data = await getWorkflowRun(runId);
-  if (!data || data.run.status !== "waiting_for_input" || !data.run.currentNodeId) return null;
-
-  const workflow = await getWorkflow(data.run.workflowId);
-  if (!workflow) return null;
-
-  await db
-    .update(workflowRuns)
-    .set({ status: "running", updatedAt: new Date() })
-    .where(eq(workflowRuns.id, runId));
-
-  const callbacks = makeCallbacks(runId, workflow.userId);
-  const graph = workflow.graph as WorkflowGraph;
-  const result = await executeWorkflow(graph, data.run.input, callbacks, {
-    resumeFromNodeId: data.run.currentNodeId,
-    resumeInput: input,
-    existingContext: (data.run.context ?? {}) as ExecutionContext,
-  });
-
-  await db
-    .update(workflowRuns)
-    .set({
-      status: result.status,
-      context: result.context,
-      currentNodeId: resultCurrentNodeId(result),
-      error: result.error ?? null,
-      updatedAt: new Date(),
-    })
-    .where(eq(workflowRuns.id, runId));
-
-  return { id: runId, ...result };
-}
-
-/** 单步调试：从 paused 状态继续执行下一批节点（stepMode=true）或直接跑完（stepMode=false）。 */
-export async function stepWorkflowRun(runId: string, stepMode: boolean) {
-  const data = await getWorkflowRun(runId);
-  if (!data || data.run.status !== "paused" || !data.run.currentNodeId) return null;
-
-  const workflow = await getWorkflow(data.run.workflowId);
-  if (!workflow) return null;
-
-  await db
-    .update(workflowRuns)
-    .set({ status: "running", updatedAt: new Date() })
-    .where(eq(workflowRuns.id, runId));
-
-  const callbacks = makeCallbacks(runId, workflow.userId);
-  const graph = workflow.graph as WorkflowGraph;
-  const result = await executeWorkflow(graph, data.run.input, callbacks, {
-    startNodeIds: data.run.currentNodeId.split(",").filter(Boolean),
-    existingContext: (data.run.context ?? {}) as ExecutionContext,
-    stepMode,
-  });
-
-  await db
-    .update(workflowRuns)
-    .set({
-      status: result.status,
-      context: result.context,
-      currentNodeId: resultCurrentNodeId(result),
-      error: result.error ?? null,
-      updatedAt: new Date(),
-    })
-    .where(eq(workflowRuns.id, runId));
-
-  return { id: runId, ...result };
-}
-
-export async function retryWorkflowRun(runId: string, nodeId: string) {
-  const data = await getWorkflowRun(runId);
-  if (!data || data.run.status !== "failed") return null;
-
-  const workflow = await getWorkflow(data.run.workflowId);
-  if (!workflow) return null;
-
-  await db
-    .update(workflowRuns)
-    .set({ status: "running", error: null, updatedAt: new Date() })
-    .where(eq(workflowRuns.id, runId));
-
-  const callbacks = makeCallbacks(runId, workflow.userId);
-  const graph = workflow.graph as WorkflowGraph;
-  const result = await executeWorkflow(graph, data.run.input, callbacks, {
-    retryNodeId: nodeId,
-    existingContext: (data.run.context ?? {}) as ExecutionContext,
-  });
-
-  await db
-    .update(workflowRuns)
-    .set({
-      status: result.status,
-      context: result.context,
-      currentNodeId: resultCurrentNodeId(result),
-      error: result.error ?? null,
-      updatedAt: new Date(),
-    })
-    .where(eq(workflowRuns.id, runId));
-
-  return { id: runId, ...result };
 }
 
 function makeCallbacks(runId: string, userId: string): EngineCallbacks {

@@ -54,6 +54,7 @@
       "sourceCount": "{count} 个来源节点"
     },
     "status": {
+      "queued": "排队中",
       "running": "运行中",
       "waiting_for_input": "等待输入",
       "completed": "已完成",
@@ -100,6 +101,8 @@
       "heading": "运行记录",
       "run": "运行",
       "noRuns": "还没有运行记录。",
+      "queuedHint": "已加入执行队列，进度会自动刷新。",
+      "activeHint": "正在后台执行，可离开页面稍后回来查看。",
       "emptyInput": "（空）",
       "colNode": "节点",
       "colType": "类型",
@@ -170,21 +173,21 @@
       "issueCount": "{count} 项待完善",
       "hint": "以下问题会导致运行失败，保存不受影响。",
       "codes": {
-        "agent.missingAgent": "未选择智能体",
-        "agent.missingPrompt": "未填写 Prompt 模板",
-        "condition.missingExpression": "未填写判断表达式",
-        "condition.missingInput": "未选择输入节点",
-        "condition.missingBranch": "未设置 True/False 分支",
-        "condition.unknownBranch": "分支指向的节点已不存在",
-        "transform.missingOperation": "未选择操作类型",
-        "transform.missingTemplate": "模板拼接缺少 template 参数",
-        "http.missingUrl": "未填写请求 URL",
-        "http.invalidUrl": "URL 需以 http:// 或 https:// 开头",
-        "code.missingCode": "未填写代码",
-        "delay.invalidDuration": "延时需在 0–30000 毫秒之间",
-        "aggregate.missingSources": "未选择来源节点",
-        "graph.emptyGraph": "工作流还没有任何节点",
-        "graph.unknownEdge": "存在指向已删除节点的连线"
+        "agentMissingAgent": "未选择智能体",
+        "agentMissingPrompt": "未填写 Prompt 模板",
+        "conditionMissingExpression": "未填写判断表达式",
+        "conditionMissingInput": "未选择输入节点",
+        "conditionMissingBranch": "未设置 True/False 分支",
+        "conditionUnknownBranch": "分支指向的节点已不存在",
+        "transformMissingOperation": "未选择操作类型",
+        "transformMissingTemplate": "模板拼接缺少 template 参数",
+        "httpMissingUrl": "未填写请求 URL",
+        "httpInvalidUrl": "URL 需以 http:// 或 https:// 开头",
+        "codeMissingCode": "未填写代码",
+        "delayInvalidDuration": "延时需在 0–30000 毫秒之间",
+        "aggregateMissingSources": "未选择来源节点",
+        "graphEmpty": "工作流还没有任何节点",
+        "graphUnknownEdge": "存在指向已删除节点的连线"
       }
     }
   }

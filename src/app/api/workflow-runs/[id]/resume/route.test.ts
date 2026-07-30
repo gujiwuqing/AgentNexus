@@ -3,7 +3,8 @@ import { clearAllTables, authedUser } from "@/db/test-helpers";
 import { createWorkflow } from "@/server/workflows";
 import { createAgent } from "@/server/agents";
 import { upsertProviderConfig } from "@/server/provider-config";
-import { triggerWorkflowRun } from "@/server/workflow-runs";
+import { enqueueWorkflowRun, getWorkflowRun } from "@/server/workflow-runs";
+import { drainWorkflowQueue } from "@/server/workflow-worker";
 import { POST } from "./route";
 
 vi.mock("@/lib/ai/generate", () => ({
@@ -34,13 +35,20 @@ describe("POST /api/workflow-runs/[id]/resume", () => {
     };
     const w = await createWorkflow({ name: "HI", description: "", graph }, user.id);
 
-    const run = await triggerWorkflowRun(w.id, "");
-    expect(run.status).toBe("waiting_for_input");
+    const run = await enqueueWorkflowRun(w.id, "");
+    await drainWorkflowQueue();
+    const paused = await getWorkflowRun(run.id);
+    expect(paused?.run.status).toBe("waiting_for_input");
 
+    // 恢复现在是异步的：接口返回 202 + queued，执行由 worker 完成
     const res = await POST(postRequest(cookie, { input: "user answer" }), { params: Promise.resolve({ id: run.id }) });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(202);
     const body = await res.json();
-    expect(body.status).toBe("completed");
+    expect(body.status).toBe("queued");
+
+    await drainWorkflowQueue();
+    const done = await getWorkflowRun(run.id);
+    expect(done?.run.status).toBe("completed");
   });
 
   it("returns 404 for non-resumable run", async () => {

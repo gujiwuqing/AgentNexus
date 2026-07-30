@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { RotateCcw, ChevronDown, ChevronRight, Play, StepForward, FastForward, Braces, Search, Download } from "lucide-react";
+import { RotateCcw, ChevronDown, ChevronRight, Play, StepForward, FastForward, Braces, Search, Download, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,13 +29,16 @@ function StatusBadge({ status }: { status: string }) {
     completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     running: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+    queued: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
     waiting_for_input: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
     paused: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
     skipped: "bg-muted text-muted-foreground",
   };
+  const isActive = status === "running" || status === "queued";
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded ${colors[status] ?? "bg-muted"}`}>
-      {t(status as "running" | "waiting_for_input" | "completed" | "failed" | "skipped" | "paused")}
+    <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ${colors[status] ?? "bg-muted"}`}>
+      {isActive && <Loader2 className="h-2.5 w-2.5 animate-spin" />}
+      {t(status as "running" | "waiting_for_input" | "completed" | "failed" | "skipped" | "paused" | "queued")}
     </span>
   );
 }
@@ -259,6 +262,12 @@ export function RunPanel({
                       </div>
                     );
                   })}
+
+                  {(runDetail.run.status === "queued" || runDetail.run.status === "running") && (
+                    <p className="text-[10px] text-muted-foreground py-1">
+                      {runDetail.run.status === "queued" ? t("queuedHint") : t("activeHint")}
+                    </p>
+                  )}
 
                   {runDetail.run.status === "paused" && (
                     <div className="mt-2 rounded border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-2 space-y-1.5">

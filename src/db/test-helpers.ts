@@ -5,6 +5,7 @@ import {
   messages,
   aiProviderConfig,
   workflowStepLogs,
+  workflowJobs,
   workflowRuns,
   workflows,
   knowledgeBases,
@@ -32,6 +33,7 @@ export async function clearAllTables() {
   await db.delete(messages);
   await db.delete(conversations);
   await db.delete(workflowStepLogs);
+  await db.delete(workflowJobs);
   await db.delete(workflowRuns);
   await db.delete(workflows);
   await db.delete(agents);

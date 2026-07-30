@@ -5,11 +5,12 @@ import { createAgent } from "./agents";
 import { upsertProviderConfig } from "./provider-config";
 import { generateAgentReply } from "@/lib/ai/generate";
 import {
-  triggerWorkflowRun,
+  enqueueWorkflowRun,
+  enqueueResumeRun,
   getWorkflowRun,
   listWorkflowRuns,
-  resumeWorkflowRun,
 } from "./workflow-runs";
+import { drainWorkflowQueue } from "./workflow-worker";
 
 vi.mock("@/lib/ai/generate", () => ({
   generateAgentReply: vi.fn(async () => "mocked AI reply"),
@@ -28,33 +29,46 @@ const makeSimpleWorkflow = async (userId: string) => {
 };
 
 describe("workflow run service", () => {
-  it("triggers a run and completes", async () => {
+  it("enqueues a run without executing it inline", async () => {
     const { user } = await authedUser();
     const w = await makeSimpleWorkflow(user.id);
-    const run = await triggerWorkflowRun(w.id, "hello");
-    expect(run.status).toBe("completed");
-    expect(run.context).toHaveProperty("a");
+
+    const queued = await enqueueWorkflowRun(w.id, "hello");
+    expect(queued.status).toBe("queued");
+
+    // 入队阶段不应执行任何节点
+    const beforeDrain = await getWorkflowRun(queued.id);
+    expect(beforeDrain?.run.status).toBe("queued");
+    expect(beforeDrain?.stepLogs).toHaveLength(0);
   });
 
-  it("retrieves a run by id", async () => {
+  it("completes the run once the queue is drained", async () => {
     const { user } = await authedUser();
     const w = await makeSimpleWorkflow(user.id);
-    const run = await triggerWorkflowRun(w.id, "hello");
-    const fetched = await getWorkflowRun(run.id);
-    expect(fetched?.run.id).toBe(run.id);
+
+    const queued = await enqueueWorkflowRun(w.id, "hello");
+    const processed = await drainWorkflowQueue();
+    expect(processed).toBe(1);
+
+    const fetched = await getWorkflowRun(queued.id);
+    expect(fetched?.run.status).toBe("completed");
+    expect(fetched?.run.context).toHaveProperty("a");
     expect(fetched?.stepLogs.length).toBeGreaterThan(0);
   });
 
   it("lists runs for a workflow", async () => {
     const { user } = await authedUser();
     const w = await makeSimpleWorkflow(user.id);
-    await triggerWorkflowRun(w.id, "a");
-    await triggerWorkflowRun(w.id, "b");
+    await enqueueWorkflowRun(w.id, "a");
+    await enqueueWorkflowRun(w.id, "b");
+    await drainWorkflowQueue();
+
     const runs = await listWorkflowRuns(w.id);
     expect(runs).toHaveLength(2);
+    expect(runs.every((r) => r.status === "completed")).toBe(true);
   });
 
-  it("handles human_input pause and resume", async () => {
+  it("handles human_input pause and resume through the queue", async () => {
     const { user } = await authedUser();
     await upsertProviderConfig({ baseUrl: "https://api.example/v1", model: "m1", apiKey: "k1" }, user.id);
     const agent = await createAgent({ name: "H", description: "", avatar: "", tags: [], systemPrompt: "", temperature: 0.7, maxTokens: 1024, topP: 1, model: null }, user.id);
@@ -67,12 +81,18 @@ describe("workflow run service", () => {
     };
     const w = await createWorkflow({ name: "HI", description: "", graph }, user.id);
 
-    const run = await triggerWorkflowRun(w.id, "");
-    expect(run.status).toBe("waiting_for_input");
+    const queued = await enqueueWorkflowRun(w.id, "");
+    await drainWorkflowQueue();
+    const paused = await getWorkflowRun(queued.id);
+    expect(paused?.run.status).toBe("waiting_for_input");
 
-    const resumed = await resumeWorkflowRun(run.id, "user input here");
-    expect(resumed?.status).toBe("completed");
-    expect(resumed?.context).toHaveProperty("a");
+    const resumed = await enqueueResumeRun(queued.id, "user input here");
+    expect(resumed?.status).toBe("queued");
+    await drainWorkflowQueue();
+
+    const done = await getWorkflowRun(queued.id);
+    expect(done?.run.status).toBe("completed");
+    expect(done?.run.context).toHaveProperty("a");
   });
 
   it("marks the step log as failed when a node throws", async () => {
@@ -80,10 +100,11 @@ describe("workflow run service", () => {
     const w = await makeSimpleWorkflow(user.id);
     vi.mocked(generateAgentReply).mockRejectedValueOnce(new Error("boom"));
 
-    const run = await triggerWorkflowRun(w.id, "hello");
-    expect(run.status).toBe("failed");
+    const queued = await enqueueWorkflowRun(w.id, "hello");
+    await drainWorkflowQueue();
 
-    const fetched = await getWorkflowRun(run.id);
+    const fetched = await getWorkflowRun(queued.id);
+    expect(fetched?.run.status).toBe("failed");
     const log = fetched?.stepLogs.find((l) => l.nodeId === "a");
     expect(log?.status).toBe("failed");
     expect(log?.output).toBe("boom");
@@ -111,15 +132,26 @@ describe("workflow run service", () => {
       .mockResolvedValueOnce("output-from-p1")
       .mockResolvedValueOnce("output-from-p2");
 
-    const run = await triggerWorkflowRun(w.id, "");
-    expect(run.status).toBe("completed");
+    const queued = await enqueueWorkflowRun(w.id, "");
+    await drainWorkflowQueue();
 
-    const fetched = await getWorkflowRun(run.id);
+    const fetched = await getWorkflowRun(queued.id);
+    expect(fetched?.run.status).toBe("completed");
     const p1Log = fetched?.stepLogs.find((l) => l.nodeId === "p1");
     const p2Log = fetched?.stepLogs.find((l) => l.nodeId === "p2");
     expect(p1Log?.status).toBe("completed");
     expect(p1Log?.output).toBe("output-from-p1");
     expect(p2Log?.status).toBe("completed");
     expect(p2Log?.output).toBe("output-from-p2");
+  });
+
+  it("refuses to resume a run that is not waiting for input", async () => {
+    const { user } = await authedUser();
+    const w = await makeSimpleWorkflow(user.id);
+    const queued = await enqueueWorkflowRun(w.id, "hello");
+    await drainWorkflowQueue();
+
+    // 已完成的运行不能被恢复
+    expect(await enqueueResumeRun(queued.id, "x")).toBeNull();
   });
 });

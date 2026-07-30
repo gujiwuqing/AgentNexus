@@ -3,6 +3,8 @@ import { clearAllTables, authedUser } from "@/db/test-helpers";
 import { createWorkflow } from "@/server/workflows";
 import { createAgent } from "@/server/agents";
 import { upsertProviderConfig } from "@/server/provider-config";
+import { getWorkflowRun } from "@/server/workflow-runs";
+import { drainWorkflowQueue } from "@/server/workflow-worker";
 import { GET, POST } from "./route";
 
 vi.mock("@/lib/ai/generate", () => ({
@@ -36,13 +38,34 @@ function req(cookie: string) {
 }
 
 describe("POST /api/workflows/[id]/runs", () => {
-  it("triggers a run and returns result", async () => {
+  it("queues a run and returns 202 without executing inline", async () => {
     const { w, cookie } = await makeWorkflow();
     const res = await POST(postRequest(cookie, { input: "hello" }), { params: Promise.resolve({ id: w.id }) });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(202);
     const body = await res.json();
-    expect(body.status).toBe("completed");
-    expect(body.context).toHaveProperty("a");
+    expect(body.status).toBe("queued");
+
+    // 执行由 worker 完成，不占用请求生命周期
+    await drainWorkflowQueue();
+    const fetched = await getWorkflowRun(body.id);
+    expect(fetched?.run.status).toBe("completed");
+    expect(fetched?.run.context).toHaveProperty("a");
+  });
+
+  it("rejects running a workflow with invalid node config", async () => {
+    const { user, cookie } = await authedUser();
+    // agent 节点未选择 Agent，也未填 Prompt
+    const graph = {
+      nodes: [{ id: "a", type: "agent" as const, label: "A", config: { agentId: "", promptTemplate: "" } }],
+      edges: [],
+    };
+    const w = await createWorkflow({ name: "Broken", description: "", graph }, user.id);
+
+    const res = await POST(postRequest(cookie, { input: "x" }), { params: Promise.resolve({ id: w.id }) });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error.code).toBe("invalid_graph");
+    expect(body.error.details.issues.length).toBeGreaterThan(0);
   });
 });
 

@@ -12,7 +12,7 @@ function codesOf(g: WorkflowGraph): string[] {
 
 describe("validateGraph", () => {
   it("flags an empty graph", () => {
-    expect(codesOf(graph([]))).toEqual(["graph.emptyGraph"]);
+    expect(codesOf(graph([]))).toEqual(["graphEmpty"]);
   });
 
   it("accepts a fully configured agent node", () => {
@@ -26,7 +26,7 @@ describe("validateGraph", () => {
     const g = graph([
       { id: "n1", type: "agent", label: "A", config: { agentId: "", promptTemplate: "" } },
     ]);
-    expect(codesOf(g)).toEqual(["agent.missingAgent", "agent.missingPrompt"]);
+    expect(codesOf(g)).toEqual(["agentMissingAgent", "agentMissingPrompt"]);
   });
 
   it("flags condition nodes missing expression, input or branches", () => {
@@ -34,35 +34,35 @@ describe("validateGraph", () => {
       { id: "n1", type: "condition", label: "C", config: { expression: "", inputNodeId: "", trueBranch: "", falseBranch: "" } },
     ]);
     const codes = codesOf(g);
-    expect(codes).toContain("condition.missingExpression");
-    expect(codes).toContain("condition.missingInput");
-    expect(codes).toContain("condition.missingBranch");
+    expect(codes).toContain("conditionMissingExpression");
+    expect(codes).toContain("conditionMissingInput");
+    expect(codes).toContain("conditionMissingBranch");
   });
 
   it("flags condition branches pointing at removed nodes", () => {
     const g = graph([
       { id: "n1", type: "condition", label: "C", config: { expression: "contains:x", inputNodeId: "n1", trueBranch: "ghost", falseBranch: "n1" } },
     ]);
-    expect(codesOf(g)).toContain("condition.unknownBranch");
+    expect(codesOf(g)).toContain("conditionUnknownBranch");
   });
 
   it("requires a template param for template transforms", () => {
     const g = graph([
       { id: "n1", type: "transform", label: "T", config: { operation: "template", params: {}, inputTemplate: "" } },
     ]);
-    expect(codesOf(g)).toContain("transform.missingTemplate");
+    expect(codesOf(g)).toContain("transformMissingTemplate");
   });
 
   it("validates http node urls but allows templated ones", () => {
     const missing = graph([
       { id: "n1", type: "http_request", label: "H", config: { url: "", method: "GET" } },
     ]);
-    expect(codesOf(missing)).toContain("http.missingUrl");
+    expect(codesOf(missing)).toContain("httpMissingUrl");
 
     const invalid = graph([
       { id: "n1", type: "http_request", label: "H", config: { url: "example.com", method: "GET" } },
     ]);
-    expect(codesOf(invalid)).toContain("http.invalidUrl");
+    expect(codesOf(invalid)).toContain("httpInvalidUrl");
 
     const templated = graph([
       { id: "n1", type: "http_request", label: "H", config: { url: "{{input}}/api", method: "GET" } },
@@ -72,18 +72,18 @@ describe("validateGraph", () => {
 
   it("flags empty code and out-of-range delay", () => {
     expect(codesOf(graph([{ id: "n1", type: "code_execute", label: "X", config: { code: "  " } }]))).toContain(
-      "code.missingCode",
+      "codeMissingCode",
     );
     expect(
       codesOf(graph([{ id: "n1", type: "delay", label: "D", config: { durationMs: 99999, inputNodeId: "n1" } }])),
-    ).toContain("delay.invalidDuration");
+    ).toContain("delayInvalidDuration");
   });
 
   it("flags aggregate nodes without sources", () => {
     const g = graph([
       { id: "n1", type: "variable_aggregate", label: "M", config: { sourceNodeIds: [] } },
     ]);
-    expect(codesOf(g)).toContain("aggregate.missingSources");
+    expect(codesOf(g)).toContain("aggregateMissingSources");
   });
 
   it("accepts human_input without a prompt", () => {
@@ -96,7 +96,7 @@ describe("validateGraph", () => {
       [{ id: "n1", type: "human_input", label: "H", config: { prompt: "" } }],
       [{ id: "e1", source: "n1", target: "ghost" }],
     );
-    expect(codesOf(g)).toContain("graph.unknownEdge");
+    expect(codesOf(g)).toContain("graphUnknownEdge");
   });
 
   it("attaches node id and label to each issue", () => {

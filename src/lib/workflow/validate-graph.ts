@@ -10,23 +10,24 @@ import type {
   VariableAggregateNodeConfig,
 } from "@/types/workflow";
 
-/** 校验问题的机器可读标识，UI 侧据此取 i18n 文案。 */
+/** 校验问题的机器可读标识，UI 侧据此取 i18n 文案。
+ * 注意：不能含 "."，next-intl 会把点解释为嵌套层级。 */
 export type GraphIssueCode =
-  | "agent.missingAgent"
-  | "agent.missingPrompt"
-  | "condition.missingExpression"
-  | "condition.missingInput"
-  | "condition.missingBranch"
-  | "condition.unknownBranch"
-  | "transform.missingOperation"
-  | "transform.missingTemplate"
-  | "http.missingUrl"
-  | "http.invalidUrl"
-  | "code.missingCode"
-  | "delay.invalidDuration"
-  | "aggregate.missingSources"
-  | "graph.emptyGraph"
-  | "graph.unknownEdge";
+  | "agentMissingAgent"
+  | "agentMissingPrompt"
+  | "conditionMissingExpression"
+  | "conditionMissingInput"
+  | "conditionMissingBranch"
+  | "conditionUnknownBranch"
+  | "transformMissingOperation"
+  | "transformMissingTemplate"
+  | "httpMissingUrl"
+  | "httpInvalidUrl"
+  | "codeMissingCode"
+  | "delayInvalidDuration"
+  | "aggregateMissingSources"
+  | "graphEmpty"
+  | "graphUnknownEdge";
 
 export type GraphIssue = {
   /** 关联节点 id；图级问题为 null */
@@ -44,18 +45,18 @@ function validateNode(node: WorkflowNode, nodeIds: Set<string>): GraphIssueCode[
   switch (node.type) {
     case "agent": {
       const c = config as unknown as AgentNodeConfig;
-      if (!c.agentId) codes.push("agent.missingAgent");
-      if (!c.promptTemplate?.trim()) codes.push("agent.missingPrompt");
+      if (!c.agentId) codes.push("agentMissingAgent");
+      if (!c.promptTemplate?.trim()) codes.push("agentMissingPrompt");
       break;
     }
     case "condition": {
       const c = config as unknown as ConditionNodeConfig;
-      if (!c.expression?.trim()) codes.push("condition.missingExpression");
-      if (!c.inputNodeId) codes.push("condition.missingInput");
-      if (!c.trueBranch || !c.falseBranch) codes.push("condition.missingBranch");
+      if (!c.expression?.trim()) codes.push("conditionMissingExpression");
+      if (!c.inputNodeId) codes.push("conditionMissingInput");
+      if (!c.trueBranch || !c.falseBranch) codes.push("conditionMissingBranch");
       for (const branch of [c.trueBranch, c.falseBranch]) {
         if (branch && !nodeIds.has(branch)) {
-          codes.push("condition.unknownBranch");
+          codes.push("conditionUnknownBranch");
           break;
         }
       }
@@ -63,38 +64,38 @@ function validateNode(node: WorkflowNode, nodeIds: Set<string>): GraphIssueCode[
     }
     case "transform": {
       const c = config as unknown as TransformNodeConfig;
-      if (!c.operation) codes.push("transform.missingOperation");
+      if (!c.operation) codes.push("transformMissingOperation");
       if (c.operation === "template" && !c.params?.template?.trim()) {
-        codes.push("transform.missingTemplate");
+        codes.push("transformMissingTemplate");
       }
       break;
     }
     case "http_request": {
       const c = config as unknown as HttpRequestNodeConfig;
       if (!c.url?.trim()) {
-        codes.push("http.missingUrl");
+        codes.push("httpMissingUrl");
       } else if (!/^https?:\/\//i.test(c.url) && !c.url.includes("{{")) {
         // 含模板变量的 URL 运行时才能确定，跳过静态校验
-        codes.push("http.invalidUrl");
+        codes.push("httpInvalidUrl");
       }
       break;
     }
     case "code_execute": {
       const c = config as unknown as CodeExecuteNodeConfig;
-      if (!c.code?.trim()) codes.push("code.missingCode");
+      if (!c.code?.trim()) codes.push("codeMissingCode");
       break;
     }
     case "delay": {
       const c = config as unknown as DelayNodeConfig;
       if (typeof c.durationMs !== "number" || c.durationMs < 0 || c.durationMs > MAX_DELAY_MS) {
-        codes.push("delay.invalidDuration");
+        codes.push("delayInvalidDuration");
       }
       break;
     }
     case "variable_aggregate": {
       const c = config as unknown as VariableAggregateNodeConfig;
       if (!Array.isArray(c.sourceNodeIds) || c.sourceNodeIds.length === 0) {
-        codes.push("aggregate.missingSources");
+        codes.push("aggregateMissingSources");
       }
       break;
     }
@@ -115,7 +116,7 @@ export function validateGraph(graph: WorkflowGraph): GraphIssue[] {
   const nodes = graph.nodes ?? [];
 
   if (nodes.length === 0) {
-    return [{ nodeId: null, nodeLabel: null, code: "graph.emptyGraph" }];
+    return [{ nodeId: null, nodeLabel: null, code: "graphEmpty" }];
   }
 
   const nodeIds = new Set(nodes.map((n) => n.id));
@@ -128,7 +129,7 @@ export function validateGraph(graph: WorkflowGraph): GraphIssue[] {
 
   for (const edge of graph.edges ?? []) {
     if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) {
-      issues.push({ nodeId: null, nodeLabel: null, code: "graph.unknownEdge" });
+      issues.push({ nodeId: null, nodeLabel: null, code: "graphUnknownEdge" });
       break;
     }
   }

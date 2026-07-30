@@ -1,0 +1,888 @@
+
+> agentnexus@0.1.0 dev /Users/feng/work/AgentNexus
+> next dev
+
+ ⚠ Port 3000 is in use by process 24104, using available port 3001 instead.
+   ▲ Next.js 15.5.22
+   - Local:        http://localhost:3001
+   - Network:      http://30.166.209.90:3001
+   - Environments: .env.local
+
+ ✓ Starting...
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 833ms (294 modules)
+[workflow-worker] started (id=25493-b125d13b, concurrency=2)
+ ✓ Ready in 3.1s
+ ○ Compiling /login ...
+ ✓ Compiled /login in 4.9s (1387 modules)
+Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+
+    at async RootLayout (src/app/layout.tsx:21:18)
+  19 |   children: React.ReactNode;
+  20 | }) {
+> 21 |   const locale = await getLocale();
+     |                  ^
+  22 |   const messages = await getMessages();
+  23 |
+  24 |   return ( {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+
+    at async LoginPage (src/app/login/page.tsx:9:13)
+   7 |   const user = await getCurrentUser();
+   8 |   if (user) redirect("/chat");
+>  9 |   const t = await getTranslations("auth");
+     |             ^
+  10 |   return (
+  11 |     <main>
+  12 |       <title>{t("login")}</title> {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+[Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+] {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+ GET /login 200 in 5708ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 4.6s (2682 modules)
+Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+
+    at async RootLayout (src/app/layout.tsx:21:18)
+  19 |   children: React.ReactNode;
+  20 | }) {
+> 21 |   const locale = await getLocale();
+     |                  ^
+  22 |   const messages = await getMessages();
+  23 |
+  24 |   return ( {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+[Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+] {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+[Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+] {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+ GET /dashboard 307 in 5455ms
+Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+
+    at async RootLayout (src/app/layout.tsx:21:18)
+  19 |   children: React.ReactNode;
+  20 | }) {
+> 21 |   const locale = await getLocale();
+     |                  ^
+  22 |   const messages = await getMessages();
+  23 |
+  24 |   return ( {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+
+    at async LoginPage (src/app/login/page.tsx:9:13)
+   7 |   const user = await getCurrentUser();
+   8 |   if (user) redirect("/chat");
+>  9 |   const t = await getTranslations("auth");
+     |             ^
+  10 |   return (
+  11 |     <main>
+  12 |       <title>{t("login")}</title> {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+[Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+] {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+ GET /login 200 in 212ms
+Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+
+    at async RootLayout (src/app/layout.tsx:21:18)
+  19 |   children: React.ReactNode;
+  20 | }) {
+> 21 |   const locale = await getLocale();
+     |                  ^
+  22 |   const messages = await getMessages();
+  23 |
+  24 |   return ( {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+
+    at async LoginPage (src/app/login/page.tsx:9:13)
+   7 |   const user = await getCurrentUser();
+   8 |   if (user) redirect("/chat");
+>  9 |   const t = await getTranslations("auth");
+     |             ^
+  10 |   return (
+  11 |     <main>
+  12 |       <title>{t("login")}</title> {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+[Error: INVALID_KEY: Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.
+
+Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)
+
+If you're migrating from a flat structure, you can convert your messages as follows:
+
+import {set} from "lodash";
+
+const input = {
+  "one.one": "1.1",
+  "one.two": "1.2",
+  "two.one.one": "2.1.1"
+};
+
+const output = Object.entries(input).reduce(
+  (acc, [key, value]) => set(acc, key, value),
+  {}
+);
+
+// Output:
+//
+// {
+//   "one": {
+//     "one": "1.1",
+//     "two": "1.2"
+//   },
+//   "two": {
+//     "one": {
+//       "one": "2.1.1"
+//     }
+//   }
+// }
+] {
+  code: 'INVALID_KEY',
+  originalMessage: 'Namespace keys cannot contain the character "." as this is used to express nesting. Please remove it or replace it with another character.\n' +
+    '\n' +
+    'Invalid keys: agent.missingAgent (at workflowExt.validation.codes), agent.missingPrompt (at workflowExt.validation.codes), condition.missingExpression (at workflowExt.validation.codes), condition.missingInput (at workflowExt.validation.codes), condition.missingBranch (at workflowExt.validation.codes), condition.unknownBranch (at workflowExt.validation.codes), transform.missingOperation (at workflowExt.validation.codes), transform.missingTemplate (at workflowExt.validation.codes), http.missingUrl (at workflowExt.validation.codes), http.invalidUrl (at workflowExt.validation.codes), code.missingCode (at workflowExt.validation.codes), delay.invalidDuration (at workflowExt.validation.codes), aggregate.missingSources (at workflowExt.validation.codes), graph.emptyGraph (at workflowExt.validation.codes), graph.unknownEdge (at workflowExt.validation.codes)\n' +
+    '\n' +
+    "If you're migrating from a flat structure, you can convert your messages as follows:\n" +
+    '\n' +
+    'import {set} from "lodash";\n' +
+    '\n' +
+    'const input = {\n' +
+    '  "one.one": "1.1",\n' +
+    '  "one.two": "1.2",\n' +
+    '  "two.one.one": "2.1.1"\n' +
+    '};\n' +
+    '\n' +
+    'const output = Object.entries(input).reduce(\n' +
+    '  (acc, [key, value]) => set(acc, key, value),\n' +
+    '  {}\n' +
+    ');\n' +
+    '\n' +
+    '// Output:\n' +
+    '//\n' +
+    '// {\n' +
+    '//   "one": {\n' +
+    '//     "one": "1.1",\n' +
+    '//     "two": "1.2"\n' +
+    '//   },\n' +
+    '//   "two": {\n' +
+    '//     "one": {\n' +
+    '//       "one": "2.1.1"\n' +
+    '//     }\n' +
+    '//   }\n' +
+    '// }\n'
+}
+ GET /login 200 in 839ms
+ ✓ Compiled in 1834ms (963 modules)
+ ✓ Compiled in 938ms (963 modules)
+ ✓ Compiled in 2.2s (1245 modules)
+[workflow-worker] stopped
+[?25h

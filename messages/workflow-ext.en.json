@@ -54,6 +54,7 @@
       "sourceCount": "{count} sources"
     },
     "status": {
+      "queued": "Queued",
       "running": "Running",
       "waiting_for_input": "Waiting for Input",
       "completed": "Completed",
@@ -100,6 +101,8 @@
       "heading": "Runs",
       "run": "Run",
       "noRuns": "No runs yet.",
+      "queuedHint": "Queued for execution. Progress refreshes automatically.",
+      "activeHint": "Running in the background — you can leave this page and come back.",
       "emptyInput": "(empty)",
       "colNode": "Node",
       "colType": "Type",
@@ -170,21 +173,21 @@
       "issueCount": "{count} to fix",
       "hint": "These issues block running. Saving is unaffected.",
       "codes": {
-        "agent.missingAgent": "No agent selected",
-        "agent.missingPrompt": "Prompt template is empty",
-        "condition.missingExpression": "Condition expression is empty",
-        "condition.missingInput": "No input node selected",
-        "condition.missingBranch": "True/False branch not set",
-        "condition.unknownBranch": "A branch points to a node that no longer exists",
-        "transform.missingOperation": "No operation selected",
-        "transform.missingTemplate": "Template operation needs a template param",
-        "http.missingUrl": "Request URL is empty",
-        "http.invalidUrl": "URL must start with http:// or https://",
-        "code.missingCode": "Code is empty",
-        "delay.invalidDuration": "Delay must be between 0 and 30000 ms",
-        "aggregate.missingSources": "No source nodes selected",
-        "graph.emptyGraph": "This workflow has no nodes yet",
-        "graph.unknownEdge": "An edge points to a deleted node"
+        "agentMissingAgent": "No agent selected",
+        "agentMissingPrompt": "Prompt template is empty",
+        "conditionMissingExpression": "Condition expression is empty",
+        "conditionMissingInput": "No input node selected",
+        "conditionMissingBranch": "True/False branch not set",
+        "conditionUnknownBranch": "A branch points to a node that no longer exists",
+        "transformMissingOperation": "No operation selected",
+        "transformMissingTemplate": "Template operation needs a template param",
+        "httpMissingUrl": "Request URL is empty",
+        "httpInvalidUrl": "URL must start with http:// or https://",
+        "codeMissingCode": "Code is empty",
+        "delayInvalidDuration": "Delay must be between 0 and 30000 ms",
+        "aggregateMissingSources": "No source nodes selected",
+        "graphEmpty": "This workflow has no nodes yet",
+        "graphUnknownEdge": "An edge points to a deleted node"
       }
     }
   }
