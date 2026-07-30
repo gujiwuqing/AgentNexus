@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useTranslations } from "next-intl";
 import { Send, Square } from "lucide-react";
 import { toast } from "sonner";
@@ -10,15 +10,29 @@ import { FilePreviewList, type PendingFile } from "./file-preview-list";
 
 export type SentAttachment = { id: string; filename: string; mimetype: string; size: number };
 
-export function ChatInput({
-  onSend,
-  onStop,
-  disabled,
-}: {
-  onSend: (content: string, attachments?: SentAttachment[]) => void;
-  onStop?: () => void;
-  disabled: boolean;
-}) {
+/** 供父组件把建议问题填入输入框（而非直接发送）。 */
+export type ChatInputHandle = { fill: (text: string) => void };
+
+/**
+ * 解析 {{占位符}} 语法：去掉花括号保留提示文字，并返回其在结果中的选区。
+ * 填入后选中该段，用户直接打字即可替换，避免"没有上下文就发出去"。
+ */
+function parsePlaceholder(text: string): { value: string; selection: [number, number] | null } {
+  const match = /\{\{([^}]*)\}\}/.exec(text);
+  if (!match) return { value: text, selection: null };
+  const hint = match[1];
+  const value = text.slice(0, match.index) + hint + text.slice(match.index + match[0].length);
+  return { value, selection: [match.index, match.index + hint.length] };
+}
+
+export const ChatInput = forwardRef<
+  ChatInputHandle,
+  {
+    onSend: (content: string, attachments?: SentAttachment[]) => void;
+    onStop?: () => void;
+    disabled: boolean;
+  }
+>(function ChatInput({ onSend, onStop, disabled }, ref) {
   const [value, setValue] = useState("");
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -30,6 +44,21 @@ export function ChatInput({
     el.style.height = "auto";
     el.style.height = Math.min(el.scrollHeight, 150) + "px";
   }, [value]);
+
+  useImperativeHandle(ref, () => ({
+    fill(text: string) {
+      const { value: next, selection } = parsePlaceholder(text);
+      setValue(next);
+      // 等高度自适应的 effect 跑完再设置选区，否则会被重排后的默认光标覆盖
+      requestAnimationFrame(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.focus();
+        if (selection) el.setSelectionRange(selection[0], selection[1]);
+        else el.setSelectionRange(next.length, next.length);
+      });
+    },
+  }));
 
   async function uploadFile(file: File, index: number) {
     try {
@@ -119,4 +148,4 @@ export function ChatInput({
       </div>
     </div>
   );
-}
+});

@@ -1,10 +1,11 @@
 "use client";
 
+import { useRef } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { MessageList } from "@/components/chat/message-list";
-import { ChatInput } from "@/components/chat/chat-input";
+import { ChatInput, type ChatInputHandle } from "@/components/chat/chat-input";
 import { ChatWelcome } from "@/components/chat/chat-welcome";
 import { ShareDialog } from "@/components/chat/share-dialog";
 import { useChatStream } from "@/hooks/use-chat-stream";
@@ -20,6 +21,7 @@ export default function ChatConversationPage() {
     agent?.model ?? null
   );
   const { data: detail } = useConversationDetail(conversationId);
+  const inputRef = useRef<ChatInputHandle>(null);
   const t = useTranslations("chat");
   const tCommon = useTranslations("common");
 
@@ -42,7 +44,8 @@ export default function ChatConversationPage() {
         </div>
       </div>
       {messages.length === 0 ? (
-        <ChatWelcome agent={agent} onSelectPrompt={sendMessage} />
+        // 建议问题只填入输入框，由用户补充具体内容后再发送
+        <ChatWelcome agent={agent} onSelectPrompt={(prompt) => inputRef.current?.fill(prompt)} />
       ) : (
         <MessageList
           messages={messages}
@@ -52,7 +55,7 @@ export default function ChatConversationPage() {
           onEditResend={isStreaming ? undefined : editAndResend}
         />
       )}
-      <ChatInput onSend={sendMessage} onStop={stop} disabled={isStreaming} />
+      <ChatInput ref={inputRef} onSend={sendMessage} onStop={stop} disabled={isStreaming} />
     </div>
   );
 }

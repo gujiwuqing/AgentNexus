@@ -70,11 +70,12 @@
       "viewResult": "Result"
     },
     "welcome": {
-      "subtitle": "How can I help you today? Try a suggestion below or type your own question.",
-      "suggestion1": "Summarize the key points of this content",
-      "suggestion2": "Explain a complex concept in simple terms",
-      "suggestion3": "Draft a weekly work report",
-      "suggestion4": "Translate this text into English"
+      "subtitle": "How can I help? Clicking a suggestion fills the composer so you can add your own content.",
+      "suggestion1": "Summarize the key points of this content:\n{{paste the content here}}",
+      "suggestion2": "Explain this concept in simple terms: {{the concept you want to understand}}",
+      "suggestion3": "Draft a weekly work report. This week I: {{list what you worked on}}",
+      "suggestion4": "Translate this text into English:\n{{paste the text here}}",
+      "suggestionHint": "Clicking a suggestion fills the composer — add your content, then send"
     }
   }
 }

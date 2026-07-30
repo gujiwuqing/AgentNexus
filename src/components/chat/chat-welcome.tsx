@@ -4,6 +4,14 @@ import { useTranslations } from "next-intl";
 import { AgentAvatar } from "@/components/agents/agent-avatar";
 import type { Agent } from "@/types/agent";
 
+/**
+ * 卡片上只展示指令主干：剥掉 {{占位符}} 及其前面的引导冒号，
+ * 完整文案（含占位符）在点击时才填入输入框。
+ */
+function toLabel(prompt: string) {
+  return prompt.replace(/\{\{[^}]*\}\}/g, "").replace(/[\s：:，,]+$/u, "").trim() || prompt;
+}
+
 export function ChatWelcome({
   agent,
   onSelectPrompt,
@@ -31,12 +39,14 @@ export function ChatWelcome({
           <button
             key={s}
             onClick={() => onSelectPrompt(s)}
-            className="text-left text-sm border rounded-lg px-3 py-2.5 hover:border-primary hover:bg-accent transition-colors"
+            title={toLabel(s)}
+            className="text-left text-sm border rounded-lg px-3 py-2.5 hover:border-primary hover:bg-accent transition-colors line-clamp-2"
           >
-            {s}
+            {toLabel(s)}
           </button>
         ))}
       </div>
+      <p className="text-xs text-muted-foreground mt-3">{t("suggestionHint")}</p>
     </div>
   );
 }
