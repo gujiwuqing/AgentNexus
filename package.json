@@ -10,7 +10,9 @@
     "test:watch": "dotenv -e .env.local -- vitest",
     "db:push": "drizzle-kit push",
     "templates:reset": "tsx scripts/replace-with-professional-templates.ts",
-    "prompts:backfill": "dotenv -e .env.local -- tsx scripts/backfill-suggested-prompts.ts"
+    "prompts:backfill": "dotenv -e .env.local -- tsx scripts/backfill-suggested-prompts.ts",
+    "seed:knowledge": "tsx scripts/seed-knowledge-bases.ts",
+    "link:knowledge": "tsx scripts/link-agents-knowledge.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
