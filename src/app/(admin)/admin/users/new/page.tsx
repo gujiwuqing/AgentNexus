@@ -13,6 +13,7 @@ import { useAuthMe } from "@/hooks/use-auth-me";
 export default function NewUserPage() {
   const router = useRouter();
   const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const { me } = useAuthMe();
   const canElevate = me?.role === "superAdmin";
 
@@ -36,7 +37,7 @@ export default function NewUserPage() {
       router.push("/admin/users");
     } else {
       const body = await res.json().catch(() => ({}));
-      toast.error(body?.error?.message ?? "Failed");
+      toast.error(body?.error?.message ?? tc("operationFailed"));
     }
   }
 
@@ -71,7 +72,7 @@ export default function NewUserPage() {
           {!canElevate && <p className="text-xs text-muted-foreground">{t("roleUser")}</p>}
         </div>
         <div className="flex items-center gap-2 pt-2">
-          <Button type="submit" disabled={saving}>{saving ? "..." : t("save")}</Button>
+          <Button type="submit" disabled={saving}>{saving ? tc("saving") : t("save")}</Button>
           <Button type="button" variant="outline" onClick={() => router.push("/admin/users")}>{t("cancel")}</Button>
         </div>
       </form>

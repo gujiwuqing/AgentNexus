@@ -167,7 +167,7 @@ export async function POST(request: Request, { params }: Params) {
         totalTokens: meta.usage?.totalTokens,
         durationMs,
         toolCalls: enrichedToolCalls.length > 0 ? enrichedToolCalls : null,
-      });
+      }).then(() => undefined);
     }
   );
 

@@ -14,7 +14,7 @@ export const PROFESSIONAL_AGENT_TEMPLATE_KEYS = [
 type ProfessionalAgentTemplateKey =
   (typeof PROFESSIONAL_AGENT_TEMPLATE_KEYS)[number];
 
-type ProfessionalAgentTemplate = AgentFormValues & {
+type ProfessionalAgentTemplate = Omit<AgentFormValues, 'memoryWindowSize' | 'toolsConfig'> & {
   key: ProfessionalAgentTemplateKey;
   output: string;
 };
@@ -124,6 +124,8 @@ export function toAgentFormValues(template: (typeof professionalAgentTemplates)[
     maxTokens: template.maxTokens,
     topP: template.topP,
     model: template.model,
+    memoryWindowSize: 20,
+    toolsConfig: { enabledTools: [] },
   };
 }
 

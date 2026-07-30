@@ -60,6 +60,9 @@
     "toolCall": {
       "calledTool": "Called {name}",
       "delegatedTo": "Delegated to {name}",
+      "delegationChain": "Team Delegation Chain ({count} steps)",
+      "task": "Task",
+      "reply": "Reply",
       "viewArgs": "Arguments",
       "viewResult": "Result"
     },

@@ -27,9 +27,10 @@ export type EngineCallbacks = {
 };
 
 export type EngineResult = {
-  status: "completed" | "failed" | "waiting_for_input";
+  status: "completed" | "failed" | "waiting_for_input" | "paused";
   context: ExecutionContext;
   currentNodeId?: string;
+  pendingNodeIds?: string[];
   error?: string;
 };
 
@@ -45,6 +46,10 @@ export async function executeWorkflow(
     retryNodeId?: string;
     existingContext?: ExecutionContext;
     maxIterations?: number;
+    /** 单步调试：每执行完一批就绪节点后暂停，返回 paused + 待执行节点。 */
+    stepMode?: boolean;
+    /** 从指定节点集合继续执行（配合 paused 恢复）。 */
+    startNodeIds?: string[];
   }
 ): Promise<EngineResult> {
   const context: ExecutionContext = { ...(options?.existingContext ?? {}) };
@@ -219,6 +224,10 @@ export async function executeWorkflow(
 
     if (allNextNodes.length > 0) {
       const unique = [...new Set(allNextNodes)];
+      if (options?.stepMode) {
+        await callbacks.onRunUpdate("paused", context);
+        return { status: "paused" as const, context, pendingNodeIds: unique };
+      }
       const nextResult = await runNodes(unique);
       if (nextResult) return nextResult;
     }
@@ -244,6 +253,8 @@ export async function executeWorkflow(
       context[options.resumeFromNodeId] = options.resumeInput;
       await callbacks.onStepComplete(options.resumeFromNodeId, options.resumeInput);
       startNodes = getOutgoingTargets(options.resumeFromNodeId);
+    } else if (options?.startNodeIds && options.startNodeIds.length > 0) {
+      startNodes = options.startNodeIds;
     } else {
       startNodes = findStartNodes();
     }

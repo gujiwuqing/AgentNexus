@@ -60,6 +60,9 @@
     "toolCall": {
       "calledTool": "调用了 {name}",
       "delegatedTo": "已委派给 {name}",
+      "delegationChain": "团队协作链路（{count} 步）",
+      "task": "任务",
+      "reply": "回复",
       "viewArgs": "参数",
       "viewResult": "结果"
     },

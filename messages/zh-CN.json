@@ -37,6 +37,7 @@
   "shortcuts": {
     "title": "键盘快捷键",
     "description": "常用操作的快捷键一览",
+    "commandPalette": "打开命令面板",
     "send": "发送消息",
     "newline": "换行",
     "undo": "撤销（工作流编辑器）",
@@ -107,6 +108,8 @@
   },
   "common": {
     "loading": "加载中...",
+    "notFound": "未找到该内容。",
+    "operationFailed": "操作失败",
     "save": "保存",
     "saving": "保存中...",
     "cancel": "取消",
@@ -195,6 +198,20 @@
     "range30d": "30 天",
     "range90d": "90 天"
   },
+  "commandPalette": {
+    "title": "命令面板",
+    "placeholder": "搜索智能体、对话、工作流、知识库或跳转页面...",
+    "noResults": "没有匹配的结果。",
+    "pages": "页面",
+    "actions": "快捷操作",
+    "agents": "智能体",
+    "conversations": "对话",
+    "workflows": "工作流",
+    "knowledgeBases": "知识库",
+    "newAgent": "新建智能体",
+    "newWorkflow": "新建工作流",
+    "newKnowledgeBase": "新建知识库"
+  },
   "knowledge": {
     "title": "知识库",
     "new": "新建知识库",
@@ -239,6 +256,14 @@
       "search": "测试",
       "noResults": "没有检索到相关内容。",
       "score": "相似度 {score}"
+    },
+    "chunkPreview": {
+      "title": "{filename} 的分片",
+      "summary": "共 {count} 个分片，按顺序展示。",
+      "chunkLabel": "分片 {index}",
+      "chars": "{count} 字符",
+      "empty": "该文档还没有分片，可能尚未索引完成。",
+      "loadError": "加载分片失败。"
     },
     "contentLoadError": "加载内容失败。",
     "loading": "加载中...",

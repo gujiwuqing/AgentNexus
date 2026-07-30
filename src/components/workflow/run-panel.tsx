@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { RotateCcw, ChevronDown, ChevronRight, Play } from "lucide-react";
+import { RotateCcw, ChevronDown, ChevronRight, Play, StepForward, FastForward, Braces } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import {
   useTriggerRun,
   useResumeRun,
   useRetryRun,
+  useStepRun,
 } from "@/hooks/use-workflows";
 
 function StatusBadge({ status }: { status: string }) {
@@ -28,11 +29,12 @@ function StatusBadge({ status }: { status: string }) {
     failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     running: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
     waiting_for_input: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+    paused: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
     skipped: "bg-muted text-muted-foreground",
   };
   return (
     <span className={`text-[10px] px-1.5 py-0.5 rounded ${colors[status] ?? "bg-muted"}`}>
-      {t(status as "running" | "waiting_for_input" | "completed" | "failed" | "skipped")}
+      {t(status as "running" | "waiting_for_input" | "completed" | "failed" | "skipped" | "paused")}
     </span>
   );
 }
@@ -57,11 +59,14 @@ export function RunPanel({
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const { data: runDetail, refetch: refetchDetail } = useWorkflowRunDetail(selectedRunId ?? "");
   const retryRun = useRetryRun(selectedRunId ?? "");
+  const stepRun = useStepRun(selectedRunId ?? "");
   const [runDialogOpen, setRunDialogOpen] = useState(false);
   const [runInput, setRunInput] = useState("");
+  const [stepMode, setStepMode] = useState(false);
   const [resumeInput, setResumeInput] = useState("");
   const [collapsed, setCollapsed] = useState(false);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [showContext, setShowContext] = useState(false);
   const t = useTranslations("workflowExt.runPanel");
 
   function selectRun(id: string) {
@@ -71,12 +76,21 @@ export function RunPanel({
   }
 
   function handleTrigger() {
-    triggerRun.mutate(runInput, {
+    triggerRun.mutate({ input: runInput, stepMode }, {
       onSuccess: (result) => {
         setRunDialogOpen(false);
         setRunInput("");
         refetchRuns();
         selectRun(result.id);
+      },
+    });
+  }
+
+  function handleStep(mode: "step" | "continue") {
+    stepRun.mutate(mode, {
+      onSuccess: () => {
+        refetchRuns();
+        refetchDetail();
       },
     });
   }
@@ -190,6 +204,47 @@ export function RunPanel({
                     );
                   })}
 
+                  {runDetail.run.status === "paused" && (
+                    <div className="mt-2 rounded border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-2 space-y-1.5">
+                      <p className="text-[10px] text-blue-800 dark:text-blue-200">
+                        {t("pausedAt", { nodes: runDetail.run.currentNodeId ?? "-" })}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button size="sm" className="h-7 text-xs cursor-pointer gap-1" onClick={() => handleStep("step")} disabled={stepRun.isPending}>
+                          <StepForward className="h-3 w-3" />
+                          {t("stepNext")}
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-7 text-xs cursor-pointer gap-1" onClick={() => handleStep("continue")} disabled={stepRun.isPending}>
+                          <FastForward className="h-3 w-3" />
+                          {t("runToEnd")}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {Object.keys(runDetail.run.context ?? {}).length > 0 && (
+                    <div className="mt-2 border rounded text-xs">
+                      <div
+                        className="flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-muted/50"
+                        onClick={() => setShowContext((v) => !v)}
+                      >
+                        {showContext ? <ChevronDown className="h-3 w-3 shrink-0" /> : <ChevronRight className="h-3 w-3 shrink-0" />}
+                        <Braces className="h-3 w-3 shrink-0 text-muted-foreground" />
+                        <span className="font-medium">{t("contextHeading", { count: Object.keys(runDetail.run.context).length })}</span>
+                      </div>
+                      {showContext && (
+                        <div className="px-3 pb-2 space-y-2 border-t bg-muted/30">
+                          {Object.entries(runDetail.run.context).map(([nodeId, value]) => (
+                            <div key={nodeId}>
+                              <p className="text-[10px] font-semibold text-muted-foreground mt-1.5">{nodeId}</p>
+                              <pre className="text-[10px] whitespace-pre-wrap bg-background rounded p-1.5 max-h-24 overflow-y-auto border">{value || "-"}</pre>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {runDetail.run.status === "waiting_for_input" && (
                     <div className="flex gap-2 mt-2">
                       <Input
@@ -217,12 +272,21 @@ export function RunPanel({
           <DialogHeader>
             <DialogTitle>{t("dialogTitle")}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Input
               value={runInput}
               onChange={(e) => setRunInput(e.target.value)}
               placeholder={t("inputPlaceholder")}
             />
+            <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={stepMode}
+                onChange={(e) => setStepMode(e.target.checked)}
+              />
+              {t("stepModeLabel")}
+            </label>
+            {stepMode && <p className="text-xs text-muted-foreground">{t("stepModeHint")}</p>}
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setRunDialogOpen(false)}>{t("cancel")}</Button>

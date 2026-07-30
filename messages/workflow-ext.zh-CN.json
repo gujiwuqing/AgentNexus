@@ -34,7 +34,8 @@
       "waiting_for_input": "等待输入",
       "completed": "已完成",
       "failed": "失败",
-      "skipped": "已跳过"
+      "skipped": "已跳过",
+      "paused": "已暂停"
     },
     "configDialog": {
       "configure": "配置 {name}",
@@ -95,7 +96,13 @@
       "duration": "耗时",
       "fullInput": "输入",
       "fullOutput": "输出",
-      "version": "v{number}"
+      "version": "v{number}",
+      "stepModeLabel": "单步调试模式",
+      "stepModeHint": "每执行完一批节点后暂停，可逐步查看每个节点的输入输出和运行时变量。",
+      "pausedAt": "已暂停，待执行节点：{nodes}",
+      "stepNext": "下一步",
+      "runToEnd": "继续执行到结束",
+      "contextHeading": "运行时变量（{count}）"
     },
     "card": {
       "noDescription": "暂无描述",

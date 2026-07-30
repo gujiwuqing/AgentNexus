@@ -13,8 +13,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAgents } from "@/hooks/use-agents";
 import type { Node } from "@xyflow/react";
+
+function ConfigSelect({
+  value,
+  onChange,
+  placeholder,
+  options,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  options: Array<{ value: string; label: string }>;
+}) {
+  return (
+    <Select value={value || undefined} onValueChange={onChange}>
+      <SelectTrigger>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 export function NodeConfigDialog({
   node,
@@ -70,16 +96,12 @@ export function NodeConfigDialog({
             <>
               <div className="space-y-2">
                 <Label>{t("agent")}</Label>
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                <ConfigSelect
                   value={(config.agentId as string) ?? ""}
-                  onChange={(e) => setConfig({ ...config, agentId: e.target.value })}
-                >
-                  <option value="">{t("selectAgent")}</option>
-                  {agents?.map((a) => (
-                    <option key={a.id} value={a.id}>{a.avatar || "🤖"} {a.name}</option>
-                  ))}
-                </select>
+                  onChange={(v) => setConfig({ ...config, agentId: v })}
+                  placeholder={t("selectAgent")}
+                  options={(agents ?? []).map((a) => ({ value: a.id, label: `${a.avatar || "🤖"} ${a.name}` }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label>{t("promptTemplate")}</Label>
@@ -105,43 +127,31 @@ export function NodeConfigDialog({
               </div>
               <div className="space-y-2">
                 <Label>{t("inputNodeId")}</Label>
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                <ConfigSelect
                   value={(config.inputNodeId as string) ?? ""}
-                  onChange={(e) => setConfig({ ...config, inputNodeId: e.target.value })}
-                >
-                  <option value="">{t("selectNode")}</option>
-                  {allNodes.filter((n) => n.id !== node.id).map((n) => (
-                    <option key={n.id} value={n.id}>{(n.data?.label as string) || n.id}</option>
-                  ))}
-                </select>
+                  onChange={(v) => setConfig({ ...config, inputNodeId: v })}
+                  placeholder={t("selectNode")}
+                  options={allNodes.filter((n) => n.id !== node.id).map((n) => ({ value: n.id, label: (n.data?.label as string) || n.id }))}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>{t("trueBranch")}</Label>
-                  <select
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  <ConfigSelect
                     value={(config.trueBranch as string) ?? ""}
-                    onChange={(e) => setConfig({ ...config, trueBranch: e.target.value })}
-                  >
-                    <option value="">{t("selectNode")}</option>
-                    {allNodes.filter((n) => n.id !== node.id).map((n) => (
-                      <option key={n.id} value={n.id}>{(n.data?.label as string) || n.id}</option>
-                    ))}
-                  </select>
+                    onChange={(v) => setConfig({ ...config, trueBranch: v })}
+                    placeholder={t("selectNode")}
+                    options={allNodes.filter((n) => n.id !== node.id).map((n) => ({ value: n.id, label: (n.data?.label as string) || n.id }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>{t("falseBranch")}</Label>
-                  <select
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  <ConfigSelect
                     value={(config.falseBranch as string) ?? ""}
-                    onChange={(e) => setConfig({ ...config, falseBranch: e.target.value })}
-                  >
-                    <option value="">{t("selectNode")}</option>
-                    {allNodes.filter((n) => n.id !== node.id).map((n) => (
-                      <option key={n.id} value={n.id}>{(n.data?.label as string) || n.id}</option>
-                    ))}
-                  </select>
+                    onChange={(v) => setConfig({ ...config, falseBranch: v })}
+                    placeholder={t("selectNode")}
+                    options={allNodes.filter((n) => n.id !== node.id).map((n) => ({ value: n.id, label: (n.data?.label as string) || n.id }))}
+                  />
                 </div>
               </div>
             </>
@@ -151,16 +161,16 @@ export function NodeConfigDialog({
             <>
               <div className="space-y-2">
                 <Label>{t("operation")}</Label>
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                <ConfigSelect
                   value={(config.operation as string) ?? "template"}
-                  onChange={(e) => setConfig({ ...config, operation: e.target.value })}
-                >
-                  <option value="template">{t("operationTemplate")}</option>
-                  <option value="substring">{t("operationSubstring")}</option>
-                  <option value="replace">{t("operationReplace")}</option>
-                  <option value="jsonExtract">{t("operationJsonExtract")}</option>
-                </select>
+                  onChange={(v) => setConfig({ ...config, operation: v })}
+                  options={[
+                    { value: "template", label: t("operationTemplate") },
+                    { value: "substring", label: t("operationSubstring") },
+                    { value: "replace", label: t("operationReplace") },
+                    { value: "jsonExtract", label: t("operationJsonExtract") },
+                  ]}
+                />
               </div>
               <div className="space-y-2">
                 <Label>{t("inputTemplate")}</Label>
@@ -218,16 +228,16 @@ export function NodeConfigDialog({
               </div>
               <div className="space-y-2">
                 <Label>{t("method")}</Label>
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                <ConfigSelect
                   value={(config.method as string) ?? "GET"}
-                  onChange={(e) => setConfig({ ...config, method: e.target.value })}
-                >
-                  <option value="GET">GET</option>
-                  <option value="POST">POST</option>
-                  <option value="PUT">PUT</option>
-                  <option value="DELETE">DELETE</option>
-                </select>
+                  onChange={(v) => setConfig({ ...config, method: v })}
+                  options={[
+                    { value: "GET", label: "GET" },
+                    { value: "POST", label: "POST" },
+                    { value: "PUT", label: "PUT" },
+                    { value: "DELETE", label: "DELETE" },
+                  ]}
+                />
               </div>
               <div className="space-y-2">
                 <Label>{t("headers")}</Label>
@@ -285,16 +295,12 @@ export function NodeConfigDialog({
               </div>
               <div className="space-y-2">
                 <Label>{t("inputNodeId")}</Label>
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                <ConfigSelect
                   value={(config.inputNodeId as string) ?? ""}
-                  onChange={(e) => setConfig({ ...config, inputNodeId: e.target.value })}
-                >
-                  <option value="">{t("selectNode")}</option>
-                  {allNodes.filter((n) => n.id !== node.id).map((n) => (
-                    <option key={n.id} value={n.id}>{(n.data?.label as string) || n.id}</option>
-                  ))}
-                </select>
+                  onChange={(v) => setConfig({ ...config, inputNodeId: v })}
+                  placeholder={t("selectNode")}
+                  options={allNodes.filter((n) => n.id !== node.id).map((n) => ({ value: n.id, label: (n.data?.label as string) || n.id }))}
+                />
               </div>
             </>
           )}

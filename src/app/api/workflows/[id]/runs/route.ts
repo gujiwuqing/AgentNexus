@@ -23,8 +23,9 @@ export async function POST(request: Request, { params }: Params) {
   if (!workflow) return apiError(404, "not_found", "Workflow not found");
   const body = await request.json().catch(() => ({}));
   const input = typeof body?.input === "string" ? body.input : "";
+  const stepMode = body?.stepMode === true;
   try {
-    const result = await triggerWorkflowRun(id, input);
+    const result = await triggerWorkflowRun(id, input, stepMode);
     return apiOk(result);
   } catch (err) {
     return apiError(400, "execution_error", err instanceof Error ? err.message : "Failed to run workflow");

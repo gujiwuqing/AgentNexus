@@ -30,6 +30,7 @@ import {
 import { DocumentList } from "@/components/knowledge/document-list";
 import { DocumentUpload } from "@/components/knowledge/document-upload";
 import { RetrievalTestPanel } from "@/components/knowledge/retrieval-test-panel";
+import { ChunkPreviewDialog } from "@/components/knowledge/chunk-preview-dialog";
 import { Breadcrumb } from "@/components/nav/breadcrumb";
 
 function EditSettingsDialog({ kbId, kb }: { kbId: string; kb: { name: string; description: string; chunkSize: number; chunkOverlap: number } }) {
@@ -202,7 +203,7 @@ export default function KnowledgeDetailPage() {
   const confirm = useConfirm();
 
   if (isLoading) return <div className="p-8">{tc("loading")}</div>;
-  if (!kb) return <div className="p-8">Not found</div>;
+  if (!kb) return <div className="p-8">{tc("notFound")}</div>;
 
   async function handleDeleteKB() {
     const ok = await confirm({ description: t("deleteConfirm"), variant: "destructive", confirmLabel: tc("delete") });
@@ -254,7 +255,10 @@ export default function KnowledgeDetailPage() {
           isReindexing={reindexDoc.isPending}
           isDeleting={deleteDoc.isPending}
           renderPreview={(doc) => (
-            <DocContentPreview kbId={id} docId={doc.id} filename={doc.filename} />
+            <>
+              <DocContentPreview kbId={id} docId={doc.id} filename={doc.filename} />
+              <ChunkPreviewDialog kbId={id} docId={doc.id} filename={doc.filename} chunkCount={doc.chunkCount} />
+            </>
           )}
         />
 

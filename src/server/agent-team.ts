@@ -61,7 +61,7 @@ export async function callTeamMember(memberAgentId: string, task: string): Promi
   const agent = await getAgent(memberAgentId);
   if (!agent) throw new Error(`Team member agent ${memberAgentId} not found`);
 
-  const globalConfig = await getProviderConfig();
+  const globalConfig = await getProviderConfig(agent.userId);
   const provider = resolveProviderConfig(agent.model, globalConfig);
 
   const messages = [

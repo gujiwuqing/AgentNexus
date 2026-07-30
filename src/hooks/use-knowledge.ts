@@ -118,6 +118,16 @@ export function useReindexDocument(knowledgeBaseId: string) {
   });
 }
 
+export type DocumentChunk = { id: string; chunkIndex: number; content: string };
+
+export function useDocumentChunks(knowledgeBaseId: string, docId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["knowledge-chunks", knowledgeBaseId, docId],
+    queryFn: () => fetchJson<DocumentChunk[]>(`/api/knowledge-bases/${knowledgeBaseId}/documents/${docId}/chunks`),
+    enabled,
+  });
+}
+
 export type RetrievalTestResult = { chunkId: string; content: string; score: number; documentId: string; filename: string | null };
 
 export function useTestRetrieval(knowledgeBaseId: string) {

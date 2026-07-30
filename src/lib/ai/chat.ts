@@ -1,4 +1,4 @@
-import { streamText, type CoreTool } from "ai";
+import { streamText, type CoreTool, type CoreMessage } from "ai";
 import type { ProviderConfig } from "./provider";
 import { createModelClient } from "./provider-factory";
 
@@ -39,15 +39,15 @@ export function streamAgentReply(
   const toolCalls: ToolCallRecord[] = [];
   return streamText({
     model: createModelClient(provider),
-    messages,
+    messages: messages as CoreMessage[],
     tools,
     maxSteps: 5,
     temperature: options.temperature,
     maxTokens: options.maxTokens,
     topP: options.topP,
     onStepFinish: (step) => {
-      const calls = step.toolCalls ?? [];
-      const results = step.toolResults ?? [];
+      const calls = (step.toolCalls ?? []) as Array<{ toolCallId: string; toolName: string; args: unknown }>;
+      const results = (step.toolResults ?? []) as Array<{ toolCallId: string; result: unknown }>;
       for (const call of calls) {
         const matched = results.find((r) => r.toolCallId === call.toolCallId);
         toolCalls.push({

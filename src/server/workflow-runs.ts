@@ -7,11 +7,17 @@ import { getAgent } from "./agents";
 import { getProviderConfig } from "./provider-config";
 import { resolveProviderConfig } from "@/lib/ai/provider";
 import { generateAgentReply } from "@/lib/ai/generate";
-import { executeWorkflow, type EngineCallbacks } from "@/lib/workflow/engine";
+import { executeWorkflow, type EngineCallbacks, type EngineResult } from "@/lib/workflow/engine";
 import type { WorkflowGraph, ExecutionContext } from "@/types/workflow";
 import { getLatestVersionNumber } from "./workflow-versions";
 
-export async function triggerWorkflowRun(workflowId: string, input: string) {
+/** paused 状态下 currentNodeId 存逗号分隔的待执行节点列表，其余状态存单个节点。 */
+function resultCurrentNodeId(result: EngineResult): string | null {
+  if (result.status === "paused") return result.pendingNodeIds?.join(",") ?? null;
+  return result.currentNodeId ?? null;
+}
+
+export async function triggerWorkflowRun(workflowId: string, input: string, stepMode = false) {
   const workflow = await getWorkflow(workflowId);
   if (!workflow) throw new Error("Workflow not found");
 
@@ -21,14 +27,14 @@ export async function triggerWorkflowRun(workflowId: string, input: string) {
 
   const callbacks = makeCallbacks(runId, workflow.userId);
   const graph = workflow.graph as WorkflowGraph;
-  const result = await executeWorkflow(graph, input, callbacks);
+  const result = await executeWorkflow(graph, input, callbacks, stepMode ? { stepMode } : undefined);
 
   await db
     .update(workflowRuns)
     .set({
       status: result.status,
       context: result.context,
-      currentNodeId: result.currentNodeId ?? null,
+      currentNodeId: resultCurrentNodeId(result),
       error: result.error ?? null,
       updatedAt: new Date(),
     })
@@ -80,7 +86,42 @@ export async function resumeWorkflowRun(runId: string, input: string) {
     .set({
       status: result.status,
       context: result.context,
-      currentNodeId: result.currentNodeId ?? null,
+      currentNodeId: resultCurrentNodeId(result),
+      error: result.error ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(workflowRuns.id, runId));
+
+  return { id: runId, ...result };
+}
+
+/** 单步调试：从 paused 状态继续执行下一批节点（stepMode=true）或直接跑完（stepMode=false）。 */
+export async function stepWorkflowRun(runId: string, stepMode: boolean) {
+  const data = await getWorkflowRun(runId);
+  if (!data || data.run.status !== "paused" || !data.run.currentNodeId) return null;
+
+  const workflow = await getWorkflow(data.run.workflowId);
+  if (!workflow) return null;
+
+  await db
+    .update(workflowRuns)
+    .set({ status: "running", updatedAt: new Date() })
+    .where(eq(workflowRuns.id, runId));
+
+  const callbacks = makeCallbacks(runId, workflow.userId);
+  const graph = workflow.graph as WorkflowGraph;
+  const result = await executeWorkflow(graph, data.run.input, callbacks, {
+    startNodeIds: data.run.currentNodeId.split(",").filter(Boolean),
+    existingContext: (data.run.context ?? {}) as ExecutionContext,
+    stepMode,
+  });
+
+  await db
+    .update(workflowRuns)
+    .set({
+      status: result.status,
+      context: result.context,
+      currentNodeId: resultCurrentNodeId(result),
       error: result.error ?? null,
       updatedAt: new Date(),
     })
@@ -113,7 +154,7 @@ export async function retryWorkflowRun(runId: string, nodeId: string) {
     .set({
       status: result.status,
       context: result.context,
-      currentNodeId: result.currentNodeId ?? null,
+      currentNodeId: resultCurrentNodeId(result),
       error: result.error ?? null,
       updatedAt: new Date(),
     })

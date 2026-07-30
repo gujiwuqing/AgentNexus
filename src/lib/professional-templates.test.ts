@@ -53,6 +53,8 @@ describe('professional template catalog', () => {
       maxTokens: 2048,
       topP: 1,
       model: null,
+      memoryWindowSize: 20,
+      toolsConfig: { enabledTools: [] },
     });
   });
 });

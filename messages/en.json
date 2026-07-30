@@ -37,6 +37,7 @@
   "shortcuts": {
     "title": "Keyboard Shortcuts",
     "description": "Quick reference for common actions",
+    "commandPalette": "Open command palette",
     "send": "Send message",
     "newline": "Insert newline",
     "undo": "Undo (workflow editor)",
@@ -107,6 +108,8 @@
   },
   "common": {
     "loading": "Loading...",
+    "notFound": "Not found.",
+    "operationFailed": "Operation failed",
     "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
@@ -195,6 +198,20 @@
     "range30d": "30 Days",
     "range90d": "90 Days"
   },
+  "commandPalette": {
+    "title": "Command Palette",
+    "placeholder": "Search agents, conversations, workflows, knowledge bases, or jump to a page...",
+    "noResults": "No matching results.",
+    "pages": "Pages",
+    "actions": "Quick Actions",
+    "agents": "Agents",
+    "conversations": "Conversations",
+    "workflows": "Workflows",
+    "knowledgeBases": "Knowledge Bases",
+    "newAgent": "New Agent",
+    "newWorkflow": "New Workflow",
+    "newKnowledgeBase": "New Knowledge Base"
+  },
   "knowledge": {
     "title": "Knowledge Bases",
     "new": "New Knowledge Base",
@@ -239,6 +256,14 @@
       "search": "Test",
       "noResults": "No relevant chunks found.",
       "score": "score {score}"
+    },
+    "chunkPreview": {
+      "title": "Chunks of {filename}",
+      "summary": "{count} chunks, shown in order.",
+      "chunkLabel": "Chunk {index}",
+      "chars": "{count} chars",
+      "empty": "No chunks yet. The document may still be indexing.",
+      "loadError": "Failed to load chunks."
     },
     "contentLoadError": "Failed to load content.",
     "loading": "Loading...",

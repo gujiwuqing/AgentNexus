@@ -20,9 +20,11 @@ export function NodeShell({
       ? "border-emerald-500"
       : runStatus === "failed"
         ? "border-red-500"
-        : runStatus === "running" || runStatus === "waiting_for_input"
-          ? "border-amber-500"
-          : "border-border";
+        : runStatus === "paused"
+          ? "border-blue-500"
+          : runStatus === "running" || runStatus === "waiting_for_input"
+            ? "border-amber-500"
+            : "border-border";
   const isActive = runStatus === "running" || runStatus === "waiting_for_input";
 
   return (

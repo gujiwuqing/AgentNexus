@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTestRetrieval } from "@/hooks/use-knowledge";
 
+function scoreColor(score: number): string {
+  if (score >= 0.8) return "bg-green-500";
+  if (score >= 0.6) return "bg-yellow-500";
+  return "bg-muted-foreground/50";
+}
+
 export function RetrievalTestPanel({ knowledgeBaseId }: { knowledgeBaseId: string }) {
   const t = useTranslations("knowledge");
   const [query, setQuery] = useState("");
@@ -47,11 +53,19 @@ export function RetrievalTestPanel({ knowledgeBaseId }: { knowledgeBaseId: strin
         <div className="space-y-2">
           {testRetrieval.data.map((r, i) => (
             <div key={r.chunkId} className="rounded-md border p-3 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-medium text-muted-foreground truncate">
                   #{i + 1} {r.filename}
                 </span>
-                <Badge variant="secondary">{t("retrievalTest.score", { score: r.score.toFixed(3) })}</Badge>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="h-1.5 w-24 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${scoreColor(r.score)}`}
+                      style={{ width: `${Math.max(0, Math.min(1, r.score)) * 100}%` }}
+                    />
+                  </div>
+                  <Badge variant="secondary">{t("retrievalTest.score", { score: r.score.toFixed(3) })}</Badge>
+                </div>
               </div>
               <p className="text-sm text-foreground/90 line-clamp-4 whitespace-pre-wrap">{r.content}</p>
             </div>

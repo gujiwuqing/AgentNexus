@@ -24,7 +24,7 @@ export function AgentImportButton() {
         toast.error(t("invalidFile", { details: parsed.error.issues.map((i) => i.message).join(", ") }));
         return;
       }
-      createAgent.mutate(parsed.data);
+      createAgent.mutate({ ...parsed.data, toolsConfig: { enabledTools: [] } });
     } catch {
       toast.error(t("parseFailed"));
     }

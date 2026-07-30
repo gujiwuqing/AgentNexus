@@ -30,7 +30,7 @@ export default function NewWorkflowPage() {
   const workflowTemplates = createProfessionalWorkflowTemplates(agentIds);
   const selectedTemplate = workflowTemplates.find((template) => template.key === selectedTemplateKey);
   const hasRequiredAgents = selectedTemplate?.graph.nodes
-    .every((node) => node.type !== "agent" || Boolean(node.config.agentId)) ?? true;
+    .every((node) => node.type !== "agent" || Boolean((node.config as { agentId?: string }).agentId)) ?? true;
   const templateItems = [
     {
       id: "blank",

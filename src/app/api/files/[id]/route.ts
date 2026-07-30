@@ -11,7 +11,7 @@ export async function GET(_request: Request, { params }: Params) {
   if (!attachment) return apiError(404, "not_found", "File not found");
 
   const buffer = await readStoredFile(attachment.storagePath);
-  return new NextResponse(buffer, {
+  return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": attachment.mimetype,
       "Content-Disposition": `inline; filename="${encodeURIComponent(attachment.filename)}"`,

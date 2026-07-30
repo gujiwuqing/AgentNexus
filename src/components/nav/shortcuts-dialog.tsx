@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 
 const SHORTCUTS = [
+  { keys: ["Ctrl", "K"], labelKey: "commandPalette" },
   { keys: ["Enter"], labelKey: "send" },
   { keys: ["Shift", "Enter"], labelKey: "newline" },
   { keys: ["Ctrl", "Z"], labelKey: "undo" },

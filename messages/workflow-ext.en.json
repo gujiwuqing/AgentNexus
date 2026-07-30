@@ -34,7 +34,8 @@
       "waiting_for_input": "Waiting for Input",
       "completed": "Completed",
       "failed": "Failed",
-      "skipped": "Skipped"
+      "skipped": "Skipped",
+      "paused": "Paused"
     },
     "configDialog": {
       "configure": "Configure {name}",
@@ -95,7 +96,13 @@
       "duration": "Duration",
       "fullInput": "Input",
       "fullOutput": "Output",
-      "version": "v{number}"
+      "version": "v{number}",
+      "stepModeLabel": "Step-by-step debug mode",
+      "stepModeHint": "Pauses after each batch of nodes so you can inspect every node's input/output and runtime variables.",
+      "pausedAt": "Paused. Next nodes: {nodes}",
+      "stepNext": "Next Step",
+      "runToEnd": "Run to End",
+      "contextHeading": "Runtime Variables ({count})"
     },
     "card": {
       "noDescription": "No description",

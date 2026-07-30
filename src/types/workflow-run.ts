@@ -1,7 +1,7 @@
 export type WorkflowRun = {
   id: string;
   workflowId: string;
-  status: "running" | "waiting_for_input" | "completed" | "failed";
+  status: "running" | "waiting_for_input" | "completed" | "failed" | "paused";
   input: string;
   currentNodeId: string | null;
   context: Record<string, string>;

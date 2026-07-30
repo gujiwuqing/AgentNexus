@@ -29,8 +29,9 @@ export async function extractText(buffer: Buffer, mimetype: string): Promise<str
     return buffer.toString("utf-8");
   }
   if (isPdfFile(mimetype)) {
-    const pdfParse = (await import("pdf-parse")).default;
-    const result = await pdfParse(buffer);
+    const { PDFParse } = await import("pdf-parse");
+    const parser = new PDFParse({ data: new Uint8Array(buffer) });
+    const result = await parser.getText();
     return result.text;
   }
   return "";

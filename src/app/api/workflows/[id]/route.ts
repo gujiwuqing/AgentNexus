@@ -2,6 +2,7 @@ import { workflowUpdateSchema } from "@/lib/validation/workflow";
 import { getWorkflowOwnedBy, updateWorkflow, deleteWorkflow } from "@/server/workflows";
 import { apiOk, apiError } from "@/lib/api-response";
 import { requireUser } from "@/lib/auth";
+import type { WorkflowGraph } from "@/types/workflow";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -23,7 +24,7 @@ export async function PATCH(request: Request, { params }: Params) {
   if (!parsed.success) {
     return apiError(400, "validation_error", parsed.error.issues[0]?.message ?? "Invalid input");
   }
-  const updated = await updateWorkflow(id, parsed.data, user.id);
+  const updated = await updateWorkflow(id, { ...parsed.data, graph: parsed.data.graph as WorkflowGraph | undefined }, user.id);
   if (!updated) return apiError(404, "not_found", "Workflow not found");
   return apiOk(updated);
 }

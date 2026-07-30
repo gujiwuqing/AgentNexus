@@ -96,13 +96,13 @@ export function useWorkflowRunDetail(runId: string) {
 export function useTriggerRun(workflowId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: string) =>
+    mutationFn: ({ input, stepMode }: { input: string; stepMode?: boolean }) =>
       fetchJson<{ id: string; status: string; context: Record<string, string> }>(
         `/api/workflows/${workflowId}/runs`,
         {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ input }),
+          body: JSON.stringify({ input, stepMode: stepMode ?? false }),
         }
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["workflows", workflowId, "runs"] }),
@@ -135,6 +135,22 @@ export function useRetryRun(runId: string) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ nodeId }),
+        }
+      ),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["workflow-runs", runId] }),
+  });
+}
+
+export function useStepRun(runId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (mode: "step" | "continue") =>
+      fetchJson<{ id: string; status: string; context: Record<string, string> }>(
+        `/api/workflow-runs/${runId}/step`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ mode }),
         }
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["workflow-runs", runId] }),

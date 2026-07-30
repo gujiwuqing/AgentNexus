@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { knowledgeChunks, knowledgeDocuments } from "@/db/schema";
 import { createId } from "@/lib/id";
@@ -21,6 +21,19 @@ export async function insertChunks(
 
 export async function deleteChunksByDocument(documentId: string) {
   await db.delete(knowledgeChunks).where(eq(knowledgeChunks.documentId, documentId));
+}
+
+/** 按分片顺序列出文档的全部分片（不含 embedding，供预览使用）。 */
+export async function listChunksByDocument(documentId: string) {
+  return db
+    .select({
+      id: knowledgeChunks.id,
+      chunkIndex: knowledgeChunks.chunkIndex,
+      content: knowledgeChunks.content,
+    })
+    .from(knowledgeChunks)
+    .where(eq(knowledgeChunks.documentId, documentId))
+    .orderBy(asc(knowledgeChunks.chunkIndex));
 }
 
 export async function getChunksByKnowledgeBaseIds(knowledgeBaseIds: string[]) {

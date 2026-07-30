@@ -8,12 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useConfirm } from "@/components/providers/confirm-provider";
 import { useAuthMe } from "@/hooks/use-auth-me";
 
 export default function EditUserPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const t = useTranslations("admin");
+  const tc = useTranslations("common");
+  const confirm = useConfirm();
   const { me } = useAuthMe();
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState("");
@@ -56,12 +59,12 @@ export default function EditUserPage() {
       router.push("/admin/users");
     } else {
       const body = await res.json().catch(() => ({}));
-      toast.error(body?.error?.message ?? "Failed");
+      toast.error(body?.error?.message ?? tc("operationFailed"));
     }
   }
 
   async function handleDelete() {
-    const ok = confirm(t("confirmDelete"));
+    const ok = await confirm({ description: t("confirmDelete"), variant: "destructive", confirmLabel: tc("delete") });
     if (!ok) return;
     const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
     if (res.ok) {
@@ -69,11 +72,11 @@ export default function EditUserPage() {
       router.push("/admin/users");
     } else {
       const body = await res.json().catch(() => ({}));
-      toast.error(body?.error?.message ?? "Failed");
+      toast.error(body?.error?.message ?? tc("operationFailed"));
     }
   }
 
-  if (!loaded) return <div className="p-8">...</div>;
+  if (!loaded) return <div className="p-8">{tc("loading")}</div>;
 
   return (
     <div className="w-full max-w-md mx-auto px-6 py-8 lg:px-10">
@@ -105,7 +108,7 @@ export default function EditUserPage() {
           <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t("resetPassword")} />
         </div>
         <div className="flex items-center gap-2 pt-2">
-          <Button type="submit" disabled={saving}>{saving ? "..." : t("save")}</Button>
+          <Button type="submit" disabled={saving}>{saving ? tc("saving") : t("save")}</Button>
           <Button type="button" variant="outline" onClick={() => router.push("/admin/users")}>{t("cancel")}</Button>
         </div>
       </form>

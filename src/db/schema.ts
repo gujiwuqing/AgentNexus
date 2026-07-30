@@ -122,7 +122,7 @@ export const workflowRuns = mysqlTable("workflow_runs", {
   workflowId: varchar("workflow_id", { length: 36 })
     .notNull()
     .references(() => workflows.id, { onDelete: "cascade" }),
-  status: mysqlEnum("status", ["running", "waiting_for_input", "completed", "failed"]).notNull(),
+  status: mysqlEnum("status", ["running", "waiting_for_input", "completed", "failed", "paused"]).notNull(),
   input: text("input").notNull(),
   currentNodeId: varchar("current_node_id", { length: 255 }),
   context: json("context").notNull().$type<Record<string, string>>().default({}),

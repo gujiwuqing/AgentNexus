@@ -224,6 +224,11 @@ function EditorInner({ workflowId }: { workflowId: string }) {
     if (runDetail.run.currentNodeId && runDetail.run.status === "waiting_for_input") {
       statusMap[runDetail.run.currentNodeId] = "waiting_for_input";
     }
+    if (runDetail.run.currentNodeId && runDetail.run.status === "paused") {
+      for (const nodeId of runDetail.run.currentNodeId.split(",")) {
+        if (nodeId) statusMap[nodeId] = "paused";
+      }
+    }
     setNodes((nds) => nds.map((n) => ({ ...n, data: { ...n.data, runStatus: statusMap[n.id] } })));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runDetail, initialized]);

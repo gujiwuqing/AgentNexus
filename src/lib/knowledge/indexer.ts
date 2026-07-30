@@ -14,7 +14,7 @@ export async function indexDocument(documentId: string): Promise<void> {
   const kb = await getKnowledgeBase(doc.knowledgeBaseId);
   if (!kb) throw new Error("Knowledge base not found");
 
-  const globalConfig = await getProviderConfig();
+  const globalConfig = await getProviderConfig(kb.userId);
   if (!globalConfig) throw new Error("AI provider not configured");
 
   const embeddingModel = kb.embeddingModel || globalConfig.embeddingModel;
