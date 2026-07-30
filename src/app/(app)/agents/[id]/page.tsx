@@ -9,6 +9,8 @@ import { useAgent, useUpdateAgent } from "@/hooks/use-agents";
 import { Button } from "@/components/ui/button";
 import { PageFormSkeleton } from "@/components/ui/page-skeleton";
 import { DeleteAgentButton } from "@/components/agents/delete-agent-button";
+import { AgentSkillsConfig } from "@/components/agents/agent-skills-config";
+import { AgentCustomToolsConfig } from "@/components/agents/agent-custom-tools-config";
 import { AgentKnowledgeConfig } from "@/components/agents/agent-knowledge-config";
 import { AgentTeamConfig } from "@/components/agents/agent-team-config";
 import { Breadcrumb } from "@/components/nav/breadcrumb";
@@ -50,6 +52,8 @@ export default function AgentDetailPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6 mt-8 pt-8 border-t">
+        <AgentSkillsConfig agentId={agent.id} />
+        <AgentCustomToolsConfig agentId={agent.id} />
         <AgentKnowledgeConfig agentId={agent.id} />
         <AgentTeamConfig agentId={agent.id} />
       </div>
