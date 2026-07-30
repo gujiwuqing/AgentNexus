@@ -8,7 +8,8 @@
     "settings": "设置",
     "openMenu": "打开菜单",
     "closeMenu": "关闭菜单",
-    "switchLanguage": "切换语言"
+    "switchLanguage": "切换语言",
+    "pendingApprovals": "{count} 个运行等待你处理"
   },
   "theme": {
     "toggle": "切换主题"
@@ -162,7 +163,8 @@
     "descriptionPlaceholder": "这个工作流是做什么的？",
     "blank": "从空白创建",
     "blankDescription": "自行配置全部节点。",
-    "buildHint": "创建后可以在工作流编辑器里搭建节点图。"
+    "buildHint": "创建后可以在工作流编辑器里搭建节点图。",
+    "pendingHeading": "待我处理（{count}）"
   },
   "settings": {
     "title": "设置",

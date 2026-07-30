@@ -99,7 +99,7 @@
     },
     "runPanel": {
       "heading": "运行记录",
-      "run": "运行",
+      "run": "调试运行",
       "noRuns": "还没有运行记录。",
       "queuedHint": "已加入执行队列，进度会自动刷新。",
       "activeHint": "正在后台执行，可离开页面稍后回来查看。",
@@ -137,7 +137,10 @@
     },
     "card": {
       "noDescription": "暂无描述",
-      "nodeCount": "{count} 个节点"
+      "nodeCount": "{count} 个节点",
+      "run": "运行",
+      "edit": "编排",
+      "published": "已发布 v{version}"
     },
     "editor": {
       "saving": "保存中...",
@@ -150,7 +153,13 @@
       "copy": "复制所选 (Ctrl+C)",
       "paste": "粘贴 (Ctrl+V)",
       "duplicate": "创建副本 (Ctrl+D)",
-      "deleteSelection": "删除所选 (Delete)"
+      "deleteSelection": "删除所选 (Delete)",
+      "publish": "发布",
+      "publishing": "发布中…",
+      "publishedToast": "已发布为版本 v{version}，正式运行将锁定该版本",
+      "publishBlocked": "存在配置问题，修复后才能发布",
+      "publishedVersion": "当前已发布 v{version}；点击将发布最新画布",
+      "unpublishedHint": "尚未发布；发布后正式运行将锁定该版本，编辑草稿不再影响使用者"
     },
     "versionHistory": {
       "heading": "历史版本",
@@ -189,6 +198,19 @@
         "graphEmpty": "工作流还没有任何节点",
         "graphUnknownEdge": "存在指向已删除节点的连线"
       }
+    },
+    "runView": {
+      "notFound": "工作流不存在或已被删除。",
+      "backToList": "返回工作流列表",
+      "edit": "编排",
+      "publishedVersion": "已发布 v{version}",
+      "unpublished": "未发布",
+      "inputPlaceholder": "输入本次运行的内容，例如：为订单系统新增退款功能，约束：两周内上线、防止重复退款…",
+      "run": "运行",
+      "runHintPublished": "将运行已发布版本 v{version}；编辑器里的草稿修改不影响本次运行",
+      "runHintDraft": "尚未发布：将运行最新保存的内容。建议先到「编排」页点击发布",
+      "historyHeading": "运行记录",
+      "waitingHeading": "此运行正在等待你的输入"
     }
   }
 }

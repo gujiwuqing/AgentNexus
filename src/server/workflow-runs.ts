@@ -1,6 +1,6 @@
 import { eq, desc, and } from "drizzle-orm";
 import { db } from "@/db";
-import { workflowRuns, workflowStepLogs } from "@/db/schema";
+import { workflowRuns, workflowStepLogs, workflows } from "@/db/schema";
 import { createId } from "@/lib/id";
 import { getWorkflow } from "./workflows";
 import { getAgent } from "./agents";
@@ -10,7 +10,7 @@ import { generateAgentReply } from "@/lib/ai/generate";
 import { executeWorkflow, type EngineCallbacks, type EngineResult } from "@/lib/workflow/engine";
 import { retrieveAgentRagContext, injectRagContext } from "@/lib/knowledge/agent-rag";
 import type { WorkflowGraph, ExecutionContext } from "@/types/workflow";
-import { getLatestVersionNumber } from "./workflow-versions";
+import { getLatestVersionNumber, getWorkflowVersion } from "./workflow-versions";
 import { enqueueJob, type ClaimedJob } from "./workflow-queue";
 
 /** 单个节点的执行超时（默认 5 分钟），可用环境变量覆盖。 */
@@ -41,23 +41,46 @@ async function persistResult(runId: string, result: EngineResult) {
 
 export type EnqueueResult = { id: string; status: "queued" };
 
+/**
+ * 解析本次触发应运行的 graph 与锁定的版本号。
+ * - draft（编辑器调试）：跑当前草稿，versionNumber 记为 null；
+ * - 正式运行：优先已发布版本，其次最新快照（兼容未发布过的存量工作流），都没有则跑草稿。
+ * 执行与运行前校验都必须用这里返回的 graph，保证“校验的”和“跑的”是同一份。
+ */
+export async function resolveTriggerGraph(
+  workflowId: string,
+  draft: boolean,
+): Promise<{ graph: WorkflowGraph; versionNumber: number | null } | null> {
+  const workflow = await getWorkflow(workflowId);
+  if (!workflow) return null;
+  if (!draft) {
+    const versionNumber =
+      workflow.publishedVersionNumber ?? (await getLatestVersionNumber(workflowId)) ?? 0;
+    if (versionNumber > 0) {
+      const version = await getWorkflowVersion(workflowId, versionNumber);
+      if (version) return { graph: version.graph as WorkflowGraph, versionNumber };
+    }
+  }
+  return { graph: workflow.graph as WorkflowGraph, versionNumber: null };
+}
+
 export async function enqueueWorkflowRun(
   workflowId: string,
   input: string,
   stepMode = false,
+  opts: { draft?: boolean } = {},
 ): Promise<EnqueueResult> {
-  const workflow = await getWorkflow(workflowId);
-  if (!workflow) throw new Error("Workflow not found");
+  const resolved = await resolveTriggerGraph(workflowId, opts.draft === true);
+  if (!resolved) throw new Error("Workflow not found");
 
   const runId = createId();
-  const versionNumber = (await getLatestVersionNumber(workflowId)) || null;
   await db.insert(workflowRuns).values({
     id: runId,
     workflowId,
     status: "queued",
     input,
     context: {},
-    versionNumber,
+    versionNumber: resolved.versionNumber,
   });
   await enqueueJob(runId, "trigger", { stepMode });
 
@@ -129,7 +152,13 @@ export async function executeRunJob(job: Pick<ClaimedJob, "runId" | "kind" | "pa
     .where(eq(workflowRuns.id, job.runId));
 
   const callbacks = makeCallbacks(job.runId, workflow.userId);
-  const graph = workflow.graph as WorkflowGraph;
+  // versionNumber 非空则锁定执行入队时的版本快照（resume/retry/step 也能拿到同一份图）；
+  // 为 null（草稿调试）或快照已被清理时，回退到当前草稿。
+  let graph = workflow.graph as WorkflowGraph;
+  if (data.run.versionNumber != null) {
+    const version = await getWorkflowVersion(workflow.id, data.run.versionNumber);
+    if (version) graph = version.graph as WorkflowGraph;
+  }
   const existingContext = (data.run.context ?? {}) as ExecutionContext;
   const payload = job.payload ?? {};
 
@@ -198,6 +227,26 @@ export async function listWorkflowRuns(workflowId: string) {
     .from(workflowRuns)
     .where(eq(workflowRuns.workflowId, workflowId))
     .orderBy(desc(workflowRuns.createdAt));
+}
+
+/**
+ * 待办收件箱：某用户名下所有卡在“等待人工输入”的运行，跨工作流聚合。
+ * join workflows 同时完成权限隔离与拿工作流名称。
+ */
+export async function listPendingInputRuns(userId: string) {
+  return db
+    .select({
+      id: workflowRuns.id,
+      workflowId: workflowRuns.workflowId,
+      workflowName: workflows.name,
+      input: workflowRuns.input,
+      currentNodeId: workflowRuns.currentNodeId,
+      updatedAt: workflowRuns.updatedAt,
+    })
+    .from(workflowRuns)
+    .innerJoin(workflows, eq(workflowRuns.workflowId, workflows.id))
+    .where(and(eq(workflows.userId, userId), eq(workflowRuns.status, "waiting_for_input")))
+    .orderBy(desc(workflowRuns.updatedAt));
 }
 
 function makeCallbacks(runId: string, userId: string): EngineCallbacks {

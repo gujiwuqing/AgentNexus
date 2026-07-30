@@ -1,9 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { WorkflowEditor } from "@/components/workflow/workflow-editor";
+import { WorkflowRunView } from "@/components/workflow/workflow-run-view";
 
-export default function WorkflowEditorPage() {
+/** 工作流默认进入“运行视图”；编排/调试在 /workflows/[id]/edit。 */
+export default function WorkflowRunPage() {
   const { workflowId } = useParams<{ workflowId: string }>();
-  return <WorkflowEditor workflowId={workflowId} />;
+  return <WorkflowRunView workflowId={workflowId} />;
 }

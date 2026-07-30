@@ -1,6 +1,6 @@
-import { eq, desc, and, sql, lt } from "drizzle-orm";
+import { eq, desc, and, sql, lt, ne } from "drizzle-orm";
 import { db } from "@/db";
-import { workflowVersions } from "@/db/schema";
+import { workflowVersions, workflows } from "@/db/schema";
 import { createId } from "@/lib/id";
 import { isSameGraph } from "@/lib/workflow/graph-diff";
 import type { WorkflowGraph } from "@/types/workflow";
@@ -26,16 +26,22 @@ async function getLatestVersion(workflowId: string) {
   return row ?? null;
 }
 
-/** 保留最近 MAX_VERSIONS_PER_WORKFLOW 个版本，删除更旧的快照。 */
+/** 保留最近 MAX_VERSIONS_PER_WORKFLOW 个版本，删除更旧的快照；已发布版本始终保留（正式运行依赖它）。 */
 async function pruneOldVersions(workflowId: string, latestVersion: number) {
   const threshold = latestVersion - MAX_VERSIONS_PER_WORKFLOW;
   if (threshold <= 0) return;
+  const [workflow] = await db
+    .select({ publishedVersionNumber: workflows.publishedVersionNumber })
+    .from(workflows)
+    .where(eq(workflows.id, workflowId));
+  const published = workflow?.publishedVersionNumber;
   await db
     .delete(workflowVersions)
     .where(
       and(
         eq(workflowVersions.workflowId, workflowId),
         lt(workflowVersions.versionNumber, threshold + 1),
+        ...(published != null ? [ne(workflowVersions.versionNumber, published)] : []),
       ),
     );
 }

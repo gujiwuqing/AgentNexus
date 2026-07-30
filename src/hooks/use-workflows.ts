@@ -19,6 +19,7 @@ type Workflow = {
   name: string;
   description: string;
   graph: WorkflowGraph;
+  publishedVersionNumber: number | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -109,16 +110,47 @@ export function useWorkflowRunDetail(runId: string) {
 export function useTriggerRun(workflowId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ input, stepMode }: { input: string; stepMode?: boolean }) =>
+    mutationFn: ({ input, stepMode, draft }: { input: string; stepMode?: boolean; draft?: boolean }) =>
       fetchJson<{ id: string; status: string; context: Record<string, string> }>(
         `/api/workflows/${workflowId}/runs`,
         {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ input, stepMode: stepMode ?? false }),
+          body: JSON.stringify({ input, stepMode: stepMode ?? false, draft: draft ?? false }),
         }
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["workflows", workflowId, "runs"] }),
+  });
+}
+
+/** 发布当前草稿为正式版本；正式运行将锁定该版本快照。 */
+export function usePublishWorkflow(workflowId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      fetchJson<Workflow>(`/api/workflows/${workflowId}/publish`, { method: "POST" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["workflows"] });
+      qc.invalidateQueries({ queryKey: ["workflows", workflowId] });
+    },
+  });
+}
+
+export type PendingInputRun = {
+  id: string;
+  workflowId: string;
+  workflowName: string;
+  input: string;
+  currentNodeId: string | null;
+  updatedAt: string;
+};
+
+/** 待办收件箱：所有等待人工输入的运行。导航角标与列表共用，30s 轻量轮询。 */
+export function usePendingInputRuns() {
+  return useQuery({
+    queryKey: ["workflow-runs", "pending"],
+    queryFn: () => fetchJson<PendingInputRun[]>("/api/workflow-runs/pending"),
+    refetchInterval: 30_000,
   });
 }
 
@@ -134,7 +166,11 @@ export function useResumeRun() {
           body: JSON.stringify({ input }),
         }
       ),
-    onSuccess: (_, { runId }) => qc.invalidateQueries({ queryKey: ["workflow-runs", runId] }),
+    onSuccess: (_, { runId }) => {
+      qc.invalidateQueries({ queryKey: ["workflow-runs", runId] });
+      // 提交输入后该运行离开待办态，同步刷新待办收件箱/角标
+      qc.invalidateQueries({ queryKey: ["workflow-runs", "pending"] });
+    },
   });
 }
 

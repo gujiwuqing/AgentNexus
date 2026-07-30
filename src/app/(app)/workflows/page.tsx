@@ -2,14 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { Search, Workflow as WorkflowIcon, Plus } from "lucide-react";
-import { useWorkflows } from "@/hooks/use-workflows";
+import { useLocale, useTranslations } from "next-intl";
+import { Search, Workflow as WorkflowIcon, Plus, UserCheck, ChevronRight } from "lucide-react";
+import { useWorkflows, usePendingInputRuns } from "@/hooks/use-workflows";
 import { WorkflowCard } from "@/components/workflow/workflow-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { formatRelativeTime } from "@/lib/format-relative-time";
 
 function WorkflowCardSkeleton() {
   return (
@@ -26,7 +27,9 @@ function WorkflowCardSkeleton() {
 
 export default function WorkflowsPage() {
   const { data: workflows, isLoading, error } = useWorkflows();
+  const { data: pendingRuns } = usePendingInputRuns();
   const t = useTranslations("workflows");
+  const locale = useLocale();
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -49,6 +52,34 @@ export default function WorkflowsPage() {
           </Link>
         </Button>
       </div>
+
+      {/* 待我处理：等待人工输入的运行，点击直达对应运行处理审批 */}
+      {pendingRuns && pendingRuns.length > 0 && (
+        <div className="mb-6 rounded-lg border border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/30 overflow-hidden">
+          <p className="px-4 py-2.5 text-sm font-medium flex items-center gap-2 border-b border-orange-200 dark:border-orange-900">
+            <UserCheck className="h-4 w-4 text-orange-600" />
+            {t("pendingHeading", { count: pendingRuns.length })}
+          </p>
+          <div className="divide-y divide-orange-200 dark:divide-orange-900">
+            {pendingRuns.map((run) => (
+              <Link
+                key={run.id}
+                href={`/workflows/${run.workflowId}?run=${run.id}`}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-orange-100/60 dark:hover:bg-orange-900/30 transition-colors"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{run.workflowName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{run.input || "—"}</p>
+                </div>
+                <span className="text-xs text-muted-foreground shrink-0">
+                  {formatRelativeTime(run.updatedAt, locale)}
+                </span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {workflows && workflows.length > 0 && (
         <div className="relative mb-6 max-w-sm">

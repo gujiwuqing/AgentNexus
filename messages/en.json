@@ -8,7 +8,8 @@
     "settings": "Settings",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "switchLanguage": "Switch language"
+    "switchLanguage": "Switch language",
+    "pendingApprovals": "{count} runs waiting for your input"
   },
   "theme": {
     "toggle": "Toggle theme"
@@ -162,7 +163,8 @@
     "descriptionPlaceholder": "What does this workflow do?",
     "blank": "Start from scratch",
     "blankDescription": "Configure every node yourself.",
-    "buildHint": "You'll build the node graph in the workflow editor after creating it."
+    "buildHint": "You'll build the node graph in the workflow editor after creating it.",
+    "pendingHeading": "Waiting for me ({count})"
   },
   "settings": {
     "title": "Settings",

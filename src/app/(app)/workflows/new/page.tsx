@@ -59,7 +59,7 @@ export default function NewWorkflowPage() {
     e.preventDefault();
     createWorkflow.mutate(
       { name: name.trim(), description: description.trim(), graph: selectedTemplate && hasRequiredAgents ? selectedTemplate.graph : { nodes: [], edges: [] } },
-      { onSuccess: (workflow) => router.push(`/workflows/${workflow.id}`) }
+      { onSuccess: (workflow) => router.push(`/workflows/${workflow.id}/edit`) }
     );
   }
 

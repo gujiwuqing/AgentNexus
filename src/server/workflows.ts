@@ -47,3 +47,19 @@ export async function deleteWorkflow(id: string, userId: string) {
   await db.delete(workflows).where(eq(workflows.id, id));
   return true;
 }
+
+/**
+ * 发布当前草稿：对当前 graph 做版本快照，并把 publishedVersionNumber 指向它。
+ * graph 与最新版本一致时复用该版本号（不会堆重复快照）。
+ * 调用方负责先做 graph 配置校验。
+ */
+export async function publishWorkflow(id: string, userId: string) {
+  const existing = await getWorkflowOwnedBy(id, userId);
+  if (!existing) return null;
+  const versionNumber = await createWorkflowVersionSnapshot(id, existing.graph as WorkflowGraph);
+  await db
+    .update(workflows)
+    .set({ publishedVersionNumber: versionNumber, updatedAt: new Date() })
+    .where(eq(workflows.id, id));
+  return getWorkflow(id);
+}

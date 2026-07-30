@@ -108,6 +108,12 @@ export const workflows = mysqlTable("workflows", {
     nodes: WorkflowNode[];
     edges: WorkflowEdge[];
   }>(),
+  /**
+   * 已发布版本号（指向 workflow_versions.versionNumber）。
+   * 运行视图触发的正式运行锁定该版本的 graph 快照；编辑器修改草稿不影响它。
+   * 为 null 表示从未发布（兼容存量数据：此时正式运行回退到当前草稿）。
+   */
+  publishedVersionNumber: int("published_version_number"),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull()
     .defaultNow()

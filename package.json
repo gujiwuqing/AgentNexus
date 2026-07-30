@@ -12,7 +12,8 @@
     "templates:reset": "tsx scripts/replace-with-professional-templates.ts",
     "prompts:backfill": "dotenv -e .env.local -- tsx scripts/backfill-suggested-prompts.ts",
     "seed:knowledge": "tsx scripts/seed-knowledge-bases.ts",
-    "link:knowledge": "tsx scripts/link-agents-knowledge.ts"
+    "link:knowledge": "tsx scripts/link-agents-knowledge.ts",
+    "init:all": "dotenv -e .env.local -- tsx scripts/init-all.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",

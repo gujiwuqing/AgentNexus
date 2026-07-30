@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
-import { History, ArrowLeft, Undo2, Redo2, LayoutGrid } from "lucide-react";
+import { History, ArrowLeft, Undo2, Redo2, LayoutGrid, Rocket } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -31,7 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
-import { useWorkflow, useUpdateWorkflow, useWorkflowRunDetail } from "@/hooks/use-workflows";
+import { useWorkflow, useUpdateWorkflow, useWorkflowRunDetail, usePublishWorkflow } from "@/hooks/use-workflows";
 import { validateGraph } from "@/lib/workflow/validate-graph";
 import type { WorkflowGraph, WorkflowNode } from "@/types/workflow";
 
@@ -145,6 +145,7 @@ type Snapshot = { nodes: Node[]; edges: Edge[] };
 function EditorInner({ workflowId }: { workflowId: string }) {
   const { data: workflow, isLoading } = useWorkflow(workflowId);
   const updateWorkflow = useUpdateWorkflow(workflowId);
+  const publishWorkflow = usePublishWorkflow(workflowId);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChangeBase] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChangeBase] = useEdgesState<Edge>([]);
@@ -407,6 +408,22 @@ function EditorInner({ workflowId }: { workflowId: string }) {
     );
   }
 
+  /** 发布 = 先保存当前画布，再把已发布版本指向这份快照；正式运行从此锁定该版本。 */
+  function handlePublish() {
+    const graph = flowToGraph(nodes, edges);
+    updateWorkflow.mutate(
+      { name, graph },
+      {
+        onSuccess: () =>
+          publishWorkflow.mutate(undefined, {
+            onSuccess: (w) => toast.success(t("publishedToast", { version: w.publishedVersionNumber ?? 0 })),
+            onError: (err) => toast.error(err.message),
+          }),
+        onError: (err) => toast.error(err.message),
+      }
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col h-full">
@@ -425,7 +442,7 @@ function EditorInner({ workflowId }: { workflowId: string }) {
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 px-4 py-2 border-b">
         <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-          <Link href="/workflows" aria-label={tCommon("back")}>
+          <Link href={`/workflows/${workflowId}`} aria-label={tCommon("back")}>
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -437,6 +454,27 @@ function EditorInner({ workflowId }: { workflowId: string }) {
         <Button size="sm" onClick={handleSave} disabled={updateWorkflow.isPending}>
           {updateWorkflow.isPending ? t("saving") : t("save")}
         </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-1"
+              onClick={handlePublish}
+              disabled={publishWorkflow.isPending || updateWorkflow.isPending || issues.length > 0}
+            >
+              <Rocket className="h-3.5 w-3.5" />
+              {publishWorkflow.isPending ? t("publishing") : t("publish")}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {issues.length > 0
+              ? t("publishBlocked")
+              : workflow.publishedVersionNumber
+                ? t("publishedVersion", { version: workflow.publishedVersionNumber })
+                : t("unpublishedHint")}
+          </TooltipContent>
+        </Tooltip>
 
         <div className="flex items-center gap-0.5 ml-2">
           <Tooltip>

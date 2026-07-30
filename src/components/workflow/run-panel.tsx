@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { RotateCcw, ChevronDown, ChevronRight, Play, StepForward, FastForward, Braces, Search, Download, Loader2 } from "lucide-react";
+import { RotateCcw, ChevronDown, ChevronRight, Play, StepForward, FastForward, Braces, Search, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,33 +22,7 @@ import {
   useRetryRun,
   useStepRun,
 } from "@/hooks/use-workflows";
-
-function StatusBadge({ status }: { status: string }) {
-  const t = useTranslations("workflowExt.status");
-  const colors: Record<string, string> = {
-    completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    running: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-    queued: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-    waiting_for_input: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-    paused: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    skipped: "bg-muted text-muted-foreground",
-  };
-  const isActive = status === "running" || status === "queued";
-  return (
-    <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ${colors[status] ?? "bg-muted"}`}>
-      {isActive && <Loader2 className="h-2.5 w-2.5 animate-spin" />}
-      {t(status as "running" | "waiting_for_input" | "completed" | "failed" | "skipped" | "paused" | "queued")}
-    </span>
-  );
-}
-
-function formatDuration(startedAt: string, completedAt: string | null): string {
-  if (!completedAt) return "-";
-  const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
+import { StatusBadge, formatDuration } from "./run-status-badge";
 
 export function RunPanel({
   workflowId,
@@ -104,7 +78,8 @@ export function RunPanel({
   }
 
   function handleTrigger() {
-    triggerRun.mutate({ input: runInput, stepMode }, {
+    // 编辑器内的运行是调试运行：跑当前草稿，不受已发布版本影响
+    triggerRun.mutate({ input: runInput, stepMode, draft: true }, {
       onSuccess: (result) => {
         setRunDialogOpen(false);
         setRunInput("");

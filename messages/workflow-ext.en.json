@@ -99,7 +99,7 @@
     },
     "runPanel": {
       "heading": "Runs",
-      "run": "Run",
+      "run": "Debug run",
       "noRuns": "No runs yet.",
       "queuedHint": "Queued for execution. Progress refreshes automatically.",
       "activeHint": "Running in the background — you can leave this page and come back.",
@@ -137,7 +137,10 @@
     },
     "card": {
       "noDescription": "No description",
-      "nodeCount": "{count} nodes"
+      "nodeCount": "{count} nodes",
+      "run": "Run",
+      "edit": "Edit",
+      "published": "Published v{version}"
     },
     "editor": {
       "saving": "Saving...",
@@ -150,7 +153,13 @@
       "copy": "Copy selection (Ctrl+C)",
       "paste": "Paste (Ctrl+V)",
       "duplicate": "Duplicate (Ctrl+D)",
-      "deleteSelection": "Delete selection (Delete)"
+      "deleteSelection": "Delete selection (Delete)",
+      "publish": "Publish",
+      "publishing": "Publishing…",
+      "publishedToast": "Published as v{version}; production runs are pinned to it",
+      "publishBlocked": "Fix configuration issues before publishing",
+      "publishedVersion": "Currently published: v{version}; click to publish the latest canvas",
+      "unpublishedHint": "Not published yet; once published, production runs are pinned to that version"
     },
     "versionHistory": {
       "heading": "Version History",
@@ -189,6 +198,19 @@
         "graphEmpty": "This workflow has no nodes yet",
         "graphUnknownEdge": "An edge points to a deleted node"
       }
+    },
+    "runView": {
+      "notFound": "This workflow does not exist or has been deleted.",
+      "backToList": "Back to workflows",
+      "edit": "Edit",
+      "publishedVersion": "Published v{version}",
+      "unpublished": "Unpublished",
+      "inputPlaceholder": "Describe what to run, e.g. add a refund feature to the order system; constraints: ship in two weeks, prevent duplicate refunds…",
+      "run": "Run",
+      "runHintPublished": "Runs published version v{version}; draft edits in the editor will not affect this run",
+      "runHintDraft": "Not published yet: the latest saved content will run. Consider publishing from the editor first",
+      "historyHeading": "Run history",
+      "waitingHeading": "This run is waiting for your input"
     }
   }
 }

@@ -8,6 +8,7 @@ import { MessagesSquare, Bot, LayoutDashboard, Workflow, BookOpen, Settings, Spa
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { UserMenu } from "./user-menu";
+import { usePendingInputRuns } from "@/hooks/use-workflows";
 import { cn } from "@/lib/utils";
 import type { SafeUser } from "@/server/users";
 
@@ -22,6 +23,9 @@ const NAV_ITEMS = [
 function SidebarContent({ user, onNavigate }: { user: SafeUser; onNavigate?: () => void }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  // 待办角标：等待人工输入的工作流运行数，提醒用户去处理，避免审批被遗忘
+  const { data: pendingRuns } = usePendingInputRuns();
+  const pendingCount = pendingRuns?.length ?? 0;
 
   function isActive(href: string) {
     if (href === "/chat") return pathname === "/chat" || pathname.startsWith("/chat/");
@@ -54,7 +58,15 @@ function SidebarContent({ user, onNavigate }: { user: SafeUser; onNavigate?: () 
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {t(item.key)}
+              <span className="flex-1">{t(item.key)}</span>
+              {item.href === "/workflows" && pendingCount > 0 && (
+                <span
+                  className="min-w-5 h-5 px-1.5 rounded-full bg-orange-500 text-white text-[10px] font-semibold flex items-center justify-center"
+                  title={t("pendingApprovals", { count: pendingCount })}
+                >
+                  {pendingCount > 99 ? "99+" : pendingCount}
+                </span>
+              )}
             </Link>
           );
         })}
