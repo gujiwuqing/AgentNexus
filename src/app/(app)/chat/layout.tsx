@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { PanelLeft } from "lucide-react";
 import { AppSidebar } from "@/components/chat/app-sidebar";
 import { useIsMobile } from "@/hooks/use-media-query";
@@ -9,6 +10,7 @@ import { useIsMobile } from "@/hooks/use-media-query";
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
   const params = useParams<{ agentId?: string; conversationId?: string; workflowId?: string }>();
   const isMobile = useIsMobile();
+  const t = useTranslations("chatExt.sidebar");
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
@@ -25,13 +27,14 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                 selectedWorkflowId={params.workflowId}
                 collapsed={false}
                 onToggle={() => setMobileDrawerOpen(false)}
+                onNavigate={() => setMobileDrawerOpen(false)}
               />
             </div>
           </div>
         )}
         <button
           onClick={() => setMobileDrawerOpen(true)}
-          aria-label="Open agent list"
+          aria-label={t("expand")}
           className="absolute top-2 left-2 z-10 h-8 w-8 rounded-md bg-background border shadow-sm flex items-center justify-center"
         >
           <PanelLeft className="h-4 w-4" />

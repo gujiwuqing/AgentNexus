@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { AgentForm } from "@/components/agents/agent-form";
 import { useAgent, useUpdateAgent } from "@/hooks/use-agents";
 import { Button } from "@/components/ui/button";
+import { PageFormSkeleton } from "@/components/ui/page-skeleton";
 import { DeleteAgentButton } from "@/components/agents/delete-agent-button";
 import { AgentKnowledgeConfig } from "@/components/agents/agent-knowledge-config";
 import { AgentTeamConfig } from "@/components/agents/agent-team-config";
@@ -17,9 +19,8 @@ export default function AgentDetailPage() {
   const { data: agent, isLoading } = useAgent(id);
   const updateAgent = useUpdateAgent(id);
   const t = useTranslations("agents");
-  const tCommon = useTranslations("common");
 
-  if (isLoading) return <div className="p-8">{tCommon("loading")}</div>;
+  if (isLoading) return <PageFormSkeleton />;
   if (!agent) return <div className="p-8">{t("notFound")}</div>;
 
   return (
@@ -39,10 +40,14 @@ export default function AgentDetailPage() {
         submitLabel={t("saveChanges")}
         isSubmitting={updateAgent.isPending}
         onCancel={() => router.push("/agents")}
-        onSubmit={(values) => updateAgent.mutate(values)}
+        // 保存反馈走 toast：原先的行内绿字位于吸底操作栏之下，既容易被忽略又不会消失
+        onSubmit={(values) =>
+          updateAgent.mutate(values, {
+            onSuccess: () => toast.success(t("saved")),
+            onError: (err) => toast.error(err.message),
+          })
+        }
       />
-      {updateAgent.isError && <p className="text-destructive mt-4">{updateAgent.error.message}</p>}
-      {updateAgent.isSuccess && <p className="text-green-600 mt-4">{t("saved")}</p>}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6 mt-8 pt-8 border-t">
         <AgentKnowledgeConfig agentId={agent.id} />

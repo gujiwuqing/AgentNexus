@@ -57,9 +57,11 @@ function groupConversationsByDate(conversations: Conversation[], labels: { today
 function ConversationList({
   agentId,
   activeConversationId,
+  onNavigate,
 }: {
   agentId: string;
   activeConversationId?: string;
+  onNavigate?: () => void;
 }) {
   const router = useRouter();
   const { data: conversations } = useConversations(agentId);
@@ -111,7 +113,10 @@ function ConversationList({
         disabled={createConversation.isPending}
         onClick={() =>
           createConversation.mutate(undefined, {
-            onSuccess: (conv) => router.push(`/chat/${agentId}/${conv.id}`),
+            onSuccess: (conv) => {
+              router.push(`/chat/${agentId}/${conv.id}`);
+              onNavigate?.();
+            },
             onError: (err) => toast.error(err.message),
           })
         }
@@ -124,13 +129,25 @@ function ConversationList({
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-0.5">
             {group.label}
           </p>
-          {group.items.map((conv) => (
+          {group.items.map((conv) => {
+            const isActive = conv.id === activeConversationId;
+            return (
             <div
               key={conv.id}
-              className={`group flex items-center gap-1 px-2 py-1.5 rounded-md text-sm hover:bg-sidebar-accent ${
-                conv.id === activeConversationId ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+              // 当前对话用“左侧色条 + 实心背景 + 加粗”；悬停只给半透背景，
+              // 否则两者背景完全一致，分不出哪个是当前打开的对话
+              className={`group relative flex items-center gap-1 pl-3 pr-2 py-1.5 rounded-md text-sm transition-colors ${
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  : "hover:bg-sidebar-accent/50"
               }`}
             >
+              {isActive && (
+                <span
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-full bg-sidebar-primary"
+                  aria-hidden="true"
+                />
+              )}
               {editingId === conv.id ? (
                 <Input
                   className="h-6 text-xs px-1 flex-1"
@@ -147,6 +164,7 @@ function ConversationList({
                 <Link
                   href={`/chat/${agentId}/${conv.id}`}
                   className="flex-1 truncate"
+                  onClick={onNavigate}
                   onDoubleClick={(e) => {
                     e.preventDefault();
                     startEditing(conv.id, conv.title);
@@ -172,7 +190,8 @@ function ConversationList({
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       ))}
     </div>
@@ -185,12 +204,15 @@ export function AppSidebar({
   selectedWorkflowId,
   collapsed,
   onToggle,
+  onNavigate,
 }: {
   selectedAgentId?: string;
   activeConversationId?: string;
   selectedWorkflowId?: string;
   collapsed: boolean;
   onToggle: () => void;
+  /** 移动端用：导航后关闭抽屉，否则侧边栏会盖住内容区 */
+  onNavigate?: () => void;
 }) {
   const router = useRouter();
   const { data: agents } = useAgents();
@@ -243,7 +265,10 @@ export function AppSidebar({
           <button
             key={agent.id}
             className={`rounded-full p-0.5 hover:ring-2 hover:ring-primary/40 ${agent.id === selectedAgentId ? "ring-2 ring-primary" : ""}`}
-            onClick={() => router.push(`/chat/${agent.id}`)}
+            onClick={() => {
+              router.push(`/chat/${agent.id}`);
+              onNavigate?.();
+            }}
             title={agent.name}
           >
             <AgentAvatar avatar={agent.avatar} className="h-8 w-8 text-lg" iconClassName="h-4 w-4" />
@@ -254,7 +279,10 @@ export function AppSidebar({
           <button
             key={w.id}
             className={`h-8 w-8 rounded-lg flex items-center justify-center hover:bg-muted ${w.id === selectedWorkflowId ? "bg-muted ring-2 ring-primary" : ""}`}
-            onClick={() => router.push(`/chat/workflows/${w.id}`)}
+            onClick={() => {
+              router.push(`/chat/workflows/${w.id}`);
+              onNavigate?.();
+            }}
             title={w.name}
           >
             <Workflow className="h-4 w-4 text-brand" />
@@ -289,11 +317,22 @@ export function AppSidebar({
         {filteredAgents?.map((agent) => (
           <div key={agent.id}>
             <div
-              className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer hover:bg-sidebar-accent ${
-                agent.id === selectedAgentId ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+              className={`group relative flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-md cursor-pointer transition-colors ${
+                agent.id === selectedAgentId
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  : "hover:bg-sidebar-accent/50"
               }`}
-              onClick={() => router.push(`/chat/${agent.id}`)}
+              onClick={() => {
+                router.push(`/chat/${agent.id}`);
+                onNavigate?.();
+              }}
             >
+              {agent.id === selectedAgentId && (
+                <span
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-sidebar-primary"
+                  aria-hidden="true"
+                />
+              )}
               <AgentAvatar avatar={agent.avatar} className="h-7 w-7 text-base shrink-0" iconClassName="h-3.5 w-3.5" />
               <span className="flex-1 truncate text-sm">{agent.name}</span>
               <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -323,7 +362,11 @@ export function AppSidebar({
             </div>
             {agent.id === selectedAgentId && (
               <div className="ml-4 mt-1">
-                <ConversationList agentId={agent.id} activeConversationId={activeConversationId} />
+                <ConversationList
+                  agentId={agent.id}
+                  activeConversationId={activeConversationId}
+                  onNavigate={onNavigate}
+                />
               </div>
             )}
           </div>
@@ -341,11 +384,22 @@ export function AppSidebar({
           {workflows?.map((w) => (
             <div
               key={w.id}
-              className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer hover:bg-sidebar-accent text-sm ${
-                w.id === selectedWorkflowId ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+              className={`group relative flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-md cursor-pointer text-sm transition-colors ${
+                w.id === selectedWorkflowId
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  : "hover:bg-sidebar-accent/50"
               }`}
-              onClick={() => router.push(`/chat/workflows/${w.id}`)}
+              onClick={() => {
+                router.push(`/chat/workflows/${w.id}`);
+                onNavigate?.();
+              }}
             >
+              {w.id === selectedWorkflowId && (
+                <span
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-sidebar-primary"
+                  aria-hidden="true"
+                />
+              )}
               <div className="h-7 w-7 rounded-md bg-brand/10 flex items-center justify-center shrink-0">
                 <Workflow className="h-3.5 w-3.5 text-brand" />
               </div>

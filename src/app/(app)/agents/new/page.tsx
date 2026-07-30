@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AgentForm } from "@/components/agents/agent-form";
 import { TemplatePicker } from "@/components/templates/template-picker";
@@ -78,10 +79,10 @@ export default function NewAgentPage() {
             onSubmit={(values) =>
               createAgent.mutate(values, {
                 onSuccess: (agent) => router.push(`/agents/${agent.id}`),
+                onError: (err) => toast.error(err.message),
               })
             }
           />
-          {createAgent.isError && <p className="text-destructive mt-4">{createAgent.error.message}</p>}
         </>
       )}
     </div>

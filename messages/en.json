@@ -5,7 +5,10 @@
     "dashboard": "Dashboard",
     "workflows": "Workflows",
     "knowledge": "Knowledge",
-    "settings": "Settings"
+    "settings": "Settings",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "switchLanguage": "Switch language"
   },
   "theme": {
     "toggle": "Toggle theme"

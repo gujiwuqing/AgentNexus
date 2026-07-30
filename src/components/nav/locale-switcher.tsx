@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ const LABELS: Record<Locale, string> = {
 
 export function LocaleSwitcher() {
   const locale = useLocale() as Locale;
+  const t = useTranslations("nav");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -33,7 +34,7 @@ export function LocaleSwitcher() {
       className="h-9 px-2 text-xs"
       onClick={toggle}
       disabled={isPending}
-      aria-label="Switch language"
+      aria-label={t("switchLanguage")}
     >
       {LABELS[next]}
     </Button>

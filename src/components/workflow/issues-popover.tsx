@@ -16,7 +16,7 @@ export function IssuesPopover({ issues }: { issues: GraphIssue[] }) {
 
   if (issues.length === 0) {
     return (
-      <span className="flex items-center gap-1 text-xs text-green-600 mr-1">
+      <span className="flex items-center gap-1 text-xs text-success mr-1">
         <CheckCircle2 className="h-3.5 w-3.5" />
         {t("allGood")}
       </span>

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageFormSkeleton } from "@/components/ui/page-skeleton";
 import { useProviderConfig, useSaveProviderConfig, useTestProviderConfig } from "@/hooks/use-provider-config";
 
 const BASE_URL_PLACEHOLDERS: Record<string, string> = {
@@ -79,7 +80,7 @@ export default function SettingsPage() {
     );
   }
 
-  if (isLoading) return <div className="p-8">{tc("loading")}</div>;
+  if (isLoading) return <PageFormSkeleton className="max-w-4xl" />;
 
   return (
     <div className="w-full max-w-4xl mx-auto px-6 py-8 lg:px-10 animate-in fade-in duration-300">
@@ -143,7 +144,7 @@ export default function SettingsPage() {
                 {testConfig.isPending ? tc("testing") : tc("testConnection")}
               </Button>
               {testResult === "success" && (
-                <span className="flex items-center gap-1 text-sm text-green-600">
+                <span className="flex items-center gap-1 text-sm text-success">
                   <CheckCircle2 className="h-4 w-4" />
                   {tc("testSuccess")}
                 </span>

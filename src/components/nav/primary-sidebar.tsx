@@ -88,6 +88,7 @@ function SidebarContent({ user, onNavigate }: { user: SafeUser; onNavigate?: () 
 
 export function PrimarySidebar({ user }: { user: SafeUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const t = useTranslations("nav");
 
   return (
     <>
@@ -100,7 +101,7 @@ export function PrimarySidebar({ user }: { user: SafeUser }) {
       <div className="md:hidden flex items-center gap-2 h-12 px-3 border-b bg-sidebar shrink-0">
         <button
           onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
+          aria-label={t("openMenu")}
           className="p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground"
         >
           <Menu className="h-5 w-5" />
@@ -118,7 +119,7 @@ export function PrimarySidebar({ user }: { user: SafeUser }) {
           <aside className="relative z-10 w-64 h-full bg-sidebar border-r flex flex-col animate-in slide-in-from-left duration-200">
             <button
               onClick={() => setMobileOpen(false)}
-              aria-label="Close menu"
+              aria-label={t("closeMenu")}
               className="absolute top-3 right-3 p-1 rounded-md hover:bg-sidebar-accent text-sidebar-foreground"
             >
               <X className="h-4 w-4" />

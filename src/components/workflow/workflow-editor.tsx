@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { History, ArrowLeft, Undo2, Redo2, LayoutGrid } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   ReactFlow,
   addEdge,
@@ -28,6 +29,7 @@ import { IssuesPopover } from "./issues-popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 import { useWorkflow, useUpdateWorkflow, useWorkflowRunDetail } from "@/hooks/use-workflows";
 import { validateGraph } from "@/lib/workflow/validate-graph";
@@ -395,10 +397,28 @@ function EditorInner({ workflowId }: { workflowId: string }) {
 
   function handleSave() {
     const graph = flowToGraph(nodes, edges);
-    updateWorkflow.mutate({ name, graph });
+    updateWorkflow.mutate(
+      { name, graph },
+      {
+        // 工具栏空间紧张，且原行内提示一直停留不消失，改用 toast
+        onSuccess: () => toast.success(t("saved")),
+        onError: (err) => toast.error(err.message),
+      }
+    );
   }
 
-  if (isLoading) return <div className="p-8">{tCommon("loading")}</div>;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center gap-2 px-4 py-2 pl-12 md:pl-4 border-b">
+          <Skeleton className="h-8 w-8 rounded-md" />
+          <Skeleton className="h-8 w-[200px]" />
+          <Skeleton className="h-8 w-16" />
+        </div>
+        <Skeleton className="flex-1 rounded-none" />
+      </div>
+    );
+  }
   if (!workflow) return <div className="p-8">{t("notFound")}</div>;
 
   return (
@@ -417,7 +437,6 @@ function EditorInner({ workflowId }: { workflowId: string }) {
         <Button size="sm" onClick={handleSave} disabled={updateWorkflow.isPending}>
           {updateWorkflow.isPending ? t("saving") : t("save")}
         </Button>
-        {updateWorkflow.isSuccess && <span className="text-green-600 text-xs">{t("saved")}</span>}
 
         <div className="flex items-center gap-0.5 ml-2">
           <Tooltip>

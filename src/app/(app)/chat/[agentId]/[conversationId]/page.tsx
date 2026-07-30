@@ -8,6 +8,7 @@ import { MessageList } from "@/components/chat/message-list";
 import { ChatInput, type ChatInputHandle } from "@/components/chat/chat-input";
 import { ChatWelcome } from "@/components/chat/chat-welcome";
 import { ShareDialog } from "@/components/chat/share-dialog";
+import { ChatSkeleton } from "@/components/ui/page-skeleton";
 import { useChatStream } from "@/hooks/use-chat-stream";
 import { useConversationDetail } from "@/hooks/use-conversations";
 import { useAgent } from "@/hooks/use-agents";
@@ -23,9 +24,8 @@ export default function ChatConversationPage() {
   const { data: detail } = useConversationDetail(conversationId);
   const inputRef = useRef<ChatInputHandle>(null);
   const t = useTranslations("chat");
-  const tCommon = useTranslations("common");
 
-  if (isLoading) return <div className="p-8">{tCommon("loading")}</div>;
+  if (isLoading) return <ChatSkeleton />;
 
   function handleExport() {
     if (!detail || !agent) return;

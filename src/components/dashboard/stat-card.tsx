@@ -8,7 +8,7 @@ function TrendBadge({ current, previous }: { current: number; previous: number }
 
   if (previous === 0) {
     return (
-      <span className="flex items-center gap-0.5 text-xs font-medium text-green-600">
+      <span className="flex items-center gap-0.5 text-xs font-medium text-success">
         <ArrowUp className="h-3 w-3" />
         100%
       </span>
@@ -31,7 +31,7 @@ function TrendBadge({ current, previous }: { current: number; previous: number }
     <span
       className={cn(
         "flex items-center gap-0.5 text-xs font-medium",
-        change > 0 ? "text-green-600" : "text-destructive"
+        change > 0 ? "text-success" : "text-destructive"
       )}
     >
       {change > 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}

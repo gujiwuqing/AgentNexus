@@ -20,6 +20,8 @@
     --accent-foreground: 243 75% 40%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+    --success: 142 71% 36%;
+    --success-foreground: 0 0% 100%;
     --border: 240 15% 90%;
     --input: 240 15% 88%;
     --ring: 243 75% 59%;
@@ -59,6 +61,9 @@
     --accent-foreground: 243 88% 80%;
     --destructive: 0 62.8% 40%;
     --destructive-foreground: 0 0% 98%;
+    /* 深色模式下提亮并降饱和，保证小字的对比度达标 */
+    --success: 142 62% 55%;
+    --success-foreground: 240 15% 10%;
     --border: 240 12% 18%;
     --input: 240 12% 20%;
     --ring: 243 88% 70%;

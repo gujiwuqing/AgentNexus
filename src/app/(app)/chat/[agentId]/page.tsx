@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AgentAvatar } from "@/components/agents/agent-avatar";
 import { useAgent } from "@/hooks/use-agents";
 import { useCreateConversation } from "@/hooks/use-conversations";
+import { ChatSkeleton } from "@/components/ui/page-skeleton";
 
 export default function AgentChatIndexPage() {
   const { agentId } = useParams<{ agentId: string }>();
@@ -14,9 +15,8 @@ export default function AgentChatIndexPage() {
   const createConversation = useCreateConversation(agentId);
   const t = useTranslations("agents");
   const tc = useTranslations("chat");
-  const tCommon = useTranslations("common");
 
-  if (isLoading) return <div className="p-8">{tCommon("loading")}</div>;
+  if (isLoading) return <ChatSkeleton />;
   if (!agent) return <div className="p-8">{t("notFound")}</div>;
 
   return (
