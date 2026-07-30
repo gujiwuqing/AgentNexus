@@ -14,6 +14,9 @@ import { extractText, isImageFile } from "@/lib/files/extractor";
 import { getTeamMembers, callTeamMember } from "@/server/agent-team";
 import { buildDelegationTool } from "@/lib/tools/team-delegation";
 import { getToolByName } from "@/lib/tools/registry";
+import { getAgentSkills } from "@/server/agent-skills";
+import { getAgentCustomTools } from "@/server/agent-custom-tools";
+import { buildSkillSystemPrompt } from "@/lib/skills/prompt-builder";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -98,6 +101,20 @@ export async function POST(request: Request, { params }: Params) {
     chatMessages[chatMessages.length - 1] = { role: "user", content: enrichedContent };
   }
 
+  // 注入关联的 Skills 到 system prompt
+  const agentSkillRows = await getAgentSkills(agent.id);
+  if (agentSkillRows.length > 0) {
+    const skillPrompt = buildSkillSystemPrompt(agentSkillRows);
+    if (chatMessages.length > 0 && chatMessages[0].role === "system") {
+      chatMessages[0] = {
+        role: "system",
+        content: (chatMessages[0].content as string) + skillPrompt,
+      };
+    } else {
+      chatMessages.unshift({ role: "system", content: skillPrompt });
+    }
+  }
+
   const ragTopK = (agent.toolsConfig as { ragTopK?: number })?.ragTopK ?? 5;
   const ragContext = await retrieveAgentRagContext(agent.id, content, globalConfig, ragTopK);
   if (ragContext) {
@@ -123,7 +140,8 @@ export async function POST(request: Request, { params }: Params) {
       (memberAgentId, task) => callTeamMember(memberAgentId, task, { depth: 1, chain: [agent.id] }),
     )
   );
-  const tools = resolveAgentTools(enabledTools, searchConfig, teamToolDefs);
+  const agentCustomToolRows = await getAgentCustomTools(agent.id);
+  const tools = resolveAgentTools(enabledTools, searchConfig, agentCustomToolRows, teamToolDefs);
 
   const startedAt = Date.now();
   const result = streamAgentReply(
@@ -138,6 +156,10 @@ export async function POST(request: Request, { params }: Params) {
           const memberId = tc.toolName.replace("delegate_to_", "");
           const member = teamMembers.find((m) => m.memberAgentId === memberId);
           return { ...tc, displayName: member?.memberAgentName ?? tc.toolName };
+        }
+        const customTool = agentCustomToolRows.find((ct) => ct.name === tc.toolName);
+        if (customTool) {
+          return { ...tc, displayName: customTool.displayName };
         }
         const builtin = getToolByName(tc.toolName);
         return { ...tc, displayName: builtin?.displayName ?? tc.toolName };
