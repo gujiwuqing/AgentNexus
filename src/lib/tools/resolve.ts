@@ -2,13 +2,28 @@ import { tool, type CoreTool } from "ai";
 import { toolMap } from "./registry";
 import { executeWebSearch } from "./web-search";
 import type { ToolDefinition } from "./types";
+import { resolveCustomTools } from "./custom-resolve";
 
 export function resolveAgentTools(
   enabledTools: string[],
   searchConfig?: { provider: string; apiKey: string } | null,
+  customToolRows?: Array<{
+    name: string;
+    description: string;
+    type: "http" | "prompt";
+    httpConfig: unknown;
+    promptConfig: unknown;
+    parameters: Array<{
+      name: string;
+      type: "string" | "number" | "boolean";
+      description: string;
+      required: boolean;
+      default?: string | number | boolean;
+    }>;
+  }>,
   teamToolDefs?: ToolDefinition[],
 ): Record<string, CoreTool> | undefined {
-  if (enabledTools.length === 0 && (!teamToolDefs || teamToolDefs.length === 0)) return undefined;
+  if (enabledTools.length === 0 && (!customToolRows || customToolRows.length === 0) && (!teamToolDefs || teamToolDefs.length === 0)) return undefined;
 
   const tools: Record<string, CoreTool> = {};
 
@@ -35,6 +50,11 @@ export function resolveAgentTools(
         execute: def.execute,
       });
     }
+  }
+
+  // 自定义工具
+  if (customToolRows && customToolRows.length > 0) {
+    Object.assign(tools, resolveCustomTools(customToolRows as Parameters<typeof resolveCustomTools>[0]));
   }
 
   for (const def of teamToolDefs ?? []) {
