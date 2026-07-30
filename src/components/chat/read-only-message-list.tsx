@@ -1,8 +1,6 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
+import { MarkdownView } from "@/components/markdown/markdown-view";
 import { MessageAttachments } from "@/components/chat/message-attachments";
 
 type ShareMessage = {
@@ -27,11 +25,11 @@ export function ReadOnlyMessageList({ messages }: { messages: ShareMessage[] }) 
                   : "bg-muted"
               }`}
             >
-              <div className="prose prose-sm dark:prose-invert max-w-none break-words">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-                  {m.content}
-                </ReactMarkdown>
-              </div>
+              <MarkdownView
+                content={m.content}
+                size="sm"
+                className={m.role === "user" ? "prose-on-primary" : undefined}
+              />
               {m.attachments && m.attachments.length > 0 && (
                 <MessageAttachments attachments={m.attachments} />
               )}

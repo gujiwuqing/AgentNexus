@@ -17,7 +17,8 @@
       "model": "Model",
       "modelPlaceholder": "Leave empty to use the global default model",
       "memoryWindowSize": "Memory Window",
-      "memoryWindowSizeHint": "0 = send all history"
+      "memoryWindowSizeHint": "0 = send all history",
+      "unsavedChanges": "Unsaved changes"
     },
     "templatePicker": {
       "heading": "Start with a professional template",

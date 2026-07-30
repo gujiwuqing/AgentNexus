@@ -65,20 +65,26 @@ function MessageBubbleImpl({
           <AgentAvatar avatar={avatar} className="w-7 h-7 text-sm" iconClassName="h-3.5 w-3.5" />
         )
       )}
-      <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
+      {/* 宽度上限必须加在列容器上（百分比参照整行）；
+          若加在气泡上，参照物是收缩适应的列容器，会双重收窄 */}
+      <div className={`flex min-w-0 max-w-[85%] flex-col ${isUser ? "items-end" : "items-start"}`}>
         <div
-          className={`max-w-[70%] rounded-lg px-4 py-2 text-sm ${
+          className={`max-w-full rounded-lg px-4 py-2 text-sm ${
             isError
               ? "bg-destructive/10 text-destructive border border-destructive/30 whitespace-pre-wrap"
               : isUser
-                ? "bg-primary text-primary-foreground whitespace-pre-wrap"
+                ? "bg-primary text-primary-foreground"
                 : "bg-muted"
           }`}
         >
-          {!isUser && !isError ? (
-            content ? <MarkdownContent content={content} /> : <TypingDots />
-          ) : (
+          {isError ? (
             content || ""
+          ) : isUser ? (
+            <MarkdownContent content={content} onPrimary />
+          ) : content ? (
+            <MarkdownContent content={content} />
+          ) : (
+            <TypingDots />
           )}
         </div>
         {attachments && attachments.length > 0 && <MessageAttachments attachments={attachments} />}

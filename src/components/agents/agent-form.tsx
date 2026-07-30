@@ -33,17 +33,23 @@ export function AgentForm({
   agent,
   initialValues,
   onSubmit,
+  onCancel,
   submitLabel,
   isSubmitting,
 }: {
   agent?: Agent;
   initialValues?: AgentFormValues;
   onSubmit: (values: AgentFormValues) => void;
+  onCancel?: () => void;
   submitLabel: string;
   isSubmitting: boolean;
 }) {
   const [values, setValues] = useState<AgentFormValues>(() => toInitialAgentFormValues(agent, initialValues));
+  // 快照初始值用于脏检查，提交后重置基准
+  const [baseline, setBaseline] = useState(() => JSON.stringify(toInitialAgentFormValues(agent, initialValues)));
+  const isDirty = JSON.stringify(values) !== baseline;
   const t = useTranslations("agentsExt.form");
+  const tCommon = useTranslations("common");
 
   function update<K extends keyof AgentFormValues>(key: K, value: AgentFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -53,6 +59,7 @@ export function AgentForm({
     e.preventDefault();
     const trimmed = (values.model ?? "").trim();
     onSubmit({ ...values, model: trimmed === "" ? null : trimmed });
+    setBaseline(JSON.stringify(values));
   }
 
   return (
@@ -188,7 +195,16 @@ export function AgentForm({
         </div>
       </div>
 
-      <div className="flex items-center gap-4 pt-2 border-t">
+      {/* 吸底操作栏：长表单滚动中保存按钮始终可见，按表单惯例右对齐 */}
+      <div className="sticky bottom-0 -mx-1 px-1 flex items-center justify-end gap-3 border-t bg-background/95 py-3 backdrop-blur">
+        {isDirty && !isSubmitting && (
+          <span className="text-xs text-muted-foreground">{t("unsavedChanges")}</span>
+        )}
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+            {tCommon("cancel")}
+          </Button>
+        )}
         <Button type="submit" disabled={isSubmitting}>
           {submitLabel}
         </Button>

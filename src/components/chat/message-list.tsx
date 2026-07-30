@@ -22,31 +22,34 @@ export function MessageList({
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3">
-      {messages.map((m, i) => {
-        const canRegenerate =
-          m.role === "assistant" &&
-          i === messages.length - 1 &&
-          i > 0 &&
-          messages[i - 1].role === "user";
-        return (
-          <MessageBubble
-            key={m.id}
-            id={m.id}
-            role={m.role}
-            content={m.content}
-            createdAt={m.createdAt}
-            avatar={avatar}
-            meta={m.meta}
-            attachments={m.attachments}
-            toolCalls={m.toolCalls}
-            isLast={i === messages.length - 1}
-            onRegenerate={canRegenerate ? onRegenerate : undefined}
-            onDelete={m.id.startsWith("local-") ? undefined : onDelete}
-          />
-        );
-      })}
-      <div ref={bottomRef} />
+    <div className="flex-1 overflow-y-auto p-4">
+      {/* 内容列限宽居中，超宽屏下保持可读行宽 */}
+      <div className="mx-auto w-full max-w-3xl space-y-3">
+        {messages.map((m, i) => {
+          const canRegenerate =
+            m.role === "assistant" &&
+            i === messages.length - 1 &&
+            i > 0 &&
+            messages[i - 1].role === "user";
+          return (
+            <MessageBubble
+              key={m.id}
+              id={m.id}
+              role={m.role}
+              content={m.content}
+              createdAt={m.createdAt}
+              avatar={avatar}
+              meta={m.meta}
+              attachments={m.attachments}
+              toolCalls={m.toolCalls}
+              isLast={i === messages.length - 1}
+              onRegenerate={canRegenerate ? onRegenerate : undefined}
+              onDelete={m.id.startsWith("local-") ? undefined : onDelete}
+            />
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
     </div>
   );
 }

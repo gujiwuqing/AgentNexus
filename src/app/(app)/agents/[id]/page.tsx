@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AgentForm } from "@/components/agents/agent-form";
 import { useAgent, useUpdateAgent } from "@/hooks/use-agents";
@@ -13,6 +13,7 @@ import { Breadcrumb } from "@/components/nav/breadcrumb";
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { data: agent, isLoading } = useAgent(id);
   const updateAgent = useUpdateAgent(id);
   const t = useTranslations("agents");
@@ -37,6 +38,7 @@ export default function AgentDetailPage() {
         agent={agent}
         submitLabel={t("saveChanges")}
         isSubmitting={updateAgent.isPending}
+        onCancel={() => router.push("/agents")}
         onSubmit={(values) => updateAgent.mutate(values)}
       />
       {updateAgent.isError && <p className="text-destructive mt-4">{updateAgent.error.message}</p>}

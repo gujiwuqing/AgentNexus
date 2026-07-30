@@ -17,7 +17,8 @@
       "model": "模型",
       "modelPlaceholder": "留空使用全局默认模型",
       "memoryWindowSize": "记忆窗口",
-      "memoryWindowSizeHint": "0 = 发送全部历史"
+      "memoryWindowSizeHint": "0 = 发送全部历史",
+      "unsavedChanges": "有未保存的修改"
     },
     "templatePicker": {
       "heading": "从专业模板开始",

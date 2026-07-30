@@ -50,6 +50,7 @@ export default function NewAgentPage() {
         initialValues={selectedTemplate ? toAgentFormValues(selectedTemplate) : undefined}
         submitLabel={t("create")}
         isSubmitting={createAgent.isPending}
+        onCancel={() => router.push("/agents")}
         onSubmit={(values) =>
           createAgent.mutate(values, {
             onSuccess: (agent) => router.push(`/agents/${agent.id}`),

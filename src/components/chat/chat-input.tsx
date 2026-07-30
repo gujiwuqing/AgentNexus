@@ -82,38 +82,40 @@ export function ChatInput({
 
   return (
     <div className="border-t">
-      <FilePreviewList files={pendingFiles} onRemove={removeFile} />
-      <div className="p-3 flex gap-2 items-end">
-        <FileUploadButton onFilesSelected={handleFilesSelected} disabled={disabled} />
-        <textarea
-          ref={textareaRef}
-          className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          placeholder={t("placeholder")}
-          rows={1}
-          disabled={disabled}
-        />
-        {disabled && onStop ? (
-          <Button variant="destructive" size="icon" onClick={onStop} aria-label={t("stop")}>
-            <Square className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button
-            size="icon"
-            onClick={submit}
-            disabled={disabled || isUploading || hasFileError || (!value.trim() && pendingFiles.length === 0)}
-            aria-label={t("send")}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        )}
+      {/* 与消息列对齐的限宽居中列 */}
+      <div className="mx-auto w-full max-w-3xl">
+        <FilePreviewList files={pendingFiles} onRemove={removeFile} />
+        <div className="p-3 flex gap-2 items-end">
+          <FileUploadButton onFilesSelected={handleFilesSelected} disabled={disabled} />
+          <textarea
+            ref={textareaRef}
+            className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submit();
+              }
+            }}
+            placeholder={t("placeholder")}
+            rows={1}
+          />
+          {disabled && onStop ? (
+            <Button variant="destructive" size="icon" onClick={onStop} aria-label={t("stop")}>
+              <Square className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              size="icon"
+              onClick={submit}
+              disabled={disabled || isUploading || hasFileError || (!value.trim() && pendingFiles.length === 0)}
+              aria-label={t("send")}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

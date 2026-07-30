@@ -102,6 +102,30 @@
   }
 }
 
+/* 用户消息气泡（bg-primary）内的 Markdown 配色：
+   typography 插件默认根据页面主题取色，在深色品牌色背景上不可读，
+   这里统一映射到 primary-foreground。 */
+.prose-on-primary {
+  --tw-prose-body: hsl(var(--primary-foreground));
+  --tw-prose-headings: hsl(var(--primary-foreground));
+  --tw-prose-lead: hsl(var(--primary-foreground) / 0.9);
+  --tw-prose-links: hsl(var(--primary-foreground));
+  --tw-prose-bold: hsl(var(--primary-foreground));
+  --tw-prose-counters: hsl(var(--primary-foreground) / 0.8);
+  --tw-prose-bullets: hsl(var(--primary-foreground) / 0.7);
+  --tw-prose-hr: hsl(var(--primary-foreground) / 0.3);
+  --tw-prose-quotes: hsl(var(--primary-foreground) / 0.9);
+  --tw-prose-quote-borders: hsl(var(--primary-foreground) / 0.4);
+  --tw-prose-captions: hsl(var(--primary-foreground) / 0.8);
+  --tw-prose-code: hsl(var(--primary-foreground));
+  --tw-prose-th-borders: hsl(var(--primary-foreground) / 0.4);
+  --tw-prose-td-borders: hsl(var(--primary-foreground) / 0.25);
+}
+
+.prose-on-primary code {
+  background-color: hsl(var(--primary-foreground) / 0.16);
+}
+
 @keyframes indeterminate {
   0% {
     transform: translateX(-100%);
