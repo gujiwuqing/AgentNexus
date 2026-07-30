@@ -374,7 +374,16 @@
       "analysis": "分析",
       "communication": "沟通",
       "other": "其他"
-    }
+    },
+    "new": "新建技能",
+    "searchPlaceholder": "搜索技能...",
+    "sortRecent": "最近创建",
+    "sortName": "按名称",
+    "tagAll": "全部",
+    "emptyTitle": "暂无技能",
+    "noSearchResults": "没有匹配的技能。",
+    "loadError": "加载技能失败：{message}",
+    "saveChanges": "保存修改"
   },
   "customTools": {
     "title": "工具",
@@ -410,6 +419,15 @@
       "paramDescription": "描述",
       "paramRequired": "必填",
       "paramDefault": "默认值"
-    }
+    },
+    "new": "新建工具",
+    "searchPlaceholder": "搜索工具...",
+    "sortRecent": "最近创建",
+    "sortName": "按名称",
+    "tagAll": "全部",
+    "emptyTitle": "暂无工具",
+    "noSearchResults": "没有匹配的工具。",
+    "loadError": "加载工具失败：{message}",
+    "saveChanges": "保存修改"
   }
 }

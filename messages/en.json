@@ -374,7 +374,16 @@
       "analysis": "Analysis",
       "communication": "Communication",
       "other": "Other"
-    }
+    },
+    "new": "New Skill",
+    "searchPlaceholder": "Search skills...",
+    "sortRecent": "Most Recent",
+    "sortName": "Name",
+    "tagAll": "All",
+    "emptyTitle": "No Skills Yet",
+    "noSearchResults": "No skills match your search.",
+    "loadError": "Failed to load skills: {message}",
+    "saveChanges": "Save Changes"
   },
   "customTools": {
     "title": "Tools",
@@ -410,6 +419,15 @@
       "paramDescription": "Description",
       "paramRequired": "Required",
       "paramDefault": "Default"
-    }
+    },
+    "new": "New Tool",
+    "searchPlaceholder": "Search tools...",
+    "sortRecent": "Most Recent",
+    "sortName": "Name",
+    "tagAll": "All",
+    "emptyTitle": "No Tools Yet",
+    "noSearchResults": "No tools match your search.",
+    "loadError": "Failed to load tools: {message}",
+    "saveChanges": "Save Changes"
   }
 }
