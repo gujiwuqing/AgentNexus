@@ -296,3 +296,67 @@ export const sessions = mysqlTable("sessions", {
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull().defaultNow().$defaultFn(() => new Date()),
 });
+
+export const skills = mysqlTable("skills", {
+  id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  userId: varchar("user_id", { length: 36 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  icon: varchar("icon", { length: 255 }).notNull().default(""),
+  tags: json("tags").notNull().$type<string[]>().default([]),
+  category: varchar("category", { length: 50 }).notNull().default(""),
+  instructions: text("instructions").notNull(),
+  examples: json("examples").notNull().$type<Array<{ input: string; output: string }>>().default([]),
+  recommendedTools: json("recommended_tools").notNull().$type<string[]>().default([]),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+  updatedAt: timestamp("updated_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+});
+
+export const agentSkills = mysqlTable("agent_skills", {
+  agentId: varchar("agent_id", { length: 36 }).notNull()
+    .references(() => agents.id, { onDelete: "cascade" }),
+  skillId: varchar("skill_id", { length: 36 }).notNull()
+    .references(() => skills.id, { onDelete: "cascade" }),
+});
+
+export const customTools = mysqlTable("custom_tools", {
+  id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  userId: varchar("user_id", { length: 36 }).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  displayName: varchar("display_name", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  icon: varchar("icon", { length: 255 }).notNull().default(""),
+  tags: json("tags").notNull().$type<string[]>().default([]),
+  type: mysqlEnum("type", ["http", "prompt"]).notNull(),
+  httpConfig: json("http_config").$type<{
+    url: string;
+    method: "GET" | "POST" | "PUT" | "DELETE";
+    headers?: Record<string, string>;
+    bodyTemplate?: string;
+    queryTemplate?: Record<string, string>;
+  } | null>(),
+  promptConfig: json("prompt_config").$type<{
+    systemInstruction: string;
+    outputFormat?: string;
+  } | null>(),
+  parameters: json("parameters").notNull().$type<Array<{
+    name: string;
+    type: "string" | "number" | "boolean";
+    description: string;
+    required: boolean;
+    default?: string | number | boolean;
+  }>>().default([]),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+  updatedAt: timestamp("updated_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+});
+
+export const agentCustomTools = mysqlTable("agent_custom_tools", {
+  agentId: varchar("agent_id", { length: 36 }).notNull()
+    .references(() => agents.id, { onDelete: "cascade" }),
+  toolId: varchar("tool_id", { length: 36 }).notNull()
+    .references(() => customTools.id, { onDelete: "cascade" }),
+});
