@@ -18,6 +18,7 @@ import { getAgentSkills } from "@/server/agent-skills";
 import { getAgentCustomTools } from "@/server/agent-custom-tools";
 import { buildSkillSystemPrompt } from "@/lib/skills/prompt-builder";
 import { updateConversationSummary, buildSummarySystemMessage } from "@/lib/memory/summary";
+import { createTrace } from "@/server/message-traces";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -161,7 +162,7 @@ export async function POST(request: Request, { params }: Params) {
     chatMessages,
     { temperature: agent.temperature, maxTokens: agent.maxTokens, topP: agent.topP },
     tools,
-    (meta) => {
+    async (meta) => {
       const durationMs = Date.now() - startedAt;
       const enrichedToolCalls = meta.toolCalls.map((tc) => {
         if (tc.toolName.startsWith("delegate_to_")) {
@@ -179,7 +180,7 @@ export async function POST(request: Request, { params }: Params) {
       const activeSkills = agentSkillRows.length > 0
         ? agentSkillRows.map((s) => ({ name: s.name, icon: s.icon || "⚡" }))
         : null;
-      return appendAssistantMessage(id, meta.text, {
+      const savedMsg = await appendAssistantMessage(id, meta.text, {
         model: providerConfig.model,
         promptTokens: meta.usage?.promptTokens,
         completionTokens: meta.usage?.completionTokens,
@@ -187,15 +188,32 @@ export async function POST(request: Request, { params }: Params) {
         durationMs,
         toolCalls: enrichedToolCalls.length > 0 ? enrichedToolCalls : null,
         activeSkills,
-      }).then(() => {
-        if (agent.memoryStrategy === "summary_window") {
-          const totalCount = history.length + 2;
-          if (totalCount > (agent.memoryWindowSize ?? 20) + 4) {
-            updateConversationSummary(id, agent.memoryWindowSize ?? 20, providerConfig)
-              .catch((err) => console.error("[memory] async summary failed:", err));
-          }
+      });
+
+      // 保存调试 trace
+      if (savedMsg) {
+        const traceSystemPrompt = chatMessages.find(m => m.role === "system")?.content as string | undefined;
+        createTrace({
+          messageId: savedMsg.id,
+          systemPrompt: traceSystemPrompt,
+          skillsInjected: activeSkills ?? undefined,
+          toolsAvailable: tools ? Object.keys(tools) : undefined,
+          ragContext: ragContext ?? undefined,
+          summaryUsed: (agent.memoryStrategy === "summary_window" && conversation.summary) ? conversation.summary : undefined,
+          modelUsed: providerConfig.model,
+          tokenDetails: meta.usage ? { input: meta.usage.promptTokens, output: meta.usage.completionTokens, total: meta.usage.totalTokens } : undefined,
+          latencyMs: durationMs,
+        }).catch((err) => console.error("[trace] save failed:", err));
+      }
+
+      // 异步触发摘要更新
+      if (agent.memoryStrategy === "summary_window") {
+        const totalCount = history.length + 2;
+        if (totalCount > (agent.memoryWindowSize ?? 20) + 4) {
+          updateConversationSummary(id, agent.memoryWindowSize ?? 20, providerConfig)
+            .catch((err) => console.error("[memory] async summary failed:", err));
         }
-      }).then(() => undefined);
+      }
     }
   );
 
