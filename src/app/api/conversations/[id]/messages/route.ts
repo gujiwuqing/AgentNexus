@@ -16,7 +16,6 @@ import { buildDelegationTool } from "@/lib/tools/team-delegation";
 import { getToolByName } from "@/lib/tools/registry";
 import { getAgentSkills } from "@/server/agent-skills";
 import { getAgentCustomTools } from "@/server/agent-custom-tools";
-import { buildSkillSystemPrompt } from "@/lib/skills/prompt-builder";
 import { updateConversationSummary, buildSummarySystemMessage } from "@/lib/memory/summary";
 import { createTrace } from "@/server/message-traces";
 
@@ -116,17 +115,6 @@ export async function POST(request: Request, { params }: Params) {
 
   // 注入关联的 Skills 到 system prompt
   const agentSkillRows = await getAgentSkills(agent.id);
-  if (agentSkillRows.length > 0) {
-    const skillPrompt = buildSkillSystemPrompt(agentSkillRows);
-    if (chatMessages.length > 0 && chatMessages[0].role === "system") {
-      chatMessages[0] = {
-        role: "system",
-        content: (chatMessages[0].content as string) + skillPrompt,
-      };
-    } else {
-      chatMessages.unshift({ role: "system", content: skillPrompt });
-    }
-  }
 
   const ragTopK = (agent.toolsConfig as { ragTopK?: number })?.ragTopK ?? 5;
   const ragContext = await retrieveAgentRagContext(agent.id, content, globalConfig, ragTopK);
@@ -154,7 +142,7 @@ export async function POST(request: Request, { params }: Params) {
     )
   );
   const agentCustomToolRows = await getAgentCustomTools(agent.id);
-  const tools = resolveAgentTools(enabledTools, searchConfig, agentCustomToolRows, teamToolDefs);
+  const tools = resolveAgentTools(enabledTools, searchConfig, agentCustomToolRows, teamToolDefs, agentSkillRows);
 
   const startedAt = Date.now();
   const result = streamAgentReply(
@@ -170,6 +158,12 @@ export async function POST(request: Request, { params }: Params) {
           const member = teamMembers.find((m) => m.memberAgentId === memberId);
           return { ...tc, displayName: member?.memberAgentName ?? tc.toolName };
         }
+        if (tc.toolName === "load_skill") {
+          return { ...tc, displayName: `加载技能：${tc.args?.skillName ?? ""}` };
+        }
+        if (tc.toolName === "read_skill_resource") {
+          return { ...tc, displayName: `读取参考资料：${tc.args?.resourceTitle ?? ""}` };
+        }
         const customTool = agentCustomToolRows.find((ct) => ct.name === tc.toolName);
         if (customTool) {
           return { ...tc, displayName: customTool.displayName };
@@ -177,8 +171,16 @@ export async function POST(request: Request, { params }: Params) {
         const builtin = getToolByName(tc.toolName);
         return { ...tc, displayName: builtin?.displayName ?? tc.toolName };
       });
-      const activeSkills = agentSkillRows.length > 0
-        ? agentSkillRows.map((s) => ({ name: s.name, icon: s.icon || "⚡" }))
+      const loadedSkillNames = new Set(
+        meta.toolCalls
+          .filter((tc) => tc.toolName === "load_skill")
+          .map((tc) => tc.args?.skillName as string | undefined)
+          .filter((name): name is string => Boolean(name)),
+      );
+      const activeSkills = loadedSkillNames.size > 0
+        ? agentSkillRows
+            .filter((s) => loadedSkillNames.has(s.name))
+            .map((s) => ({ name: s.name, icon: s.icon || "⚡" }))
         : null;
       const savedMsg = await appendAssistantMessage(id, meta.text, {
         model: providerConfig.model,
