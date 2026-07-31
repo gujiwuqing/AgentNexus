@@ -8,6 +8,7 @@ import { MarkdownContent } from "./markdown-content";
 import { MessageActions } from "./message-actions";
 import { ToolCallBlock } from "./tool-call-block";
 import { SkillBadges } from "./skill-badges";
+import { TracePanel } from "./trace-panel";
 import { TypingDots } from "./typing-dots";
 import { MessageAttachments } from "./message-attachments";
 import { AgentAvatar } from "@/components/agents/agent-avatar";
@@ -56,6 +57,7 @@ function MessageBubbleImpl({
   const tCommon = useTranslations("common");
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState("");
+  const [showTrace, setShowTrace] = useState(false);
   const isUser = role === "user";
   const isError = role === "error";
   const time = createdAt ? formatTime(createdAt) : "";
@@ -158,7 +160,11 @@ function MessageBubbleImpl({
             onRegenerateFrom={role === "assistant" && !isLast && onRegenerateFrom ? () => onRegenerateFrom(id) : undefined}
             onDelete={handleDelete}
             onEdit={canEdit ? startEdit : undefined}
+            onShowTrace={role === "assistant" ? () => setShowTrace(true) : undefined}
           />
+        )}
+        {role === "assistant" && (
+          <TracePanel messageId={id} open={showTrace} onClose={() => setShowTrace(false)} />
         )}
       </div>
     </div>

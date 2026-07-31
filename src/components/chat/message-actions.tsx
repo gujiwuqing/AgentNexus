@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Copy, Check, RotateCcw, Trash2, Pencil, GitBranch } from "lucide-react";
+import { Copy, Check, RotateCcw, Trash2, Pencil, GitBranch, Bug } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 function ActionButton({
@@ -40,6 +40,7 @@ export function MessageActions({
   onRegenerateFrom,
   onDelete,
   onEdit,
+  onShowTrace,
 }: {
   role: string;
   content: string;
@@ -48,6 +49,7 @@ export function MessageActions({
   onRegenerateFrom?: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
+  onShowTrace?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const t = useTranslations("chatExt.actions");
@@ -76,6 +78,11 @@ export function MessageActions({
       {role === "assistant" && !isLast && onRegenerateFrom && (
         <ActionButton label={t("regenerateFrom")} onClick={onRegenerateFrom}>
           <GitBranch className="h-3.5 w-3.5" />
+        </ActionButton>
+      )}
+      {role === "assistant" && onShowTrace && (
+        <ActionButton label="调试信息" onClick={onShowTrace}>
+          <Bug className="h-3.5 w-3.5" />
         </ActionButton>
       )}
       {onDelete && (
