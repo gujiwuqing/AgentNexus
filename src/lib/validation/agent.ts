@@ -11,6 +11,7 @@ export const agentInputSchema = z.object({
   topP: z.number().min(0).max(1).default(1),
   model: z.string().nullable().default(null),
   memoryWindowSize: z.number().int().min(0).max(200).default(20),
+  memoryStrategy: z.enum(["window", "summary_window"]).default("window"),
   // 不在 schema 内的字段会被 safeParse 剥掉，以下两项必须显式声明
   toolsConfig: z
     .object({ enabledTools: z.array(z.string()).default([]) })

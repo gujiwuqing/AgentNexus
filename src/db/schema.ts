@@ -31,6 +31,7 @@ export const agents = mysqlTable("agents", {
   topP: float("top_p").notNull().default(1),
   model: varchar("model", { length: 255 }),
   memoryWindowSize: int("memory_window_size").notNull().default(20),
+  memoryStrategy: mysqlEnum("memory_strategy", ["window", "summary_window"]).notNull().default("window"),
   toolsConfig: json("tools_config").$type<unknown | null>(),
   suggestedPrompts: json("suggested_prompts").notNull().$type<string[]>().default([]),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
@@ -58,6 +59,8 @@ export const conversations = mysqlTable("conversations", {
     .notNull()
     .defaultNow()
     .$defaultFn(() => new Date()),
+  summary: text("summary"),
+  summaryUpTo: varchar("summary_up_to", { length: 36 }),
 });
 
 export const messages = mysqlTable("messages", {

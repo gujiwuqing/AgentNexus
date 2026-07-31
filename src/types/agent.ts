@@ -10,6 +10,7 @@ export type Agent = {
   topP: number;
   model: string | null;
   memoryWindowSize: number;
+  memoryStrategy: "window" | "summary_window";
   toolsConfig: unknown;
   suggestedPrompts: string[];
   createdAt: string;
@@ -29,6 +30,7 @@ export type AgentFormValues = {
   topP: number;
   model: string | null;
   memoryWindowSize: number;
+  memoryStrategy: "window" | "summary_window";
   toolsConfig: { enabledTools: string[] };
   suggestedPrompts: string[];
 };
