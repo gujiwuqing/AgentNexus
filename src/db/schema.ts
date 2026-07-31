@@ -346,6 +346,11 @@ export const customTools = mysqlTable("custom_tools", {
     systemInstruction: string;
     outputFormat?: string;
   } | null>(),
+  mcpConfig: json("mcp_config").$type<{
+    serverUrl: string;
+    toolName: string;
+    authToken?: string;
+  } | null>(),
   parameters: json("parameters").notNull().$type<Array<{
     name: string;
     type: "string" | "number" | "boolean";
