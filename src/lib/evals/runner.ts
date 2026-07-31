@@ -1,11 +1,12 @@
 import { generateText } from "ai";
 import type { ProviderConfig } from "@/lib/ai/provider";
 import { createModelClient } from "@/lib/ai/provider-factory";
+import { generateAgentReply } from "@/lib/ai/generate";
 import { getAgent } from "@/server/agents";
 import { getProviderConfig } from "@/server/provider-config";
 import { resolveProviderConfig } from "@/lib/ai/provider";
 import { getAgentSkills } from "@/server/agent-skills";
-import { buildSkillSystemPrompt } from "@/lib/skills/prompt-builder";
+import { resolveAgentTools } from "@/lib/tools/resolve";
 import { createEvalRun } from "@/server/evals";
 import type { EvalCaseInput } from "@/server/evals";
 
@@ -24,24 +25,23 @@ export async function runEvalCase(evalCase: EvalCaseRow, userId: string): Promis
   const globalConfig = await getProviderConfig(userId);
   const provider = resolveProviderConfig(agent.model, globalConfig);
 
-  // 构建 Agent 的完整 system prompt（含 skills）
+  // Skill 通过工具化机制挂载（渐进式披露），不再全量拼进 system prompt
   const skills = await getAgentSkills(agent.id);
-  const skillPrompt = buildSkillSystemPrompt(skills);
-  const systemPrompt = (agent.systemPrompt || "") + skillPrompt;
+  const tools = resolveAgentTools([], null, undefined, undefined, skills);
 
-  // 用 Agent 生成回复
+  const messages = [
+    ...(agent.systemPrompt ? [{ role: "system" as const, content: agent.systemPrompt }] : []),
+    { role: "user" as const, content: evalCase.input },
+  ];
+
   const startedAt = Date.now();
-  const agentResult = await generateText({
-    model: createModelClient(provider),
-    messages: [
-      ...(systemPrompt ? [{ role: "system" as const, content: systemPrompt }] : []),
-      { role: "user" as const, content: evalCase.input },
-    ],
-    temperature: agent.temperature,
-    maxTokens: agent.maxTokens,
-  });
+  const actualOutput = await generateAgentReply(
+    provider,
+    messages,
+    { temperature: agent.temperature, maxTokens: agent.maxTokens, topP: agent.topP },
+    tools,
+  );
   const durationMs = Date.now() - startedAt;
-  const actualOutput = agentResult.text;
 
   // 用 LLM 评判
   const judgePrompt = [
@@ -76,7 +76,6 @@ export async function runEvalCase(evalCase: EvalCaseRow, userId: string): Promis
     score = 0.5;
   }
 
-  // 保存运行结果
   await createEvalRun({
     caseId: evalCase.id,
     actualOutput,
