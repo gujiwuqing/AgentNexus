@@ -27,10 +27,12 @@ export async function GET(request: Request, { params }: Params) {
     },
   };
 
+  const encodedFilename = encodeURIComponent(`${skill.name}.skill.json`);
+
   return new Response(JSON.stringify(exportData, null, 2), {
     headers: {
       "Content-Type": "application/json",
-      "Content-Disposition": `attachment; filename="${skill.name}.skill.json"`,
+      "Content-Disposition": `attachment; filename="skill.json"; filename*=UTF-8''${encodedFilename}`,
     },
   });
 }
