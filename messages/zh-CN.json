@@ -371,7 +371,15 @@
       "content": "技能内容（Markdown）",
       "contentHint": "完整的技能定义，Markdown 格式——包含指令、流程、示例、模板等",
       "metadata": "元数据",
-      "unsavedChanges": "有未保存的更改"
+      "unsavedChanges": "有未保存的更改",
+      "descriptionHint": "写清楚：做什么 + 什么时候用 + 什么时候不用。这段文字会被 AI 用来判断何时调用此技能。",
+      "resources": "参考资料",
+      "resourcesHint": "技能正文中可通过\"详见 XXX\"引用，AI 需要时会按需读取。",
+      "addResource": "添加",
+      "resourceTitle": "标题",
+      "resourceContent": "内容",
+      "allowedTools": "允许搭配的工具",
+      "allowedToolsHint": "留空表示不限制。勾选后，此技能激活期间，对话只能使用勾选的工具。"
     },
     "categories": {
       "development": "开发",

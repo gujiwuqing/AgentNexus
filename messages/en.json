@@ -371,7 +371,15 @@
       "content": "Skill Content (Markdown)",
       "contentHint": "Full skill definition in Markdown format — include instructions, workflows, examples, templates",
       "metadata": "Metadata",
-      "unsavedChanges": "Unsaved changes"
+      "unsavedChanges": "Unsaved changes",
+      "descriptionHint": "Write clearly: what it does + when to use it + when NOT to use it. This text is what the AI uses to decide when to invoke this skill.",
+      "resources": "Reference Resources",
+      "resourcesHint": "Referenced in the skill body as \"see XXX\"; the AI reads these on demand.",
+      "addResource": "Add",
+      "resourceTitle": "Title",
+      "resourceContent": "Content",
+      "allowedTools": "Allowed Tools",
+      "allowedToolsHint": "Leave empty for no restriction. When checked, only the selected tools can be used while this skill is active."
     },
     "categories": {
       "development": "Development",

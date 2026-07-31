@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { Skill, SkillFormValues } from "@/types/skill";
+import { useCustomTools } from "@/hooks/use-custom-tools";
+import type { Skill, SkillFormValues, SkillResource } from "@/types/skill";
 
 function toFormValues(skill?: Skill): SkillFormValues {
   return {
@@ -18,6 +20,8 @@ function toFormValues(skill?: Skill): SkillFormValues {
     version: skill?.version ?? "1.0.0",
     argumentHint: skill?.argumentHint ?? "",
     content: skill?.content ?? "",
+    resources: skill?.resources ?? [],
+    allowedTools: skill?.allowedTools ?? [],
   };
 }
 
@@ -91,6 +95,7 @@ export function SkillForm({
               className="text-sm resize-none"
               placeholder="简要描述触发场景和用途..."
             />
+            <p className="text-[11px] text-muted-foreground">{t("descriptionHint")}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -148,6 +153,58 @@ export function SkillForm({
               className="h-8 text-sm"
             />
           </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">{t("resources")}</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 text-[11px] px-2"
+                onClick={() => update("resources", [...values.resources, { title: "", content: "" }])}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                {t("addResource")}
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">{t("resourcesHint")}</p>
+            {values.resources.map((resource, i) => (
+              <div key={i} className="relative border rounded-md p-2 space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() => update("resources", values.resources.filter((_, idx) => idx !== i))}
+                  className="absolute top-1.5 right-1.5 p-0.5 rounded hover:bg-muted text-muted-foreground"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+                <Input
+                  value={resource.title}
+                  onChange={(e) => {
+                    const next = values.resources.map((r, idx): SkillResource => idx === i ? { ...r, title: e.target.value } : r);
+                    update("resources", next);
+                  }}
+                  placeholder={t("resourceTitle")}
+                  className="h-7 text-xs"
+                />
+                <Textarea
+                  rows={3}
+                  value={resource.content}
+                  onChange={(e) => {
+                    const next = values.resources.map((r, idx): SkillResource => idx === i ? { ...r, content: e.target.value } : r);
+                    update("resources", next);
+                  }}
+                  placeholder={t("resourceContent")}
+                  className="text-xs resize-y font-mono"
+                />
+              </div>
+            ))}
+          </div>
+
+          <AllowedToolsField
+            selected={values.allowedTools}
+            onChange={(next) => update("allowedTools", next)}
+          />
         </div>
       </div>
 
@@ -166,5 +223,49 @@ export function SkillForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+function AllowedToolsField({
+  selected,
+  onChange,
+}: {
+  selected: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const t = useTranslations("skills.form");
+  const { data: allTools } = useCustomTools();
+
+  function toggle(toolName: string) {
+    onChange(
+      selected.includes(toolName)
+        ? selected.filter((n) => n !== toolName)
+        : [...selected, toolName],
+    );
+  }
+
+  if (!allTools || allTools.length === 0) return null;
+
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{t("allowedTools")}</Label>
+      <p className="text-[11px] text-muted-foreground">{t("allowedToolsHint")}</p>
+      <div className="space-y-1">
+        {allTools.map((tool) => {
+          const checked = selected.includes(tool.name);
+          return (
+            <label key={tool.id} className="flex items-center gap-2 text-xs cursor-pointer">
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => toggle(tool.name)}
+                className="rounded border-input"
+              />
+              <span>{tool.displayName}</span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
   );
 }
