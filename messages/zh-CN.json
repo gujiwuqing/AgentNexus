@@ -369,6 +369,7 @@
       "argumentHint": "参数提示",
       "content": "技能内容（Markdown）",
       "contentHint": "完整的技能定义，Markdown 格式——包含指令、流程、示例、模板等",
+      "metadata": "元数据",
       "unsavedChanges": "有未保存的更改"
     },
     "categories": {

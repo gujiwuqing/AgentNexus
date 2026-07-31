@@ -369,6 +369,7 @@
       "argumentHint": "Argument Hint",
       "content": "Skill Content (Markdown)",
       "contentHint": "Full skill definition in Markdown format — include instructions, workflows, examples, templates",
+      "metadata": "Metadata",
       "unsavedChanges": "Unsaved changes"
     },
     "categories": {
