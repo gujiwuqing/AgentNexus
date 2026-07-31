@@ -1,11 +1,12 @@
 import { tool, type CoreTool } from "ai";
 import { z } from "zod";
 import type { ToolParameter } from "@/types/custom-tool";
+import { buildMcpTool } from "./mcp-client";
 
 type CustomToolRow = {
   name: string;
   description: string;
-  type: "http" | "prompt";
+  type: "http" | "prompt" | "mcp";
   httpConfig: {
     url: string;
     method: "GET" | "POST" | "PUT" | "DELETE";
@@ -16,6 +17,11 @@ type CustomToolRow = {
   promptConfig: {
     systemInstruction: string;
     outputFormat?: string;
+  } | null;
+  mcpConfig: {
+    serverUrl: string;
+    toolName: string;
+    authToken?: string;
   } | null;
   parameters: ToolParameter[];
 };
@@ -96,6 +102,8 @@ export function resolveCustomTools(customTools: CustomToolRow[]): Record<string,
           return `请按以下规则处理：${config.systemInstruction}${format}\n输入：${JSON.stringify(params)}`;
         },
       });
+    } else if (t.type === "mcp" && t.mcpConfig) {
+      result[t.name] = buildMcpTool(t.name, t.description, t.mcpConfig);
     }
   }
 

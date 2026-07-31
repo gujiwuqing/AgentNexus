@@ -11,6 +11,12 @@ export type PromptToolConfig = {
   outputFormat?: string;
 };
 
+export type McpToolConfig = {
+  serverUrl: string;
+  toolName: string;
+  authToken?: string;
+};
+
 export type ToolParameter = {
   name: string;
   type: "string" | "number" | "boolean";
@@ -26,9 +32,10 @@ export type CustomTool = {
   description: string;
   icon: string;
   tags: string[];
-  type: "http" | "prompt";
+  type: "http" | "prompt" | "mcp";
   httpConfig: HttpToolConfig | null;
   promptConfig: PromptToolConfig | null;
+  mcpConfig: McpToolConfig | null;
   parameters: ToolParameter[];
   createdAt: string;
   updatedAt: string;
@@ -40,8 +47,9 @@ export type CustomToolFormValues = {
   description: string;
   icon: string;
   tags: string[];
-  type: "http" | "prompt";
+  type: "http" | "prompt" | "mcp";
   httpConfig: HttpToolConfig | null;
   promptConfig: PromptToolConfig | null;
+  mcpConfig: McpToolConfig | null;
   parameters: ToolParameter[];
 };

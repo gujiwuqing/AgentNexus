@@ -39,6 +39,7 @@ function toFormValues(tool?: CustomTool): CustomToolFormValues {
     type: tool?.type ?? "http",
     httpConfig: tool?.httpConfig ?? { ...DEFAULT_HTTP_CONFIG },
     promptConfig: tool?.promptConfig ?? { ...DEFAULT_PROMPT_CONFIG },
+    mcpConfig: tool?.mcpConfig ?? null,
     parameters: tool?.parameters ?? [],
   };
 }
@@ -80,12 +81,13 @@ export function ToolForm({
     }));
   }
 
-  function switchType(newType: "http" | "prompt") {
+  function switchType(newType: "http" | "prompt" | "mcp") {
     setValues((prev) => ({
       ...prev,
       type: newType,
       httpConfig: newType === "http" ? (prev.httpConfig ?? { ...DEFAULT_HTTP_CONFIG }) : null,
       promptConfig: newType === "prompt" ? (prev.promptConfig ?? { ...DEFAULT_PROMPT_CONFIG }) : null,
+      mcpConfig: newType === "mcp" ? (prev.mcpConfig ?? { serverUrl: "", toolName: "" }) : null,
     }));
   }
 
@@ -95,6 +97,7 @@ export function ToolForm({
       ...values,
       httpConfig: values.type === "http" ? values.httpConfig : null,
       promptConfig: values.type === "prompt" ? values.promptConfig : null,
+      mcpConfig: values.type === "mcp" ? values.mcpConfig : null,
     };
     onSubmit(submitted);
     setBaseline(JSON.stringify(values));
@@ -185,6 +188,14 @@ export function ToolForm({
                 onClick={() => switchType("prompt")}
               >
                 Prompt
+              </Button>
+              <Button
+                type="button"
+                variant={values.type === "mcp" ? "default" : "outline"}
+                size="sm"
+                onClick={() => switchType("mcp")}
+              >
+                MCP
               </Button>
             </div>
           </div>
@@ -304,6 +315,41 @@ export function ToolForm({
                   value={values.promptConfig?.outputFormat ?? ""}
                   onChange={(e) => updatePromptConfig("outputFormat", e.target.value || undefined)}
                   placeholder="json"
+                />
+              </div>
+            </fieldset>
+          )}
+
+          {/* MCP config */}
+          {values.type === "mcp" && (
+            <fieldset className="border rounded-lg p-4 space-y-3">
+              <legend className="text-sm font-medium px-1">MCP Configuration</legend>
+              <div className="space-y-2">
+                <Label htmlFor="mcpServerUrl">Server URL</Label>
+                <Input
+                  id="mcpServerUrl"
+                  value={values.mcpConfig?.serverUrl ?? ""}
+                  onChange={(e) => update("mcpConfig", { ...values.mcpConfig, serverUrl: e.target.value, toolName: values.mcpConfig?.toolName ?? "" })}
+                  placeholder="http://localhost:3001"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mcpToolName">Tool Name</Label>
+                <Input
+                  id="mcpToolName"
+                  value={values.mcpConfig?.toolName ?? ""}
+                  onChange={(e) => update("mcpConfig", { ...values.mcpConfig, serverUrl: values.mcpConfig?.serverUrl ?? "", toolName: e.target.value })}
+                  placeholder="search_documents"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mcpAuthToken">Auth Token (optional)</Label>
+                <Input
+                  id="mcpAuthToken"
+                  type="password"
+                  value={values.mcpConfig?.authToken ?? ""}
+                  onChange={(e) => update("mcpConfig", { ...values.mcpConfig, serverUrl: values.mcpConfig?.serverUrl ?? "", toolName: values.mcpConfig?.toolName ?? "", authToken: e.target.value || undefined })}
+                  placeholder="Bearer token"
                 />
               </div>
             </fieldset>
