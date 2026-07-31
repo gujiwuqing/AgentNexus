@@ -17,6 +17,7 @@ import { getToolByName } from "@/lib/tools/registry";
 import { getAgentSkills } from "@/server/agent-skills";
 import { getAgentCustomTools } from "@/server/agent-custom-tools";
 import { buildSkillSystemPrompt } from "@/lib/skills/prompt-builder";
+import { updateConversationSummary, buildSummarySystemMessage } from "@/lib/memory/summary";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -87,6 +88,16 @@ export async function POST(request: Request, { params }: Params) {
     ...(agent.systemPrompt ? [{ role: "system" as const, content: agent.systemPrompt }] : []),
     ...trimmedHistory.map((m) => ({ role: m.role, content: m.content })),
   ];
+
+  // Summary + Window 策略：注入对话摘要
+  if (agent.memoryStrategy === "summary_window" && conversation.summary) {
+    const summaryMsg = { role: "system" as const, content: buildSummarySystemMessage(conversation.summary) };
+    if (chatMessages.length > 0 && chatMessages[0].role === "system") {
+      chatMessages.splice(1, 0, summaryMsg);
+    } else {
+      chatMessages.unshift(summaryMsg);
+    }
+  }
 
   if (imageContents.length > 0) {
     const lastIdx = chatMessages.length - 1;
@@ -175,6 +186,14 @@ export async function POST(request: Request, { params }: Params) {
         durationMs,
         toolCalls: enrichedToolCalls.length > 0 ? enrichedToolCalls : null,
         activeSkills,
+      }).then(() => {
+        if (agent.memoryStrategy === "summary_window") {
+          const totalCount = history.length + 2;
+          if (totalCount > (agent.memoryWindowSize ?? 20) + 4) {
+            updateConversationSummary(id, agent.memoryWindowSize ?? 20, providerConfig)
+              .catch((err) => console.error("[memory] async summary failed:", err));
+          }
+        }
       }).then(() => undefined);
     }
   );
