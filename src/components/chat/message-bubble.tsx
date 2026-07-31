@@ -30,6 +30,7 @@ function MessageBubbleImpl({
   meta,
   attachments,
   toolCalls,
+  activeSkills,
   isLast,
   onRegenerate,
   onDelete,
