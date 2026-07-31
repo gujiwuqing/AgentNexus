@@ -22,6 +22,7 @@ function toFormValues(agent?: Agent): AgentFormValues {
     topP: agent?.topP ?? 1,
     model: agent?.model ?? "",
     memoryWindowSize: agent?.memoryWindowSize ?? 20,
+    memoryStrategy: agent?.memoryStrategy ?? "window",
     toolsConfig: (agent?.toolsConfig as { enabledTools: string[] }) ?? { enabledTools: [] },
     suggestedPrompts: agent?.suggestedPrompts ?? [],
   };
@@ -179,6 +180,40 @@ export function AgentForm({
             </div>
           </div>
           <p className="text-xs text-muted-foreground -mt-3">{t("memoryWindowSizeHint")}</p>
+
+          <div className="space-y-2">
+            <Label>{t("memoryStrategy")}</Label>
+            <div className="space-y-2">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="memoryStrategy"
+                  value="window"
+                  checked={values.memoryStrategy === "window"}
+                  onChange={() => update("memoryStrategy", "window")}
+                  className="mt-1"
+                />
+                <div>
+                  <p className="text-sm font-medium">{t("memoryStrategyWindow")}</p>
+                  <p className="text-xs text-muted-foreground">{t("memoryStrategyWindowHint")}</p>
+                </div>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="memoryStrategy"
+                  value="summary_window"
+                  checked={values.memoryStrategy === "summary_window"}
+                  onChange={() => update("memoryStrategy", "summary_window")}
+                  className="mt-1"
+                />
+                <div>
+                  <p className="text-sm font-medium">{t("memoryStrategySummary")}</p>
+                  <p className="text-xs text-muted-foreground">{t("memoryStrategySummaryHint")}</p>
+                </div>
+              </label>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
