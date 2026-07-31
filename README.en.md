@@ -28,10 +28,14 @@ Create AI agents, chat with them in real time, and chain multiple agents into au
 
 | Module | Description |
 | --- | --- |
-| 🤖 **Agents** | Custom system prompts, model params (temperature / maxTokens / topP), memory window, suggested prompts, tool config; each agent can override the global model provider |
-| 💬 **Chat** | Streaming responses, Markdown rendering, file attachments, token-based share links |
-| 🔀 **Workflows** | React Flow visual editor with 8 node types, version history, an async execution queue, run records, and step-by-step debugging |
+| 🤖 **Agents** | Custom system prompts, model params (temperature / maxTokens / topP), memory strategy (sliding window / summary+window), suggested prompts, built-in tool config; each agent can override the global model provider, and any single message can override the model too |
+| 💬 **Chat** | Streaming responses, Markdown rendering, file attachments, token-based share links, conversation summary memory, per-message debug trace panel, fork/regenerate from any historical message |
+| ⚡ **Skills** | Reusable capability packs authored as Markdown documents (metadata + full instructions); attaching one to an agent injects it into the system prompt. Supports JSON import/export |
+| 🔧 **Custom Tools** | User-defined tools with three execution modes — HTTP call, prompt instruction, or MCP protocol — callable in conversation once attached to an agent. Supports JSON import/export |
+| 🔀 **Workflows** | React Flow visual editor with 8 node types, global variables plus per-node input/output mapping, version history, an async execution queue, run records, and step-by-step debugging |
 | 📚 **Knowledge / RAG** | Document upload, chunking, reindexing, retrieval testing; attachable to agents |
+| 🧪 **Evals** | Create evaluation cases for an agent; an LLM judge scores and gives feedback automatically |
+| ⏰ **Schedules** | Trigger an agent chat or workflow run automatically on a recurring schedule |
 | 📊 **Dashboard** | Usage and conversation statistics |
 | 👥 **Multi-user & roles** | Authenticated login and an admin console (user management / site-wide data) |
 | 🌍 **i18n** | Built-in English and Simplified Chinese (`next-intl`) |
@@ -39,7 +43,7 @@ Create AI agents, chat with them in real time, and chain multiple agents into au
 
 ### Workflow node types
 
-`agent` (call an agent), `condition` (conditional branch), `transform` (text processing), `human_input` (wait for human input), `http_request` (call an external API), `code_execute` (code execution), `delay`, and `variable_aggregate`.
+`agent` (call an agent), `condition` (conditional branch), `transform` (text processing), `human_input` (wait for human input), `http_request` (call an external API), `code_execute` (code execution), `delay`, and `variable_aggregate`. Nodes can pass data via global variables and input/output mapping (`{{global.varName}}` / `{{nodeId}}`).
 
 ---
 
@@ -122,6 +126,7 @@ pnpm test -- <pattern>    # run a subset, e.g. pnpm test -- workflow-runs.test
 pnpm run db:push          # push the schema to MySQL
 pnpm run templates:reset  # reset to the built-in professional templates
 pnpm run prompts:backfill # backfill agent suggested prompts
+pnpm run init:all         # one-shot init: account → agents → workflows → knowledge → skills/tools → all associations
 ```
 
 > Tests share a single MySQL test database (`agentnexus_test`), DROP/CREATE-rebuilt and schema-pushed at startup by `vitest.setup.ts`. Because of this, tests run **serially** (`fileParallelism: false`), and each test clears all tables in `afterEach`.
@@ -133,15 +138,15 @@ pnpm run prompts:backfill # backfill agent suggested prompts
 ```
 src/
 ├── app/
-│   ├── (app)/            # main app after login (chat / agents / workflows / knowledge / dashboard / settings)
+│   ├── (app)/            # main app after login (chat / agents / skills / tools / workflows / knowledge / schedules / dashboard / settings)
 │   ├── (admin)/          # admin console
 │   ├── api/**/route.ts   # API route layer (parse request + validate + call service layer only)
 │   ├── login/            # login page
 │   └── share/[token]/    # conversation share page
-├── components/           # UI components (chat / agents / workflow / knowledge / nav / ui ...)
+├── components/           # UI components (chat / agents / skills / tools / workflow / knowledge / nav / ui ...)
 ├── server/               # service layer: one file per resource, talks to Drizzle directly
 ├── db/                   # Drizzle schema & connection
-├── lib/                  # ai / workflow engine / files / knowledge / validation / tools ...
+├── lib/                  # ai / workflow engine / memory / evals / scheduler / files / knowledge / validation / tools ...
 ├── hooks/                # TanStack Query hooks
 ├── i18n/                 # internationalization config
 └── types/                # domain type definitions
@@ -154,17 +159,29 @@ docs/superpowers/         # per-phase design specs and implementation plans
 Every feature follows the same layering — don't skip a layer:
 
 1. **`src/app/api/**/route.ts`** — parse the request, validate with a Zod schema from `src/lib/validation/*`, call the service layer, and wrap the result with `apiOk` / `apiError`. Route handlers contain no business logic.
-2. **`src/server/*.ts`** — one file per resource (`agents.ts`, `conversations.ts`, `workflows.ts`, `workflow-runs.ts`, …); plain async functions that talk to Drizzle directly.
+2. **`src/server/*.ts`** — one file per resource (`agents.ts`, `conversations.ts`, `workflows.ts`, `workflow-runs.ts`, `skills.ts`, `custom-tools.ts`, `evals.ts`, `scheduled-tasks.ts`, …); plain async functions that talk to Drizzle directly.
 3. **`src/db/schema.ts`** — Drizzle table definitions (MySQL). Primary keys are `varchar(36)` generated by `createId()`; all FKs use `onDelete: "cascade"`.
 
-### Two data domains
+### Three data domains
 
-- **Agent / Conversation / Message** — the chat side. Responses stream via `streamAgentReply` (AI SDK `streamText`).
-- **Workflow / WorkflowRun / WorkflowStepLog** — the orchestration side. Workflow nodes call agents **non-streamed** via `generateAgentReply`.
+- **Agent / Conversation / Message** — the chat side. Responses stream via `streamAgentReply` (AI SDK `streamText`). Each message can have an associated debug trace (`message_traces`) recording the full system prompt, injected Skills, available Tools, RAG context, and token breakdown.
+- **Skill / Tool** — the capability side. A Skill is a Markdown document injected into the system prompt once attached to an agent; a Tool is one of three executable types (HTTP / Prompt / MCP) callable in conversation once attached. Both are many-to-many with agents, independently manageable, and support import/export.
+- **Workflow / WorkflowRun / WorkflowStepLog** — the orchestration side. Workflow nodes call agents **non-streamed** via `generateAgentReply`. `graph.variables` defines global variables; a node's `inputMapping` / `outputMapping` controls variable reads/writes.
+
+### Memory strategy
+
+An agent's `memoryStrategy` supports two modes:
+
+- **`window`** (default): keep only the most recent N messages (`memoryWindowSize`); older ones are simply discarded.
+- **`summary_window`**: messages beyond the window are incrementally compressed by an LLM into a summary (stored in `conversations.summary`); each turn injects `[summary] + [most recent N raw messages]` so long conversations don't lose context.
 
 ### Workflow execution engine
 
 `executeWorkflow()` in `src/lib/workflow/engine.ts` is a pure function that uses dependency injection through an `EngineCallbacks` object and performs no DB/IO of its own. `makeCallbacks()` in `src/server/workflow-runs.ts` is the only place wiring the engine to Drizzle and the LLM. A workflow may run for minutes, so it does not execute synchronously inside an HTTP request — it is enqueued and consumed by a worker while the frontend polls for progress.
+
+### Scheduler
+
+`src/lib/scheduler/worker.ts` polls the `scheduled_tasks` table on a fixed in-process interval. Due tasks are dispatched by `type`: `agent_chat` creates a conversation and sends a message; `workflow_run` enqueues a workflow execution. After running, the next trigger time is computed from `cronExpression` (a simplified format: `every Nm` / `every Nh` / `HH:MM`).
 
 ---
 
