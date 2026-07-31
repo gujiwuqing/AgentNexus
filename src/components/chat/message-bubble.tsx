@@ -33,6 +33,7 @@ function MessageBubbleImpl({
   activeSkills,
   isLast,
   onRegenerate,
+  onRegenerateFrom,
   onDelete,
   onEditResend,
 }: {
@@ -47,6 +48,7 @@ function MessageBubbleImpl({
   activeSkills?: Array<{ name: string; icon: string }> | null;
   isLast: boolean;
   onRegenerate?: () => void;
+  onRegenerateFrom?: (id: string) => void;
   onDelete?: (id: string) => void;
   onEditResend?: (id: string, content: string) => void;
 }) {
@@ -153,6 +155,7 @@ function MessageBubbleImpl({
             content={content}
             isLast={isLast}
             onRegenerate={onRegenerate}
+            onRegenerateFrom={role === "assistant" && !isLast && onRegenerateFrom ? () => onRegenerateFrom(id) : undefined}
             onDelete={handleDelete}
             onEdit={canEdit ? startEdit : undefined}
           />

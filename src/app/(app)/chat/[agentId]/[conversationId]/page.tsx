@@ -17,7 +17,7 @@ import { exportConversationMarkdown } from "@/lib/export";
 export default function ChatConversationPage() {
   const { agentId, conversationId } = useParams<{ agentId: string; conversationId: string }>();
   const { data: agent } = useAgent(agentId);
-  const { messages, isLoading, isStreaming, sendMessage, regenerate, deleteMessage, editAndResend, stop } = useChatStream(
+  const { messages, isLoading, isStreaming, sendMessage, regenerate, regenerateFrom, deleteMessage, editAndResend, stop } = useChatStream(
     conversationId,
     agent?.model ?? null
   );
@@ -51,6 +51,7 @@ export default function ChatConversationPage() {
           messages={messages}
           avatar={agent?.avatar}
           onRegenerate={regenerate}
+          onRegenerateFrom={isStreaming ? undefined : regenerateFrom}
           onDelete={deleteMessage}
           onEditResend={isStreaming ? undefined : editAndResend}
         />

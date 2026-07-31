@@ -254,6 +254,31 @@ export function useChatStream(conversationId: string, agentModel: string | null)
     await streamReply(lastUser.content, true);
   }, [messages, streamReply]);
 
+  /**
+   * 从历史中任意一条 assistant 消息处重新生成（Fork）：
+   * 定位该消息之前最近的一条 user 消息，删除该 user 消息之后的全部记录，再以其内容重新触发生成。
+   * 与 regenerate 不同——regenerate 只能对"最后一条"assistant 消息重来，此函数可对话中任意历史节点分叉。
+   */
+  const regenerateFrom = useCallback(
+    async (assistantMessageId: string) => {
+      const idx = messages.findIndex((m) => m.id === assistantMessageId);
+      if (idx === -1) return;
+      const precedingUser = [...messages.slice(0, idx)].reverse().find((m) => m.role === "user");
+      if (!precedingUser || precedingUser.id.startsWith("local-")) return;
+
+      await fetch(`/api/conversations/${conversationId}/fork`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ afterMessageId: precedingUser.id }),
+      });
+
+      const userIdx = messages.findIndex((m) => m.id === precedingUser.id);
+      setMessages((prev) => prev.slice(0, userIdx + 1));
+      await streamReply(precedingUser.content, true);
+    },
+    [messages, conversationId, streamReply]
+  );
+
   const deleteMsg = useCallback(
     async (id: string) => {
       await fetch(`/api/messages/${id}`, { method: "DELETE" });
@@ -276,5 +301,5 @@ export function useChatStream(conversationId: string, agentModel: string | null)
     [messages, streamReply]
   );
 
-  return { messages, isLoading, isStreaming, sendMessage, regenerate, deleteMessage: deleteMsg, editAndResend, stop };
+  return { messages, isLoading, isStreaming, sendMessage, regenerate, regenerateFrom, deleteMessage: deleteMsg, editAndResend, stop };
 }

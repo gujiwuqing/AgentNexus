@@ -8,12 +8,14 @@ export function MessageList({
   messages,
   avatar,
   onRegenerate,
+  onRegenerateFrom,
   onDelete,
   onEditResend,
 }: {
   messages: DisplayMessage[];
   avatar?: string;
   onRegenerate?: () => void;
+  onRegenerateFrom?: (id: string) => void;
   onDelete: (id: string) => void;
   onEditResend?: (id: string, content: string) => void;
 }) {
@@ -47,6 +49,7 @@ export function MessageList({
               activeSkills={m.activeSkills}
               isLast={i === messages.length - 1}
               onRegenerate={canRegenerate ? onRegenerate : undefined}
+              onRegenerateFrom={m.id.startsWith("local-") ? undefined : onRegenerateFrom}
               onDelete={m.id.startsWith("local-") ? undefined : onDelete}
               onEditResend={onEditResend}
             />

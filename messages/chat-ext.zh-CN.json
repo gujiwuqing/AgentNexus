@@ -40,7 +40,8 @@
       "in": "入",
       "out": "出",
       "edit": "编辑",
-      "saveAndResend": "保存并重发"
+      "saveAndResend": "保存并重发",
+      "regenerateFrom": "从此处重新生成（分叉）"
     },
     "codeBlock": {
       "copy": "复制",

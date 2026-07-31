@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Copy, Check, RotateCcw, Trash2, Pencil } from "lucide-react";
+import { Copy, Check, RotateCcw, Trash2, Pencil, GitBranch } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 function ActionButton({
@@ -37,6 +37,7 @@ export function MessageActions({
   content,
   isLast,
   onRegenerate,
+  onRegenerateFrom,
   onDelete,
   onEdit,
 }: {
@@ -44,6 +45,7 @@ export function MessageActions({
   content: string;
   isLast: boolean;
   onRegenerate?: () => void;
+  onRegenerateFrom?: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
 }) {
@@ -69,6 +71,11 @@ export function MessageActions({
       {role === "assistant" && isLast && onRegenerate && (
         <ActionButton label={t("regenerate")} onClick={onRegenerate}>
           <RotateCcw className="h-3.5 w-3.5" />
+        </ActionButton>
+      )}
+      {role === "assistant" && !isLast && onRegenerateFrom && (
+        <ActionButton label={t("regenerateFrom")} onClick={onRegenerateFrom}>
+          <GitBranch className="h-3.5 w-3.5" />
         </ActionButton>
       )}
       {onDelete && (

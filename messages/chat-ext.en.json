@@ -40,7 +40,8 @@
       "in": "in",
       "out": "out",
       "edit": "Edit",
-      "saveAndResend": "Save & resend"
+      "saveAndResend": "Save & resend",
+      "regenerateFrom": "Regenerate from here (fork)"
     },
     "codeBlock": {
       "copy": "Copy",
