@@ -34,11 +34,12 @@ export async function POST(request: Request, { params }: Params) {
   const body = await request.json().catch(() => ({}));
   const content = typeof body?.content === "string" ? body.content.trim() : "";
   if (!content) return apiError(400, "validation_error", "content is required");
+  const modelOverride = typeof body?.modelOverride === "string" ? body.modelOverride.trim() || null : null;
 
   const globalConfig = await getProviderConfig(user.id);
   let providerConfig;
   try {
-    providerConfig = resolveProviderConfig(agent.model, globalConfig);
+    providerConfig = resolveProviderConfig(modelOverride || agent.model, globalConfig);
   } catch (err) {
     if (err instanceof MissingProviderConfigError) {
       return apiError(424, "provider_not_configured", err.message);

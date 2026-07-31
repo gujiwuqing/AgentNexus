@@ -28,12 +28,13 @@ function parsePlaceholder(text: string): { value: string; selection: [number, nu
 export const ChatInput = forwardRef<
   ChatInputHandle,
   {
-    onSend: (content: string, attachments?: SentAttachment[]) => void;
+    onSend: (content: string, attachments?: SentAttachment[], modelOverride?: string) => void;
     onStop?: () => void;
     disabled: boolean;
   }
 >(function ChatInput({ onSend, onStop, disabled }, ref) {
   const [value, setValue] = useState("");
+  const [modelOverride, setModelOverride] = useState<string>("");
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const t = useTranslations("chatExt.input");
@@ -104,7 +105,7 @@ export const ChatInput = forwardRef<
         mimetype: f.file.type,
         size: f.file.size,
       }));
-    onSend(trimmed, attachments.length > 0 ? attachments : undefined);
+    onSend(trimmed, attachments.length > 0 ? attachments : undefined, modelOverride || undefined);
     setValue("");
     setPendingFiles([]);
   }
@@ -116,6 +117,13 @@ export const ChatInput = forwardRef<
         <FilePreviewList files={pendingFiles} onRemove={removeFile} />
         <div className="p-3 flex gap-2 items-end">
           <FileUploadButton onFilesSelected={handleFilesSelected} disabled={disabled} />
+          <input
+            type="text"
+            value={modelOverride}
+            onChange={(e) => setModelOverride(e.target.value)}
+            placeholder="模型覆盖（可选）"
+            className="h-7 text-xs border rounded px-2 w-40 bg-transparent"
+          />
           <textarea
             ref={textareaRef}
             className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"

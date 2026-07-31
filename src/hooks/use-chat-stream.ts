@@ -83,7 +83,8 @@ export function useChatStream(conversationId: string, agentModel: string | null)
     async (
       content: string,
       replaceLastAssistant = false,
-      attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>
+      attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>,
+      modelOverride?: string
     ) => {
       const assistantId = `local-${Date.now()}-assistant`;
       const now = new Date().toISOString();
@@ -114,7 +115,7 @@ export function useChatStream(conversationId: string, agentModel: string | null)
         const res = await fetch(`/api/conversations/${conversationId}/messages`, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ content, ...(attachmentIds?.length ? { attachmentIds } : {}) }),
+          body: JSON.stringify({ content, ...(attachmentIds?.length ? { attachmentIds } : {}), ...(modelOverride ? { modelOverride } : {}) }),
           signal: controller.signal,
         });
 
@@ -232,9 +233,10 @@ export function useChatStream(conversationId: string, agentModel: string | null)
   const sendMessage = useCallback(
     async (
       content: string,
-      attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>
+      attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>,
+      modelOverride?: string
     ) => {
-      await streamReply(content, false, attachments);
+      await streamReply(content, false, attachments, modelOverride);
     },
     [streamReply]
   );
