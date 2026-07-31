@@ -11,7 +11,8 @@
     "openMenu": "打开菜单",
     "closeMenu": "关闭菜单",
     "switchLanguage": "切换语言",
-    "pendingApprovals": "{count} 个运行等待你处理"
+    "pendingApprovals": "{count} 个运行等待你处理",
+    "schedules": "定时任务"
   },
   "theme": {
     "toggle": "切换主题"

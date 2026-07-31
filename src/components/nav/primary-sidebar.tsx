@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { MessagesSquare, Bot, LayoutDashboard, Workflow, BookOpen, Zap, Wrench, Settings, Sparkles, Menu, X } from "lucide-react";
+import { MessagesSquare, Bot, LayoutDashboard, Workflow, BookOpen, Zap, Wrench, Clock, Settings, Sparkles, Menu, X } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { UserMenu } from "./user-menu";
@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { href: "/knowledge", key: "knowledge", icon: BookOpen },
   { href: "/skills", key: "skills", icon: Zap },
   { href: "/tools", key: "tools", icon: Wrench },
+  { href: "/schedules", key: "schedules", icon: Clock },
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard },
 ] as const;
 

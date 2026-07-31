@@ -11,7 +11,8 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "switchLanguage": "Switch language",
-    "pendingApprovals": "{count} runs waiting for your input"
+    "pendingApprovals": "{count} runs waiting for your input",
+    "schedules": "Schedules"
   },
   "theme": {
     "toggle": "Toggle theme"
