@@ -1,4 +1,4 @@
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and, gt } from "drizzle-orm";
 import { db } from "@/db";
 import { messages } from "@/db/schema";
 import { createId } from "@/lib/id";
@@ -74,4 +74,17 @@ export async function deleteMessage(id: string) {
   if (!existing) return false;
   await db.delete(messages).where(eq(messages.id, id));
   return true;
+}
+
+export async function deleteMessagesAfter(conversationId: string, afterMessageId: string) {
+  const msg = await db.select({ createdAt: messages.createdAt }).from(messages).where(eq(messages.id, afterMessageId));
+  if (msg.length === 0) return 0;
+
+  const result = await db.delete(messages).where(
+    and(
+      eq(messages.conversationId, conversationId),
+      gt(messages.createdAt, msg[0].createdAt),
+    )
+  );
+  return result[0]?.affectedRows ?? 0;
 }
