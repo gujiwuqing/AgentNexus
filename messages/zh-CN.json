@@ -348,7 +348,13 @@
     "title": "技能",
     "create": "新建技能",
     "edit": "编辑技能",
-    "delete": "删除技能",
+    "delete": {
+      "button": "删除",
+      "confirmTitle": "删除技能",
+      "confirmBody": "确定要删除此技能吗？此操作不可撤销。",
+      "cancel": "取消",
+      "confirm": "删除"
+    },
     "deleteConfirm": "确定要删除此技能吗？",
     "empty": "暂无技能，点击创建开始使用。",
     "saved": "技能已保存",
@@ -380,13 +386,20 @@
     "emptyTitle": "暂无技能",
     "noSearchResults": "没有匹配的技能。",
     "loadError": "加载技能失败：{message}",
-    "saveChanges": "保存修改"
+    "saveChanges": "保存修改",
+    "noDescription": "暂无描述"
   },
   "customTools": {
     "title": "工具",
     "create": "新建工具",
     "edit": "编辑工具",
-    "delete": "删除工具",
+    "delete": {
+      "button": "删除",
+      "confirmTitle": "删除工具",
+      "confirmBody": "确定要删除此工具吗？此操作不可撤销。",
+      "cancel": "取消",
+      "confirm": "删除"
+    },
     "deleteConfirm": "确定要删除此工具吗？",
     "empty": "暂无自定义工具，点击创建开始使用。",
     "saved": "工具已保存",
@@ -415,7 +428,16 @@
       "paramType": "类型",
       "paramDescription": "描述",
       "paramRequired": "必填",
-      "paramDefault": "默认值"
+      "paramDefault": "默认值",
+      "tagsPlaceholder": "API, 天气",
+      "httpConfig": "HTTP 配置",
+      "httpUrl": "URL",
+      "httpMethod": "方法",
+      "httpHeaders": "请求头（JSON）",
+      "httpBodyTemplate": "请求体模板",
+      "httpQueryTemplate": "查询参数模板（JSON）",
+      "promptConfig": "Prompt 配置",
+      "unsavedChanges": "有未保存的更改"
     },
     "new": "新建工具",
     "searchPlaceholder": "搜索工具...",
@@ -425,6 +447,7 @@
     "emptyTitle": "暂无工具",
     "noSearchResults": "没有匹配的工具。",
     "loadError": "加载工具失败：{message}",
-    "saveChanges": "保存修改"
+    "saveChanges": "保存修改",
+    "noDescription": "暂无描述"
   }
 }

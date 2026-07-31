@@ -348,7 +348,13 @@
     "title": "Skills",
     "create": "New Skill",
     "edit": "Edit Skill",
-    "delete": "Delete Skill",
+    "delete": {
+      "button": "Delete",
+      "confirmTitle": "Delete Skill",
+      "confirmBody": "Are you sure you want to delete this skill? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
     "deleteConfirm": "Are you sure you want to delete this skill?",
     "empty": "No skills yet. Create one to get started.",
     "saved": "Skill saved",
@@ -380,13 +386,20 @@
     "emptyTitle": "No Skills Yet",
     "noSearchResults": "No skills match your search.",
     "loadError": "Failed to load skills: {message}",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "noDescription": "No description"
   },
   "customTools": {
     "title": "Tools",
     "create": "New Tool",
     "edit": "Edit Tool",
-    "delete": "Delete Tool",
+    "delete": {
+      "button": "Delete",
+      "confirmTitle": "Delete Tool",
+      "confirmBody": "Are you sure you want to delete this tool? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
     "deleteConfirm": "Are you sure you want to delete this tool?",
     "empty": "No custom tools yet. Create one to get started.",
     "saved": "Tool saved",
@@ -415,7 +428,16 @@
       "paramType": "Type",
       "paramDescription": "Description",
       "paramRequired": "Required",
-      "paramDefault": "Default"
+      "paramDefault": "Default",
+      "tagsPlaceholder": "API, weather",
+      "httpConfig": "HTTP Configuration",
+      "httpUrl": "URL",
+      "httpMethod": "Method",
+      "httpHeaders": "Headers (JSON)",
+      "httpBodyTemplate": "Body Template",
+      "httpQueryTemplate": "Query Template (JSON)",
+      "promptConfig": "Prompt Configuration",
+      "unsavedChanges": "Unsaved changes"
     },
     "new": "New Tool",
     "searchPlaceholder": "Search tools...",
@@ -425,6 +447,7 @@
     "emptyTitle": "No Tools Yet",
     "noSearchResults": "No tools match your search.",
     "loadError": "Failed to load tools: {message}",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "noDescription": "No description"
   }
 }
