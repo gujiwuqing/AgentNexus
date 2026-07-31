@@ -11,7 +11,6 @@ import { buildDelegationTool } from "@/lib/tools/team-delegation";
 import { retrieveAgentRagContext, injectRagContext } from "@/lib/knowledge/agent-rag";
 import { getAgentSkills } from "./agent-skills";
 import { getAgentCustomTools } from "./agent-custom-tools";
-import { buildSkillSystemPrompt } from "@/lib/skills/prompt-builder";
 
 /** 委托链最大层数：主 Agent 算第 0 层，成员可再向下委托到该深度为止。 */
 export const MAX_DELEGATION_DEPTH = 2;
@@ -100,13 +99,9 @@ export async function callTeamMember(
   const ragContext = await retrieveAgentRagContext(agent.id, task, globalConfig);
 
   const memberSkills = await getAgentSkills(agent.id);
-  const skillPrompt = buildSkillSystemPrompt(memberSkills);
-  const systemContent = agent.systemPrompt
-    ? agent.systemPrompt + skillPrompt
-    : skillPrompt || undefined;
 
   const baseMessages = [
-    ...(systemContent ? [{ role: "system" as const, content: systemContent }] : []),
+    ...(agent.systemPrompt ? [{ role: "system" as const, content: agent.systemPrompt }] : []),
     { role: "user" as const, content: task },
   ];
   const messages = injectRagContext(baseMessages, ragContext);
@@ -131,7 +126,7 @@ export async function callTeamMember(
     );
 
   const memberCustomTools = await getAgentCustomTools(agent.id);
-  const tools = resolveAgentTools(enabledTools, searchConfig, memberCustomTools, subToolDefs);
+  const tools = resolveAgentTools(enabledTools, searchConfig, memberCustomTools, subToolDefs, memberSkills);
 
   return generateAgentReply(
     provider,
