@@ -13,6 +13,7 @@ import { AgentSkillsConfig } from "@/components/agents/agent-skills-config";
 import { AgentCustomToolsConfig } from "@/components/agents/agent-custom-tools-config";
 import { AgentKnowledgeConfig } from "@/components/agents/agent-knowledge-config";
 import { AgentTeamConfig } from "@/components/agents/agent-team-config";
+import { AgentEvals } from "@/components/agents/agent-evals";
 import { Breadcrumb } from "@/components/nav/breadcrumb";
 
 export default function AgentDetailPage() {
@@ -56,6 +57,10 @@ export default function AgentDetailPage() {
         <AgentCustomToolsConfig agentId={agent.id} />
         <AgentKnowledgeConfig agentId={agent.id} />
         <AgentTeamConfig agentId={agent.id} />
+      </div>
+
+      <div className="mt-8 pt-8 border-t">
+        <AgentEvals agentId={agent.id} />
       </div>
     </div>
   );
