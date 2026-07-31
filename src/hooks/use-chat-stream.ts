@@ -23,6 +23,7 @@ export type DisplayMessage = {
   meta?: MessageMeta;
   attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>;
   toolCalls?: Array<{ toolName: string; displayName: string; args: Record<string, unknown>; result: string }>;
+  activeSkills?: Array<{ name: string; icon: string }> | null;
 };
 
 function toMeta(m: Message): MessageMeta {
@@ -57,6 +58,7 @@ export function useChatStream(conversationId: string, agentModel: string | null)
           meta: toMeta(m),
           attachments: m.attachments ?? undefined,
           toolCalls: m.toolCalls ?? undefined,
+          activeSkills: m.activeSkills ?? undefined,
         }))
       );
     }

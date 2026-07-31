@@ -44,6 +44,7 @@ export function MessageList({
               meta={m.meta}
               attachments={m.attachments}
               toolCalls={m.toolCalls}
+              activeSkills={m.activeSkills}
               isLast={i === messages.length - 1}
               onRegenerate={canRegenerate ? onRegenerate : undefined}
               onDelete={m.id.startsWith("local-") ? undefined : onDelete}

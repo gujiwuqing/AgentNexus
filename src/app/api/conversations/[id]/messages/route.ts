@@ -164,6 +164,9 @@ export async function POST(request: Request, { params }: Params) {
         const builtin = getToolByName(tc.toolName);
         return { ...tc, displayName: builtin?.displayName ?? tc.toolName };
       });
+      const activeSkills = agentSkillRows.length > 0
+        ? agentSkillRows.map((s) => ({ name: s.name, icon: s.icon || "⚡" }))
+        : null;
       return appendAssistantMessage(id, meta.text, {
         model: providerConfig.model,
         promptTokens: meta.usage?.promptTokens,
@@ -171,6 +174,7 @@ export async function POST(request: Request, { params }: Params) {
         totalTokens: meta.usage?.totalTokens,
         durationMs,
         toolCalls: enrichedToolCalls.length > 0 ? enrichedToolCalls : null,
+        activeSkills,
       }).then(() => undefined);
     }
   );

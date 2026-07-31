@@ -79,6 +79,7 @@ export const messages = mysqlTable("messages", {
     args: Record<string, unknown>;
     result: string;
   }>>(),
+  activeSkills: json("active_skills").$type<Array<{ name: string; icon: string }>>(),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull()
     .defaultNow()

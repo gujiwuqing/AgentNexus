@@ -15,5 +15,6 @@ export type Message = {
     args: Record<string, unknown>;
     result: string;
   }> | null;
+  activeSkills: Array<{ name: string; icon: string }> | null;
   createdAt: string;
 };

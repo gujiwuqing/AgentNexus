@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { MarkdownContent } from "./markdown-content";
 import { MessageActions } from "./message-actions";
 import { ToolCallBlock } from "./tool-call-block";
+import { SkillBadges } from "./skill-badges";
 import { TypingDots } from "./typing-dots";
 import { MessageAttachments } from "./message-attachments";
 import { AgentAvatar } from "@/components/agents/agent-avatar";
@@ -42,6 +43,7 @@ function MessageBubbleImpl({
   meta?: MessageMeta;
   attachments?: Array<{ id: string; filename: string; mimetype: string; size: number }>;
   toolCalls?: Array<{ toolName: string; displayName: string; args: Record<string, unknown>; result: string }>;
+  activeSkills?: Array<{ name: string; icon: string }> | null;
   isLast: boolean;
   onRegenerate?: () => void;
   onDelete?: (id: string) => void;
@@ -133,6 +135,7 @@ function MessageBubbleImpl({
         {time && (
           <span className="text-[10px] text-muted-foreground mt-0.5 px-1">{time}</span>
         )}
+        {activeSkills && activeSkills.length > 0 && <SkillBadges skills={activeSkills} />}
         {toolCalls && toolCalls.length > 0 && <ToolCallBlock toolCalls={toolCalls} />}
         {showMeta && meta && (
           <span className="text-[10px] text-muted-foreground px-1">
