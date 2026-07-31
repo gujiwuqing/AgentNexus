@@ -313,6 +313,8 @@ export const skills = mysqlTable("skills", {
   version: varchar("version", { length: 50 }).notNull().default("1.0.0"),
   argumentHint: text("argument_hint").notNull().default(""),
   content: text("content").notNull(),
+  resources: json("resources").notNull().$type<Array<{ title: string; content: string }>>().default([]),
+  allowedTools: json("allowed_tools").notNull().$type<string[]>().default([]),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull().defaultNow().$defaultFn(() => new Date()),
   updatedAt: timestamp("updated_at", { mode: "date", fsp: 6 })
