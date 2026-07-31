@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Search, FileText, Plus } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Search, FileText, Plus, Upload } from "lucide-react";
 import { useSkills } from "@/hooks/use-skills";
 import { SkillCard } from "@/components/skills/skill-card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +19,32 @@ export default function SkillsPage() {
   const t = useTranslations("skills");
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      const res = await fetch("/api/skills/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(json),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message ?? "导入失败");
+      }
+      toast.success("导入成功");
+      queryClient.invalidateQueries({ queryKey: ["skills"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "导入失败：文件格式不正确");
+    } finally {
+      e.target.value = "";
+    }
+  }
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -51,13 +79,27 @@ export default function SkillsPage() {
           <h1 className="text-2xl font-semibold">{t("title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">管理可复用的技能文档，挂载到 Agent 后注入专业能力</p>
         </div>
-        <Button asChild>
-          <Link href="/skills/new">
-            <Plus className="h-4 w-4" />
-            {t("new")}
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="h-4 w-4" />
+            导入
+          </Button>
+          <Button asChild>
+            <Link href="/skills/new">
+              <Plus className="h-4 w-4" />
+              {t("new")}
+            </Link>
+          </Button>
+        </div>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        className="hidden"
+        onChange={handleImportFile}
+      />
 
       {skills && skills.length > 0 && (
         <div className="space-y-3 mb-6">

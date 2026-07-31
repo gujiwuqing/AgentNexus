@@ -3,10 +3,12 @@
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Download } from "lucide-react";
 import { ToolForm } from "@/components/tools/tool-form";
 import { useCustomTool, useUpdateCustomTool } from "@/hooks/use-custom-tools";
 import { PageFormSkeleton } from "@/components/ui/page-skeleton";
 import { DeleteToolButton } from "@/components/tools/delete-tool-button";
+import { Button } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/nav/breadcrumb";
 
 export default function ToolDetailPage() {
@@ -24,7 +26,13 @@ export default function ToolDetailPage() {
       <Breadcrumb items={[{ label: t("title"), href: "/tools" }, { label: tool.displayName || tool.name }]} />
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-semibold">{tool.displayName || tool.name}</h1>
-        <DeleteToolButton toolId={tool.id} />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => window.open(`/api/custom-tools/${tool.id}/export`, "_blank")}>
+            <Download className="h-4 w-4" />
+            导出
+          </Button>
+          <DeleteToolButton toolId={tool.id} />
+        </div>
       </div>
       <ToolForm
         tool={tool}

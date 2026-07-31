@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Search, Wrench, Plus, ArrowUpDown } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Search, Wrench, Plus, ArrowUpDown, Upload } from "lucide-react";
 import { useCustomTools } from "@/hooks/use-custom-tools";
 import { ToolCard } from "@/components/tools/tool-card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,32 @@ export default function ToolsPage() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("recent");
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      const res = await fetch("/api/custom-tools/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(json),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message ?? "导入失败");
+      }
+      toast.success("导入成功");
+      queryClient.invalidateQueries({ queryKey: ["custom-tools"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "导入失败：文件格式不正确");
+    } finally {
+      e.target.value = "";
+    }
+  }
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -85,12 +113,25 @@ export default function ToolsPage() {
     <div className="w-full max-w-7xl mx-auto px-6 py-8 lg:px-10 animate-in fade-in duration-300">
       <div className="flex items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        <Button asChild>
-          <Link href="/tools/new">
-            <Plus className="h-4 w-4" />
-            {t("new")}
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={handleImportFile}
+          />
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="h-4 w-4" />
+            导入
+          </Button>
+          <Button asChild>
+            <Link href="/tools/new">
+              <Plus className="h-4 w-4" />
+              {t("new")}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {tools && tools.length > 0 && (

@@ -3,10 +3,12 @@
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Download } from "lucide-react";
 import { SkillForm } from "@/components/skills/skill-form";
 import { useSkill, useUpdateSkill } from "@/hooks/use-skills";
 import { PageFormSkeleton } from "@/components/ui/page-skeleton";
 import { DeleteSkillButton } from "@/components/skills/delete-skill-button";
+import { Button } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/nav/breadcrumb";
 
 export default function SkillDetailPage() {
@@ -24,7 +26,13 @@ export default function SkillDetailPage() {
       <Breadcrumb items={[{ label: t("title"), href: "/skills" }, { label: skill.name }]} />
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-semibold">{skill.name}</h1>
-        <DeleteSkillButton skillId={skill.id} />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => window.open(`/api/skills/${skill.id}/export`, "_blank")}>
+            <Download className="h-4 w-4" />
+            导出
+          </Button>
+          <DeleteSkillButton skillId={skill.id} />
+        </div>
       </div>
       <SkillForm
         skill={skill}
