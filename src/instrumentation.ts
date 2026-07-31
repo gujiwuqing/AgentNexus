@@ -14,5 +14,11 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { startWorkflowWorker } = await import("@/server/workflow-worker");
     startWorkflowWorker();
+
+    // 启动定时任务调度器（非测试环境）
+    if (process.env.NODE_ENV !== "test") {
+      const { startScheduler } = await import("@/lib/scheduler/worker");
+      startScheduler();
+    }
   }
 }
