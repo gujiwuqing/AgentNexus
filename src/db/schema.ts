@@ -1,6 +1,6 @@
 import { mysqlTable, varchar, text, int, float, timestamp, json, mysqlEnum } from "drizzle-orm/mysql-core";
 import { createId } from "@/lib/id";
-import type { WorkflowNode, WorkflowEdge } from "@/types/workflow";
+import type { WorkflowNode, WorkflowEdge, WorkflowVariable } from "@/types/workflow";
 
 export const aiProviderConfig = mysqlTable("ai_provider_config", {
   id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
@@ -111,6 +111,7 @@ export const workflows = mysqlTable("workflows", {
   graph: json("graph").notNull().$type<{
     nodes: WorkflowNode[];
     edges: WorkflowEdge[];
+    variables?: WorkflowVariable[];
   }>(),
   /**
    * 已发布版本号（指向 workflow_versions.versionNumber）。
@@ -262,7 +263,7 @@ export const workflowVersions = mysqlTable("workflow_versions", {
   workflowId: varchar("workflow_id", { length: 36 }).notNull()
     .references(() => workflows.id, { onDelete: "cascade" }),
   versionNumber: int("version_number").notNull(),
-  graph: json("graph").notNull().$type<{ nodes: WorkflowNode[]; edges: WorkflowEdge[] }>(),
+  graph: json("graph").notNull().$type<{ nodes: WorkflowNode[]; edges: WorkflowEdge[]; variables?: WorkflowVariable[] }>(),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull().defaultNow().$defaultFn(() => new Date()),
 });

@@ -36,6 +36,43 @@ export type EngineResult = {
 
 type NodeExecResult = { output: string; nextNodes: string[] } | { pause: true; nodeId: string };
 
+/** 支持 {{global.varName}} 和 {{nodeId}} 两种插值格式，从 context 中取值。 */
+function interpolateVariables(template: string, context: ExecutionContext): string {
+  return template.replace(/\{\{([^}]+)\}\}/g, (_, path) => {
+    const trimmed = path.trim();
+    if (trimmed.startsWith("global.")) {
+      return context[trimmed.slice(7)] ?? "";
+    }
+    return context[trimmed] ?? "";
+  });
+}
+
+/** 将节点的 inputMapping 模板解析为实际字符串，供节点执行前参考（当前节点执行器仍以 promptTemplate/inputTemplate 等自有模板为主，此处映射结果写入 context 上的影子键 `${nodeId}.input.*`，供后续节点或调试查看）。 */
+function resolveInputMapping(
+  nodeId: string,
+  mapping: Record<string, string> | undefined,
+  context: ExecutionContext,
+): void {
+  if (!mapping) return;
+  for (const [key, template] of Object.entries(mapping)) {
+    context[`${nodeId}.input.${key}`] = interpolateVariables(template, context);
+  }
+}
+
+/** 将节点输出按 outputMapping 写入全局变量或自定义 context 键。 */
+function applyOutputMapping(
+  mapping: Record<string, string> | undefined,
+  output: string,
+  context: ExecutionContext,
+): void {
+  if (!mapping) return;
+  for (const [target, template] of Object.entries(mapping)) {
+    const value = template === "{{result}}" ? output : interpolateVariables(template, context);
+    const key = target.startsWith("global.") ? target.slice(7) : target;
+    context[key] = value;
+  }
+}
+
 /** 给节点执行加超时上限；timeoutMs 未传或为 0 时不限制。 */
 async function withNodeTimeout<T>(
   promise: Promise<T>,
@@ -79,6 +116,12 @@ export async function executeWorkflow(
   }
 ): Promise<EngineResult> {
   const context: ExecutionContext = { ...(options?.existingContext ?? {}) };
+  // 用图上定义的默认值初始化尚未存在于 context 中的全局变量
+  for (const v of graph.variables ?? []) {
+    if (!(v.name in context) && v.defaultValue !== undefined) {
+      context[v.name] = v.defaultValue;
+    }
+  }
   const maxIterations = options?.maxIterations ?? 50;
   const iterationCounts: Record<string, number> = {};
 
@@ -210,8 +253,14 @@ export async function executeWorkflow(
       throw new Error(`Max iterations exceeded on node ${node.id}`);
     }
 
+    resolveInputMapping(node.id, node.inputMapping, context);
+
     try {
-      return await withNodeTimeout(executeNodeByType(node), options?.nodeTimeoutMs, node.id);
+      const result = await withNodeTimeout(executeNodeByType(node), options?.nodeTimeoutMs, node.id);
+      if (!("pause" in result)) {
+        applyOutputMapping(node.outputMapping, result.output, context);
+      }
+      return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await callbacks.onStepFail(node.id, message);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
-import { History, ArrowLeft, Undo2, Redo2, LayoutGrid, Rocket } from "lucide-react";
+import { History, ArrowLeft, Undo2, Redo2, LayoutGrid, Rocket, Variable } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -33,7 +33,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 import { useWorkflow, useUpdateWorkflow, useWorkflowRunDetail, usePublishWorkflow } from "@/hooks/use-workflows";
 import { validateGraph } from "@/lib/workflow/validate-graph";
-import type { WorkflowGraph, WorkflowNode } from "@/types/workflow";
+import type { WorkflowGraph, WorkflowNode, WorkflowVariable } from "@/types/workflow";
+import { VariablePanel } from "./variable-panel";
 
 const NODE_TYPE_KEYS: Record<string, "agent.label" | "condition.label" | "transform.label" | "humanInput.label" | "httpRequest.label" | "codeExecute.label" | "delay.label" | "variableAggregate.label"> = {
   agent: "agent.label",
@@ -55,7 +56,7 @@ function graphToFlow(graph: WorkflowGraph) {
     id: n.id,
     type: n.type,
     position: n.position ?? { x: Math.random() * 400, y: Math.random() * 300 },
-    data: { label: n.label, config: n.config },
+    data: { label: n.label, config: n.config, inputMapping: n.inputMapping, outputMapping: n.outputMapping },
   }));
   const edges: Edge[] = graph.edges.map((e) => ({
     id: e.id,
@@ -65,7 +66,7 @@ function graphToFlow(graph: WorkflowGraph) {
   return { nodes, edges };
 }
 
-function flowToGraph(nodes: Node[], edges: Edge[]): WorkflowGraph {
+function flowToGraph(nodes: Node[], edges: Edge[], variables: WorkflowVariable[]): WorkflowGraph {
   return {
     nodes: nodes.map((n): WorkflowNode => ({
       id: n.id,
@@ -73,12 +74,15 @@ function flowToGraph(nodes: Node[], edges: Edge[]): WorkflowGraph {
       label: (n.data?.label as string) ?? "",
       config: (n.data?.config as WorkflowNode["config"]) ?? {},
       position: n.position,
+      inputMapping: n.data?.inputMapping as Record<string, string> | undefined,
+      outputMapping: n.data?.outputMapping as Record<string, string> | undefined,
     })),
     edges: edges.map((e) => ({
       id: e.id,
       source: e.source,
       target: e.target,
     })),
+    variables,
   };
 }
 
@@ -155,6 +159,8 @@ function EditorInner({ workflowId }: { workflowId: string }) {
   const [configOpen, setConfigOpen] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showVariablePanel, setShowVariablePanel] = useState(false);
+  const [variables, setVariables] = useState<WorkflowVariable[]>([]);
   const { data: runDetail } = useWorkflowRunDetail(selectedRunId ?? "");
   const t = useTranslations("workflowExt.editor");
   const tCommon = useTranslations("common");
@@ -198,8 +204,8 @@ function EditorInner({ workflowId }: { workflowId: string }) {
   // （写回会形成 校验→setNodes→重算校验 的循环）
   const issues = useMemo(() => {
     if (!initialized) return [];
-    return validateGraph(flowToGraph(nodes, edges));
-  }, [nodes, edges, initialized]);
+    return validateGraph(flowToGraph(nodes, edges, variables));
+  }, [nodes, edges, variables, initialized]);
 
   /** 把选中节点（及其内部连线）写入剪贴缓存。 */
   const copySelection = useCallback(() => {
@@ -296,6 +302,7 @@ function EditorInner({ workflowId }: { workflowId: string }) {
       setNodes(n);
       setEdges(e);
       setName(workflow.name);
+      setVariables(workflow.graph.variables ?? []);
       setInitialized(true);
     }
   }, [workflow, initialized, setNodes, setEdges]);
@@ -397,7 +404,7 @@ function EditorInner({ workflowId }: { workflowId: string }) {
   }
 
   function handleSave() {
-    const graph = flowToGraph(nodes, edges);
+    const graph = flowToGraph(nodes, edges, variables);
     updateWorkflow.mutate(
       { name, graph },
       {
@@ -410,7 +417,7 @@ function EditorInner({ workflowId }: { workflowId: string }) {
 
   /** 发布 = 先保存当前画布，再把已发布版本指向这份快照；正式运行从此锁定该版本。 */
   function handlePublish() {
-    const graph = flowToGraph(nodes, edges);
+    const graph = flowToGraph(nodes, edges, variables);
     updateWorkflow.mutate(
       { name, graph },
       {
@@ -507,6 +514,14 @@ function EditorInner({ workflowId }: { workflowId: string }) {
         <IssuesPopover issues={issues} />
         <Button
           size="sm"
+          variant={showVariablePanel ? "secondary" : "ghost"}
+          className="cursor-pointer"
+          onClick={() => setShowVariablePanel((v) => !v)}
+        >
+          <Variable className="h-4 w-4" />
+        </Button>
+        <Button
+          size="sm"
           variant={showVersionHistory ? "secondary" : "ghost"}
           className="cursor-pointer"
           onClick={() => setShowVersionHistory((v) => !v)}
@@ -536,6 +551,11 @@ function EditorInner({ workflowId }: { workflowId: string }) {
             <MiniMap className="!bg-background" pannable zoomable />
           </ReactFlow>
         </div>
+        {showVariablePanel && (
+          <div className="w-[280px] border-l overflow-y-auto">
+            <VariablePanel variables={variables} onChange={setVariables} />
+          </div>
+        )}
         {showVersionHistory && (
           <div className="w-[280px] border-l overflow-y-auto">
             <VersionHistoryPanel

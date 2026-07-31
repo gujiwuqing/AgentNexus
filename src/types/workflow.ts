@@ -58,6 +58,8 @@ export type WorkflowNode = {
   label: string;
   config: NodeConfig;
   position?: { x: number; y: number };
+  inputMapping?: Record<string, string>;   // { paramName: "{{global.varName}}" 或 "{{nodeId.output}}" }
+  outputMapping?: Record<string, string>;  // { "global.varName": "{{result}}" }
 };
 
 export type WorkflowEdge = {
@@ -69,9 +71,17 @@ export type WorkflowEdge = {
 export type WorkflowGraph = {
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
+  variables?: WorkflowVariable[];
 };
 
 export type WorkflowRunStatus = "running" | "waiting_for_input" | "completed" | "failed";
 export type StepLogStatus = "running" | "completed" | "failed" | "skipped";
+
+export type WorkflowVariable = {
+  name: string;
+  type: "string" | "number" | "boolean" | "json";
+  defaultValue?: string;
+  description?: string;
+};
 
 export type ExecutionContext = Record<string, string>;
