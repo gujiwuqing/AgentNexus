@@ -1,8 +1,3 @@
-export type SkillExample = {
-  input: string;
-  output: string;
-};
-
 export type Skill = {
   id: string;
   name: string;
@@ -10,9 +5,9 @@ export type Skill = {
   icon: string;
   tags: string[];
   category: string;
-  instructions: string;
-  examples: SkillExample[];
-  recommendedTools: string[];
+  version: string;
+  argumentHint: string;
+  content: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -23,7 +18,7 @@ export type SkillFormValues = {
   icon: string;
   tags: string[];
   category: string;
-  instructions: string;
-  examples: SkillExample[];
-  recommendedTools: string[];
+  version: string;
+  argumentHint: string;
+  content: string;
 };

@@ -359,14 +359,11 @@
       "icon": "Icon",
       "tags": "Tags",
       "category": "Category",
-      "instructions": "Instructions",
-      "instructionsHint": "Core prompt instructions that define this skill's behavior",
-      "examples": "Examples",
-      "examplesHint": "Few-shot examples to help the AI understand expected behavior",
-      "addExample": "Add Example",
-      "exampleInput": "User Input",
-      "exampleOutput": "Expected Output",
-      "recommendedTools": "Recommended Tools"
+      "version": "Version",
+      "argumentHint": "Argument Hint",
+      "content": "Skill Content (Markdown)",
+      "contentHint": "Full skill definition in Markdown format — include instructions, workflows, examples, templates",
+      "unsavedChanges": "Unsaved changes"
     },
     "categories": {
       "development": "Development",

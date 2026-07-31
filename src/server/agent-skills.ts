@@ -18,8 +18,7 @@ export async function getAgentSkills(agentId: string) {
       description: skills.description,
       icon: skills.icon,
       category: skills.category,
-      instructions: skills.instructions,
-      examples: skills.examples,
+      content: skills.content,
     })
     .from(agentSkills)
     .innerJoin(skills, eq(agentSkills.skillId, skills.id))

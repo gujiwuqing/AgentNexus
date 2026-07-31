@@ -359,14 +359,11 @@
       "icon": "图标",
       "tags": "标签",
       "category": "分类",
-      "instructions": "指令",
-      "instructionsHint": "定义该技能行为的核心提示词指令",
-      "examples": "示例",
-      "examplesHint": "输入/输出示例对，帮助 AI 理解预期行为",
-      "addExample": "添加示例",
-      "exampleInput": "用户输入",
-      "exampleOutput": "预期输出",
-      "recommendedTools": "推荐工具"
+      "version": "版本",
+      "argumentHint": "参数提示",
+      "content": "技能内容（Markdown）",
+      "contentHint": "完整的技能定义，Markdown 格式——包含指令、流程、示例、模板等",
+      "unsavedChanges": "有未保存的更改"
     },
     "categories": {
       "development": "开发",

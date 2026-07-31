@@ -6,12 +6,9 @@ export const skillInputSchema = z.object({
   icon: z.string().default(""),
   tags: z.array(z.string()).default([]),
   category: z.string().default(""),
-  instructions: z.string().min(1, "Instructions are required"),
-  examples: z.array(z.object({
-    input: z.string().min(1),
-    output: z.string().min(1),
-  })).default([]),
-  recommendedTools: z.array(z.string()).default([]),
+  version: z.string().default("1.0.0"),
+  argumentHint: z.string().default(""),
+  content: z.string().min(1, "Content is required"),
 });
 
 export type SkillInput = z.infer<typeof skillInputSchema>;

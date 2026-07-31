@@ -6,17 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { SkillExamplesEditor } from "@/components/skills/skill-examples-editor";
 import type { Skill, SkillFormValues } from "@/types/skill";
-
-const CATEGORIES = ["development", "writing", "analysis", "communication", "other"] as const;
 
 function toFormValues(skill?: Skill): SkillFormValues {
   return {
@@ -24,10 +14,10 @@ function toFormValues(skill?: Skill): SkillFormValues {
     description: skill?.description ?? "",
     icon: skill?.icon ?? "",
     tags: skill?.tags ?? [],
-    category: skill?.category ?? "other",
-    instructions: skill?.instructions ?? "",
-    examples: skill?.examples ?? [],
-    recommendedTools: skill?.recommendedTools ?? [],
+    category: skill?.category ?? "",
+    version: skill?.version ?? "1.0.0",
+    argumentHint: skill?.argumentHint ?? "",
+    content: skill?.content ?? "",
   };
 }
 
@@ -45,11 +35,11 @@ export function SkillForm({
   isSubmitting: boolean;
 }) {
   const [values, setValues] = useState<SkillFormValues>(() => toFormValues(skill));
-  const [baseline, setBaseline] = useState(() => JSON.stringify(toFormValues(skill)));
+  const [baseline] = useState(() => JSON.stringify(toFormValues(skill)));
   const isDirty = JSON.stringify(values) !== baseline;
   const t = useTranslations("skills.form");
-  const tCat = useTranslations("skills.categories");
   const tCommon = useTranslations("common");
+  const tCat = useTranslations("skills.categories");
 
   function update<K extends keyof SkillFormValues>(key: K, value: SkillFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -58,95 +48,70 @@ export function SkillForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     onSubmit(values);
-    setBaseline(JSON.stringify(values));
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
-        <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">{t("name")}</Label>
-            <Input
-              id="name"
-              value={values.name}
-              onChange={(e) => update("name", e.target.value)}
-              required
-            />
+            <Label>{t("name")}</Label>
+            <Input value={values.name} onChange={(e) => update("name", e.target.value)} required />
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="description">{t("description")}</Label>
-            <Input
-              id="description"
-              value={values.description}
-              onChange={(e) => update("description", e.target.value)}
-            />
+            <Label>{t("description")}</Label>
+            <Textarea rows={2} value={values.description} onChange={(e) => update("description", e.target.value)} />
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="icon">{t("icon")}</Label>
-              <Input
-                id="icon"
-                value={values.icon}
-                onChange={(e) => update("icon", e.target.value)}
-                placeholder="⚡"
-              />
+              <Label>{t("icon")}</Label>
+              <Input value={values.icon} onChange={(e) => update("icon", e.target.value)} placeholder="⚡" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category">{t("category")}</Label>
-              <Select
+              <Label>{t("version")}</Label>
+              <Input value={values.version} onChange={(e) => update("version", e.target.value)} placeholder="1.0.0" />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("category")}</Label>
+              <select
                 value={values.category}
-                onValueChange={(v) => update("category", v)}
+                onChange={(e) => update("category", e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                <SelectTrigger id="category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {tCat(cat)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">{tCat("other")}</option>
+                <option value="development">{tCat("development")}</option>
+                <option value="writing">{tCat("writing")}</option>
+                <option value="analysis">{tCat("analysis")}</option>
+                <option value="communication">{tCat("communication")}</option>
+              </select>
             </div>
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="tags">{t("tags")}</Label>
+            <Label>{t("tags")}</Label>
             <Input
-              id="tags"
               value={values.tags.join(", ")}
-              onChange={(e) =>
-                update(
-                  "tags",
-                  e.target.value
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                )
-              }
-              placeholder={t("tagsPlaceholder")}
+              onChange={(e) => update("tags", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
+              placeholder="开发, 代码质量"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{t("argumentHint")}</Label>
+            <Input
+              value={values.argumentHint}
+              onChange={(e) => update("argumentHint", e.target.value)}
+              placeholder="<PRD链接 / 需求描述 / 代码路径>"
             />
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="instructions">{t("instructions")}</Label>
-            <Textarea
-              id="instructions"
-              className="min-h-[200px] resize-y"
-              value={values.instructions}
-              onChange={(e) => update("instructions", e.target.value)}
-            />
-          </div>
-
-          <SkillExamplesEditor
-            examples={values.examples}
-            onChange={(exs) => update("examples", exs)}
+        <div className="space-y-2 lg:row-span-2">
+          <Label>{t("content")}</Label>
+          <p className="text-xs text-muted-foreground">{t("contentHint")}</p>
+          <Textarea
+            className="min-h-[400px] lg:min-h-[500px] resize-y font-mono text-sm"
+            value={values.content}
+            onChange={(e) => update("content", e.target.value)}
+            required
           />
         </div>
       </div>

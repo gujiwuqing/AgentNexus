@@ -305,9 +305,9 @@ export const skills = mysqlTable("skills", {
   icon: varchar("icon", { length: 255 }).notNull().default(""),
   tags: json("tags").notNull().$type<string[]>().default([]),
   category: varchar("category", { length: 50 }).notNull().default(""),
-  instructions: text("instructions").notNull(),
-  examples: json("examples").notNull().$type<Array<{ input: string; output: string }>>().default([]),
-  recommendedTools: json("recommended_tools").notNull().$type<string[]>().default([]),
+  version: varchar("version", { length: 50 }).notNull().default("1.0.0"),
+  argumentHint: text("argument_hint").notNull().default(""),
+  content: text("content").notNull(),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull().defaultNow().$defaultFn(() => new Date()),
   updatedAt: timestamp("updated_at", { mode: "date", fsp: 6 })
