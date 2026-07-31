@@ -333,7 +333,7 @@ export const customTools = mysqlTable("custom_tools", {
   description: text("description").notNull(),
   icon: varchar("icon", { length: 255 }).notNull().default(""),
   tags: json("tags").notNull().$type<string[]>().default([]),
-  type: mysqlEnum("type", ["http", "prompt"]).notNull(),
+  type: mysqlEnum("type", ["http", "prompt", "mcp"]).notNull(),
   httpConfig: json("http_config").$type<{
     url: string;
     method: "GET" | "POST" | "PUT" | "DELETE";
@@ -363,4 +363,62 @@ export const agentCustomTools = mysqlTable("agent_custom_tools", {
     .references(() => agents.id, { onDelete: "cascade" }),
   toolId: varchar("tool_id", { length: 36 }).notNull()
     .references(() => customTools.id, { onDelete: "cascade" }),
+});
+export const messageTraces = mysqlTable("message_traces", {
+  id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  messageId: varchar("message_id", { length: 36 }).notNull()
+    .references(() => messages.id, { onDelete: "cascade" }),
+  systemPrompt: text("system_prompt"),
+  skillsInjected: json("skills_injected").$type<Array<{ name: string; icon: string }>>(),
+  toolsAvailable: json("tools_available").$type<string[]>(),
+  ragContext: text("rag_context"),
+  summaryUsed: text("summary_used"),
+  modelUsed: varchar("model_used", { length: 255 }),
+  tokenDetails: json("token_details").$type<{ input?: number; output?: number; total?: number }>(),
+  latencyMs: int("latency_ms"),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+});
+
+export const evalCases = mysqlTable("eval_cases", {
+  id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  userId: varchar("user_id", { length: 36 }).notNull(),
+  agentId: varchar("agent_id", { length: 36 }).notNull()
+    .references(() => agents.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  input: text("input").notNull(),
+  expectedOutput: text("expected_output"),
+  criteria: text("criteria").notNull(),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+});
+
+export const evalRuns = mysqlTable("eval_runs", {
+  id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  caseId: varchar("case_id", { length: 36 }).notNull()
+    .references(() => evalCases.id, { onDelete: "cascade" }),
+  actualOutput: text("actual_output").notNull(),
+  score: float("score"),
+  feedback: text("feedback"),
+  model: varchar("model", { length: 255 }),
+  durationMs: int("duration_ms"),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+});
+
+export const scheduledTasks = mysqlTable("scheduled_tasks", {
+  id: varchar("id", { length: 36 }).primaryKey().$defaultFn(createId),
+  userId: varchar("user_id", { length: 36 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: mysqlEnum("type", ["agent_chat", "workflow_run"]).notNull(),
+  targetId: varchar("target_id", { length: 36 }).notNull(),
+  input: text("input").notNull(),
+  cronExpression: varchar("cron_expression", { length: 50 }).notNull(),
+  enabled: int("enabled").notNull().default(1),
+  lastRunAt: timestamp("last_run_at", { mode: "date", fsp: 6 }),
+  nextRunAt: timestamp("next_run_at", { mode: "date", fsp: 6 }),
+  createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
+  updatedAt: timestamp("updated_at", { mode: "date", fsp: 6 })
+    .notNull().defaultNow().$defaultFn(() => new Date()),
 });
