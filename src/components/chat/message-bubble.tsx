@@ -164,7 +164,13 @@ function MessageBubbleImpl({
           />
         )}
         {role === "assistant" && (
-          <TracePanel messageId={id} open={showTrace} onClose={() => setShowTrace(false)} />
+          <TracePanel
+            messageId={id}
+            open={showTrace}
+            onClose={() => setShowTrace(false)}
+            actualToolCalls={toolCalls}
+            actualSkills={activeSkills}
+          />
         )}
       </div>
     </div>

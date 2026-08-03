@@ -113,6 +113,11 @@ export async function POST(request: Request, { params }: Params) {
   const { tools, skills: agentSkillRows, customTools: agentCustomToolRows, teamMembers } =
     await assembleAgentToolset(agent, globalConfig);
 
+  // 保留原始 system prompt（不含 RAG），用于 trace 记录
+  const originalSystemPrompt = chatMessages.length > 0 && chatMessages[0].role === "system"
+    ? chatMessages[0].content as string
+    : undefined;
+
   const ragContext = await retrieveAgentRagContext(agent.id, content, globalConfig, resolveRagTopK(agent));
   if (ragContext) {
     if (chatMessages.length > 0 && chatMessages[0].role === "system") {
@@ -181,10 +186,9 @@ export async function POST(request: Request, { params }: Params) {
 
       // 保存调试 trace
       if (savedMsg) {
-        const traceSystemPrompt = chatMessages.find(m => m.role === "system")?.content as string | undefined;
         createTrace({
           messageId: savedMsg.id,
-          systemPrompt: traceSystemPrompt,
+          systemPrompt: originalSystemPrompt,
           skillsInjected: activeSkills ?? undefined,
           toolsAvailable: tools ? Object.keys(tools) : undefined,
           ragContext: ragContext ?? undefined,

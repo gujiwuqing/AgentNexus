@@ -25,10 +25,14 @@ export function TracePanel({
   messageId,
   open,
   onClose,
+  actualToolCalls,
+  actualSkills,
 }: {
   messageId: string;
   open: boolean;
   onClose: () => void;
+  actualToolCalls?: Array<{ toolName: string; displayName: string; args: Record<string, unknown>; result: string }>;
+  actualSkills?: Array<{ name: string; icon: string }> | null;
 }) {
   const { data: trace, isLoading } = useMessageTrace(messageId, open);
 
@@ -90,6 +94,46 @@ export function TracePanel({
                     <span key={name} className="text-xs px-2 py-0.5 rounded-full bg-muted border font-mono">
                       {name}
                     </span>
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            {actualSkills && actualSkills.length > 0 && (
+              <Section title="实际调用的 Skills">
+                <div className="flex flex-wrap gap-1.5">
+                  {actualSkills.map((s) => (
+                    <span key={s.name} className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700">
+                      {s.icon} {s.name}
+                    </span>
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            {actualToolCalls && actualToolCalls.length > 0 && (
+              <Section title="实际调用的 Tools">
+                <div className="space-y-2">
+                  {actualToolCalls.map((tc, i) => (
+                    <details key={i} className="text-xs border rounded-md">
+                      <summary className="px-3 py-1.5 cursor-pointer hover:bg-muted/50 font-medium">
+                        {tc.displayName || tc.toolName}
+                      </summary>
+                      <div className="px-3 py-2 space-y-1.5 border-t bg-muted/20">
+                        <div>
+                          <span className="text-muted-foreground">入参：</span>
+                          <pre className="mt-0.5 whitespace-pre-wrap text-[11px] bg-muted/50 rounded p-2 max-h-32 overflow-y-auto">
+                            {JSON.stringify(tc.args, null, 2)}
+                          </pre>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">结果：</span>
+                          <pre className="mt-0.5 whitespace-pre-wrap text-[11px] bg-muted/50 rounded p-2 max-h-32 overflow-y-auto">
+                            {tc.result}
+                          </pre>
+                        </div>
+                      </div>
+                    </details>
                   ))}
                 </div>
               </Section>

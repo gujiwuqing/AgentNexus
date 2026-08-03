@@ -158,5 +158,5 @@ export function buildRagContext(results: RetrievalResult[]): string {
       return source ? `[${i + 1}] (来源：${source})\n${r.content}` : `[${i + 1}] ${r.content}`;
     })
     .join("\n\n");
-  return `\n\n--- 以下是从知识库检索到的相关参考资料，请基于这些内容回答用户问题；引用时可标注对应来源 ---\n${refs}\n--- 参考资料结束 ---`;
+  return `\n\n--- 以下是从知识库检索到的相关参考资料，仅供参考。如果参考资料与用户问题相关，请优先基于这些内容回答并标注来源；如果参考资料与问题无关，请忽略这些资料，直接用你自身的知识回答用户问题 ---\n${refs}\n--- 参考资料结束 ---`;
 }
