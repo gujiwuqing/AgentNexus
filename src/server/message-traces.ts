@@ -13,6 +13,9 @@ export type TraceInput = {
   modelUsed?: string;
   tokenDetails?: { input?: number; output?: number; total?: number };
   latencyMs?: number;
+  maxSteps?: number;
+  /** 本次是否因工具调用步数上限被截断 */
+  stepLimitReached?: boolean;
 };
 
 export async function createTrace(input: TraceInput) {
@@ -28,6 +31,8 @@ export async function createTrace(input: TraceInput) {
     modelUsed: input.modelUsed ?? null,
     tokenDetails: input.tokenDetails ?? null,
     latencyMs: input.latencyMs ?? null,
+    maxSteps: input.maxSteps ?? null,
+    stepLimitReached: input.stepLimitReached === undefined ? null : input.stepLimitReached ? 1 : 0,
   });
   return id;
 }

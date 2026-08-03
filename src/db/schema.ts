@@ -384,6 +384,8 @@ export const messageTraces = mysqlTable("message_traces", {
   modelUsed: varchar("model_used", { length: 255 }),
   tokenDetails: json("token_details").$type<{ input?: number; output?: number; total?: number }>(),
   latencyMs: int("latency_ms"),
+  maxSteps: int("max_steps"),
+  stepLimitReached: int("step_limit_reached"),
   createdAt: timestamp("created_at", { mode: "date", fsp: 6 })
     .notNull().defaultNow().$defaultFn(() => new Date()),
 });

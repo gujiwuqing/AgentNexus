@@ -12,9 +12,14 @@ export const agentInputSchema = z.object({
   model: z.string().nullable().default(null),
   memoryWindowSize: z.number().int().min(0).max(200).default(20),
   memoryStrategy: z.enum(["window", "summary_window"]).default("window"),
-  // 不在 schema 内的字段会被 safeParse 剥掉，以下两项必须显式声明
+  // 不在 schema 内的字段会被 safeParse 剔掉，ragTopK / maxSteps 也必须显式声明
   toolsConfig: z
-    .object({ enabledTools: z.array(z.string()).default([]) })
+    .object({
+      enabledTools: z.array(z.string()).default([]),
+      ragTopK: z.number().int().min(1).max(50).optional(),
+      /** 工具调用轮数上限，缺省 12；Skill 元工具也计步，设太小会被截断 */
+      maxSteps: z.number().int().min(1).max(40).optional(),
+    })
     .nullable()
     .default(null),
   suggestedPrompts: z.array(z.string().min(1).max(200)).max(4).default([]),

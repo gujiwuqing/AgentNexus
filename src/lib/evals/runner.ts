@@ -1,12 +1,8 @@
 import { generateText } from "ai";
-import type { ProviderConfig } from "@/lib/ai/provider";
 import { createModelClient } from "@/lib/ai/provider-factory";
 import { generateAgentReply } from "@/lib/ai/generate";
 import { getAgent } from "@/server/agents";
-import { getProviderConfig } from "@/server/provider-config";
-import { resolveProviderConfig } from "@/lib/ai/provider";
-import { getAgentSkills } from "@/server/agent-skills";
-import { resolveAgentTools } from "@/lib/tools/resolve";
+import { assembleAgentRuntime } from "@/server/agent-runtime";
 import { createEvalRun } from "@/server/evals";
 import type { EvalCaseInput } from "@/server/evals";
 
@@ -22,24 +18,22 @@ export async function runEvalCase(evalCase: EvalCaseRow, userId: string): Promis
   const agent = await getAgent(evalCase.agentId);
   if (!agent) throw new Error("Agent not found");
 
-  const globalConfig = await getProviderConfig(userId);
-  const provider = resolveProviderConfig(agent.model, globalConfig);
-
-  // Skill 通过工具化机制挂载（渐进式披露），不再全量拼进 system prompt
-  const skills = await getAgentSkills(agent.id);
-  const tools = resolveAgentTools([], null, undefined, undefined, skills);
-
-  const messages = [
-    ...(agent.systemPrompt ? [{ role: "system" as const, content: agent.systemPrompt }] : []),
-    { role: "user" as const, content: evalCase.input },
-  ];
+  // 评测必须跑与线上完全一致的装配（知识库 + 内置/自定义工具 + 技能 + 团队），
+  // 否则分数反映的是一个现实中不存在的阉割版 Agent
+  const runtime = await assembleAgentRuntime({
+    agent,
+    prompt: evalCase.input,
+    ownerUserId: userId,
+  });
+  const provider = runtime.provider;
 
   const startedAt = Date.now();
   const actualOutput = await generateAgentReply(
     provider,
-    messages,
-    { temperature: agent.temperature, maxTokens: agent.maxTokens, topP: agent.topP },
-    tools,
+    runtime.messages,
+    runtime.options,
+    runtime.tools,
+    runtime.maxSteps,
   );
   const durationMs = Date.now() - startedAt;
 

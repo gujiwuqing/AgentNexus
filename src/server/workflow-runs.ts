@@ -4,11 +4,9 @@ import { workflowRuns, workflowStepLogs, workflows } from "@/db/schema";
 import { createId } from "@/lib/id";
 import { getWorkflow } from "./workflows";
 import { getAgent } from "./agents";
-import { getProviderConfig } from "./provider-config";
-import { resolveProviderConfig } from "@/lib/ai/provider";
 import { generateAgentReply } from "@/lib/ai/generate";
+import { assembleAgentRuntime } from "./agent-runtime";
 import { executeWorkflow, type EngineCallbacks, type EngineResult } from "@/lib/workflow/engine";
-import { retrieveAgentRagContext, injectRagContext } from "@/lib/knowledge/agent-rag";
 import type { WorkflowGraph, ExecutionContext } from "@/types/workflow";
 import { getLatestVersionNumber, getWorkflowVersion } from "./workflow-versions";
 import { enqueueJob, type ClaimedJob } from "./workflow-queue";
@@ -254,20 +252,15 @@ function makeCallbacks(runId: string, userId: string): EngineCallbacks {
     async callAgent(agentId: string, prompt: string): Promise<string> {
       const agent = await getAgent(agentId);
       if (!agent) throw new Error(`Agent ${agentId} not found`);
-      const globalConfig = await getProviderConfig(userId);
-      const provider = resolveProviderConfig(agent.model, globalConfig);
-      // 工作流中的 Agent 节点同样注入其关联知识库，与对话场景保持一致
-      const ragContext = await retrieveAgentRagContext(agent.id, prompt, globalConfig);
-      const baseMessages = [
-        ...(agent.systemPrompt ? [{ role: "system" as const, content: agent.systemPrompt }] : []),
-        { role: "user" as const, content: prompt },
-      ];
-      const messages = injectRagContext(baseMessages, ragContext);
-      return generateAgentReply(provider, messages, {
-        temperature: agent.temperature,
-        maxTokens: agent.maxTokens,
-        topP: agent.topP,
-      });
+      // 走统一装配：工作流里的 Agent 节点与对话入口拿到同一套知识库、工具、技能与团队
+      const runtime = await assembleAgentRuntime({ agent, prompt, ownerUserId: userId });
+      return generateAgentReply(
+        runtime.provider,
+        runtime.messages,
+        runtime.options,
+        runtime.tools,
+        runtime.maxSteps,
+      );
     },
     async onStepStart(nodeId, nodeType, input) {
       await db.insert(workflowStepLogs).values({

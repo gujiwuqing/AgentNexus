@@ -15,6 +15,11 @@ import {
   conversationShares,
   workflowVersions,
   agentTeamMembers,
+  agentSkills,
+  skills,
+  agentCustomTools,
+  customTools,
+  messageTraces,
   users,
   sessions,
 } from "./schema";
@@ -29,7 +34,10 @@ export async function clearAllTables() {
   await db.delete(knowledgeDocuments);
   await db.delete(agentKnowledgeBases);
   await db.delete(agentTeamMembers);
+  await db.delete(agentSkills);
+  await db.delete(agentCustomTools);
   await db.delete(workflowVersions);
+  await db.delete(messageTraces);
   await db.delete(messages);
   await db.delete(conversations);
   await db.delete(workflowStepLogs);
@@ -37,6 +45,8 @@ export async function clearAllTables() {
   await db.delete(workflowRuns);
   await db.delete(workflows);
   await db.delete(agents);
+  await db.delete(skills);
+  await db.delete(customTools);
   await db.delete(aiProviderConfig);
   await db.delete(knowledgeBases);
   await db.delete(users);

@@ -2,6 +2,8 @@ import { tool, type CoreTool } from "ai";
 import { z } from "zod";
 import type { ToolParameter } from "@/types/custom-tool";
 import { buildMcpTool } from "./mcp-client";
+import { safeFetch } from "./safe-fetch";
+import { interpolate, interpolateRecord, interpolateBody } from "./template-interpolate";
 
 type CustomToolRow = {
   name: string;
@@ -41,21 +43,6 @@ function buildZodSchema(parameters: ToolParameter[]): z.ZodSchema {
   return z.object(shape);
 }
 
-function interpolate(template: string, params: Record<string, unknown>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => {
-    const val = params[key];
-    return val !== undefined ? String(val) : "";
-  });
-}
-
-function interpolateRecord(template: Record<string, string>, params: Record<string, unknown>): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const [k, v] of Object.entries(template)) {
-    result[k] = interpolate(v, params);
-  }
-  return result;
-}
-
 export function resolveCustomTools(customTools: CustomToolRow[]): Record<string, CoreTool> {
   const result: Record<string, CoreTool> = {};
 
@@ -79,14 +66,18 @@ export function resolveCustomTools(customTools: CustomToolRow[]): Record<string,
             const headers: Record<string, string> = config.headers
               ? interpolateRecord(config.headers, params)
               : {};
-            const fetchOpts: RequestInit = { method: config.method, headers };
+            let body: string | undefined;
             if (config.bodyTemplate && config.method !== "GET") {
-              fetchOpts.body = interpolate(config.bodyTemplate, params);
+              body = interpolateBody(config.bodyTemplate, params);
               if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
             }
-            const res = await fetch(url.toString(), fetchOpts);
-            const text = await res.text();
-            return text.slice(0, 10000);
+            // 走 safeFetch：内置 http_request 有的 SSRF 拦截与超时，自定义工具同样必须有
+            const res = await safeFetch(url.toString(), {
+              method: config.method,
+              headers,
+              body,
+            });
+            return res.body;
           } catch (err) {
             return JSON.stringify({ error: err instanceof Error ? err.message : "HTTP request failed" });
           }

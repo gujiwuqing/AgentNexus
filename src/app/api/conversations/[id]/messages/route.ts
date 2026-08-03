@@ -3,19 +3,15 @@ import { getAgent } from "@/server/agents";
 import { listMessages, appendUserMessage, appendAssistantMessage } from "@/server/messages";
 import { getProviderConfig } from "@/server/provider-config";
 import { resolveProviderConfig, MissingProviderConfigError } from "@/lib/ai/provider";
-import { streamAgentReply, type ChatMessage } from "@/lib/ai/chat";
+import { streamAgentReply, stepLimitNotice, type ChatMessage } from "@/lib/ai/chat";
 import { apiError } from "@/lib/api-response";
 import { requireUser } from "@/lib/auth";
-import { resolveAgentTools } from "@/lib/tools/resolve";
 import { retrieveAgentRagContext } from "@/lib/knowledge/agent-rag";
 import { getAttachmentsByIds, linkAttachmentToMessage } from "@/server/attachments";
 import { readStoredFile } from "@/lib/files/storage";
 import { extractText, isImageFile } from "@/lib/files/extractor";
-import { getTeamMembers, callTeamMember } from "@/server/agent-team";
-import { buildDelegationTool } from "@/lib/tools/team-delegation";
 import { getToolByName } from "@/lib/tools/registry";
-import { getAgentSkills } from "@/server/agent-skills";
-import { getAgentCustomTools } from "@/server/agent-custom-tools";
+import { assembleAgentToolset, resolveMaxSteps, resolveRagTopK } from "@/server/agent-runtime";
 import { updateConversationSummary, buildSummarySystemMessage } from "@/lib/memory/summary";
 import { createTrace } from "@/server/message-traces";
 
@@ -113,11 +109,11 @@ export async function POST(request: Request, { params }: Params) {
     chatMessages[chatMessages.length - 1] = { role: "user", content: enrichedContent };
   }
 
-  // 注入关联的 Skills 到 system prompt
-  const agentSkillRows = await getAgentSkills(agent.id);
+  // Skill 走元工具按需加载，不拼进 system prompt；工具面与其他入口共用同一装配函数
+  const { tools, skills: agentSkillRows, customTools: agentCustomToolRows, teamMembers } =
+    await assembleAgentToolset(agent, globalConfig);
 
-  const ragTopK = (agent.toolsConfig as { ragTopK?: number })?.ragTopK ?? 5;
-  const ragContext = await retrieveAgentRagContext(agent.id, content, globalConfig, ragTopK);
+  const ragContext = await retrieveAgentRagContext(agent.id, content, globalConfig, resolveRagTopK(agent));
   if (ragContext) {
     if (chatMessages.length > 0 && chatMessages[0].role === "system") {
       chatMessages[0] = {
@@ -129,21 +125,7 @@ export async function POST(request: Request, { params }: Params) {
     }
   }
 
-  const enabledTools = (agent.toolsConfig as { enabledTools?: string[] })?.enabledTools ?? [];
-  const searchConfig = globalConfig?.webSearchProvider && globalConfig?.webSearchApiKey
-    ? { provider: globalConfig.webSearchProvider, apiKey: globalConfig.webSearchApiKey }
-    : null;
-  const teamMembers = await getTeamMembers(agent.id);
-  const teamToolDefs = teamMembers.map((m) =>
-    buildDelegationTool(
-      { memberAgentId: m.memberAgentId, memberAgentName: m.memberAgentName, roleDescription: m.roleDescription },
-      // 将主 Agent 作为委托链起点传入，防止成员反向委托回主 Agent 成环
-      (memberAgentId, task) => callTeamMember(memberAgentId, task, { depth: 1, chain: [agent.id] }),
-    )
-  );
-  const agentCustomToolRows = await getAgentCustomTools(agent.id);
-  const tools = resolveAgentTools(enabledTools, searchConfig, agentCustomToolRows, teamToolDefs, agentSkillRows);
-
+  const maxSteps = resolveMaxSteps(agent);
   const startedAt = Date.now();
   const result = streamAgentReply(
     providerConfig,
@@ -182,15 +164,20 @@ export async function POST(request: Request, { params }: Params) {
             .filter((s) => loadedSkillNames.has(s.name))
             .map((s) => ({ name: s.name, icon: s.icon || "⚡" }))
         : null;
-      const savedMsg = await appendAssistantMessage(id, meta.text, {
-        model: providerConfig.model,
-        promptTokens: meta.usage?.promptTokens,
-        completionTokens: meta.usage?.completionTokens,
-        totalTokens: meta.usage?.totalTokens,
-        durationMs,
-        toolCalls: enrichedToolCalls.length > 0 ? enrichedToolCalls : null,
-        activeSkills,
-      });
+      const savedMsg = await appendAssistantMessage(
+        id,
+        // 步数耗尽时模型可能只返回半截甚至空文本，必须让用户知道是被截断而不是模型不会
+        meta.stepLimitReached ? meta.text + stepLimitNotice(maxSteps) : meta.text,
+        {
+          model: providerConfig.model,
+          promptTokens: meta.usage?.promptTokens,
+          completionTokens: meta.usage?.completionTokens,
+          totalTokens: meta.usage?.totalTokens,
+          durationMs,
+          toolCalls: enrichedToolCalls.length > 0 ? enrichedToolCalls : null,
+          activeSkills,
+        },
+      );
 
       // 保存调试 trace
       if (savedMsg) {
@@ -205,6 +192,8 @@ export async function POST(request: Request, { params }: Params) {
           modelUsed: providerConfig.model,
           tokenDetails: meta.usage ? { input: meta.usage.promptTokens, output: meta.usage.completionTokens, total: meta.usage.totalTokens } : undefined,
           latencyMs: durationMs,
+          maxSteps,
+          stepLimitReached: meta.stepLimitReached,
         }).catch((err) => console.error("[trace] save failed:", err));
       }
 
@@ -216,7 +205,8 @@ export async function POST(request: Request, { params }: Params) {
             .catch((err) => console.error("[memory] async summary failed:", err));
         }
       }
-    }
+    },
+    maxSteps,
   );
 
   return result.toDataStreamResponse();
